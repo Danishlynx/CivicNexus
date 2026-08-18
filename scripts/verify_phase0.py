@@ -9,10 +9,12 @@ import sys
 from pathlib import Path
 
 # A concrete trace must be recorded — a URL carrying a trace id, not a bare
-# traces list link (which exists even when zero traces were emitted).
+# traces list link (which exists even when zero traces were emitted). Covers
+# the legacy details/tid forms and the current Trace Explorer form
+# (`explorer;...;traceId=<hex>` — observed live 2026-08-18).
 TRACE_URL_PATTERN = re.compile(
     r"https://console\.cloud\.google\.com/traces/"
-    r"(?:details/[0-9a-f]{16,32}|list\?\S*tid=[0-9a-f]{16,32})\S*",
+    r"(?:details/[0-9a-f]{16,32}|list\?\S*tid=[0-9a-f]{16,32}|explorer\S*traceId=[0-9a-f]{16,32})\S*",
     re.IGNORECASE,
 )
 
