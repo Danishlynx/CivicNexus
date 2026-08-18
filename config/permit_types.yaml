@@ -1,0 +1,9 @@
+# PermitType config (ARCHITECTURE.md §4): which review capabilities each permit
+# type requires, which outcomes are legal, and the SLA clock.
+#
+# Phase 1 vertical slice runs zoning only; the spec's full garage_conversion
+# example adds "safety" when that agent lands in Phase 3 (§11).
+garage_conversion:
+  required_capabilities: [zoning]
+  allowed_outcomes: [approve, deny, request_info]
+  sla_days: 14
