@@ -5,31 +5,24 @@ paths, recommendation, who acts.
 
 ---
 
-## B-005 — No traces reach Cloud Trace from the deployed hello agent (Phase 0 exit blocked on this alone)
+## B-005 — "No traces from the hello agent" — RESOLVED 2026-08-18 (was a read-path gap, not a write failure)
 
-**Symptom:** `make bootstrap`, `make deploy`, and `make smoke` all PASS — the
-agent answers queries end to end — but zero traces appear via the Cloud Trace v1
-API (filtered and bare list both empty, polled repeatedly over ~40 min). All
-three documented tracing mechanisms were tried empirically on 2026-08-18:
-(1) SDK `AdkApp(enable_tracing=True)`, (2) the documented telemetry env vars
-(`GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY` etc. — confirmed present on the
-instance spec), (3) ADK CLI `--otel_to_cloud` on a source-built instance. Agent
-logs show healthy request handling and no OTel init lines or export errors.
+**Resolution (human console check at the gate):** Trace Explorer shows 24 spans
+across all three deployed instances — `invoke_workflow` → `invoke_agent` →
+`call_llm` → `generate_content gemini-3.5-flash` — including the instances
+deployed via mechanisms I had scored as "failed". Tracing was working all
+along. The false negative: **OTel-native spans do not surface through the
+legacy Cloud Trace v1 `traces.list` API**, which is what the polling scripts
+queried. Console evidence (span IDs, timings, the four Error spans from the
+regional-404 run at 17:27 IST) is recorded in PROGRESS.md.
 
-**Paths:**
-1. Human opens the console — both the Trace Explorer
-   (https://console.cloud.google.com/traces/list?project=civicnexus-hack26) and
-   the Agent Engine playground/observability tab for instance 7337306624207355904
-   — spans may exist in a store the v1 list API doesn't surface.
-2. Instrument our own OTel export in Phase 1 services via `libs/otel` (planned
-   anyway per ARCHITECTURE §8): direct `opentelemetry-exporter-gcp-trace` export
-   demonstrably lands in Cloud Trace and does not depend on the platform's
-   auto-tracing, which may simply be broken/moved on the current runtime.
-
-**Recommendation:** Path 1 at the gate (2 minutes, resolves whether this is a
-write problem or a read problem), then Path 2 regardless — our architecture
-requires one trace per case rooted at intake, which is our instrumentation, not
-the platform's. **Human checks console; build continues on Path 2 in Phase 1.**
+**Two lessons carried forward:**
+1. Never conclude "no traces" from the v1 API again; verify in Trace Explorer
+   or a modern query surface.
+2. Runtime logs show partial instrumentation only: "Unable to import
+   GoogleGenAiSdkInstrumentor … Make sure to install google-adk[otel-gcp]".
+   Phase 1 agent requirements must include the **`google-adk[otel-gcp]`**
+   extra for full HTTPX/gRPC/GenAI-SDK spans.
 
 ## B-004 — Repo lives inside a OneDrive-synced folder — RESOLVED 2026-08-18
 

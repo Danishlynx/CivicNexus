@@ -1,13 +1,13 @@
 # PROGRESS
 
-**Current phase: 0 — walking skeleton (in progress).**
+**Current phase: 0 — COMPLETE (gate passed 2026-08-18); Phase 1 awaiting human go.**
 Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
 | Phase | Status |
 |---|---|
-| 0 Skeleton | IN PROGRESS — local scaffold verified; deploy blocked on GCP prerequisites (B-002) |
+| 0 Skeleton | **COMPLETE** — `make verify-phase-0` PASS (test + smoke + trace URL); human reviewed traces at the gate |
 | 1–7 | not started |
 
 ## Phase 0 checklist
@@ -44,9 +44,13 @@ Exit criteria: `make smoke` green + a concrete Cloud Trace URL recorded below.
       (CLI-built with `--otel_to_cloud`; model calls route via the global
       endpoint per ADR-001 items 8–9)
 - [x] `make smoke` PASS — agent replied over the deployed stack (4 passing runs)
-- [ ] Trace URL (must contain a concrete trace id): **blocked on B-005** — no
-      traces reach the Cloud Trace v1 API from any documented mechanism; human
-      console check requested at the gate
+- [x] Trace URL recorded — trace `ac70d29773a2694335410ef54538fed4` (root span
+      `1c739761e187c1f5`, `invoke_workflow hello_agent`, 17:31:58 IST, live
+      instance), clicked through and pasted by the human at the gate:
+      https://console.cloud.google.com/traces/explorer;traceId=ac70d29773a2694335410ef54538fed4;spanId=1c739761e187c1f5;duration=PT1H?project=civicnexus-hack26
+      B-005 resolved: 24 spans across all three instances in Trace Explorer
+      (`invoke_workflow` → `invoke_agent` → `call_llm` → `generate_content
+      gemini-3.5-flash`); the v1 list API simply cannot see OTel-native spans.
 
 ## Evidence log
 
@@ -73,8 +77,13 @@ Exit criteria: `make smoke` green + a concrete Cloud Trace URL recorded below.
     propagation retry, then budget currency fix).
   - `make deploy` → PASS; `make smoke` → PASS ×4, e.g. reply: "Yes, the
     CivicNexus hello agent is alive and online."
-  - Tracing: **not working** despite three mechanisms tried — full detail in
-    B-005 and ADR-001 item 10. This is the sole open Phase 0 exit criterion.
+  - Tracing: resolved at the gate — spans existed all along; the legacy v1 list
+    API can't see OTel-native spans (B-005, ADR-001 item 10). Human verified 24
+    spans in Trace Explorer and clicked through trace
+    `ac70d29773a2694335410ef54538fed4`.
+  - **`make verify-phase-0` → PASS** (test chain green, live smoke reply
+    "Yes, I am alive and online to confirm that the connection works.", trace
+    URL assertion satisfied). **Phase 0 exit criteria met.**
 
 ## Known gaps (deliberate, tracked)
 

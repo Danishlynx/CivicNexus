@@ -71,11 +71,14 @@ following confirmed deltas against ARCHITECTURE.md.
    `make deploy` consolidates on the CLI path in Phase 1. The CLI runtime also
    pre-sets `GOOGLE_CLOUD_LOCATION` to the deploy region, so the global model
    routing (item 8) must force-override, which `agents/hello` now does.
-10. **(Observed, unresolved — see BLOCKERS B-005.)** None of the three
-   documented tracing mechanisms (SDK `enable_tracing=True`, telemetry env
-   vars, CLI `--otel_to_cloud`) produced traces queryable via the Cloud Trace
-   v1 API. Phase 1 instruments our own OTel export per ARCHITECTURE §8 rather
-   than relying on platform auto-tracing.
+10. **(Observed; resolved — see BLOCKERS B-005.)** Platform tracing works, but
+   **OTel-native spans are invisible to the legacy Cloud Trace v1 list API** —
+   only the console Trace Explorer (new backend) shows them. All three
+   mechanisms (SDK `enable_tracing=True`, telemetry env vars, CLI
+   `--otel_to_cloud`) did emit spans. Additionally, full instrumentation
+   requires the `google-adk[otel-gcp]` extra in the agent's requirements
+   (runtime log warns `GoogleGenAiSdkInstrumentor` missing without it) —
+   Phase 1 adds it. Phase 1 services still add our own OTel export per §8.
 
 ## Decision
 
