@@ -14,14 +14,20 @@ variable "billing_account_id" {
   type        = string
 }
 
-variable "budget_amount_usd" {
-  description = "Total budget in USD; alert thresholds are expressed against this."
+variable "budget_currency" {
+  description = "Currency of the budget — MUST match the billing account's currency or the API rejects the budget with a bare INVALID_ARGUMENT."
+  type        = string
+  default     = "USD"
+}
+
+variable "budget_amount" {
+  description = "Total budget ceiling in budget_currency units (spec intent: ~USD 150)."
   type        = number
   default     = 150
 }
 
-variable "alert_spend_usd" {
-  description = "Absolute USD spend levels that trigger budget alerts (CLAUDE.md: 50/100/140)."
+variable "alert_spend" {
+  description = "Absolute spend levels (in budget_currency) that trigger alerts (spec intent: ~USD 50/100/140)."
   type        = list(number)
   default     = [50, 100, 140]
 }

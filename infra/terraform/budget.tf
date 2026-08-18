@@ -19,15 +19,15 @@ resource "google_billing_budget" "civicnexus" {
 
   amount {
     specified_amount {
-      currency_code = "USD"
-      units         = tostring(floor(var.budget_amount_usd))
+      currency_code = var.budget_currency
+      units         = tostring(floor(var.budget_amount))
     }
   }
 
   dynamic "threshold_rules" {
-    for_each = var.alert_spend_usd
+    for_each = var.alert_spend
     content {
-      threshold_percent = threshold_rules.value / var.budget_amount_usd
+      threshold_percent = threshold_rules.value / var.budget_amount
       spend_basis       = "CURRENT_SPEND"
     }
   }

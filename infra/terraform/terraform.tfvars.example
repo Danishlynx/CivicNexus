@@ -2,3 +2,10 @@
 # GCP setup guide in PROGRESS.md / the session notes.
 project_id         = "your-project-id"
 billing_account_id = "XXXXXX-XXXXXX-XXXXXX"
+
+# IMPORTANT: budget_currency must match the billing account's currency exactly,
+# or budget creation fails with a bare INVALID_ARGUMENT. For non-USD accounts,
+# set the amount/alerts to local-currency equivalents of USD 150 / 50/100/140:
+# budget_currency = "INR"
+# budget_amount   = 13000
+# alert_spend     = [4333, 8667, 12133]
