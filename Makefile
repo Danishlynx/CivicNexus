@@ -47,7 +47,7 @@ verify-phase-0:
 	@$(MAKE) test && $(MAKE) smoke && uv run python scripts/verify_phase0.py && echo PASS: make verify-phase-0 || (echo FAIL: make verify-phase-0 && exit 1)
 
 verify-phase-1:
-	@echo FAIL: verify-phase-1 not implemented until Phase 1 && exit 1
+	@$(MAKE) test && uv run python scripts/run_case.py && echo PASS: make verify-phase-1 || (echo FAIL: make verify-phase-1 && exit 1)
 
 verify-phase-2:
 	@echo FAIL: verify-phase-2 not implemented until Phase 2 && exit 1
