@@ -8,6 +8,7 @@ dependencies = [
     "civicnexus-otel",
     "civicnexus-tools",
     "civicnexus-agent-hello",
+    "civicnexus-agent-caseflow",
 ]
 
 [dependency-groups]
@@ -28,13 +29,14 @@ dev = [
 package = false
 
 [tool.uv.workspace]
-members = ["libs/contracts", "libs/otel", "libs/tools", "agents/hello"]
+members = ["libs/contracts", "libs/otel", "libs/tools", "agents/hello", "agents/caseflow"]
 
 [tool.uv.sources]
 civicnexus-contracts = { workspace = true }
 civicnexus-otel = { workspace = true }
 civicnexus-tools = { workspace = true }
 civicnexus-agent-hello = { workspace = true }
+civicnexus-agent-caseflow = { workspace = true }
 
 [tool.ruff]
 line-length = 100
@@ -48,7 +50,13 @@ python_version = "3.12"
 strict = true
 namespace_packages = true
 explicit_package_bases = true
-mypy_path = ["libs/contracts/src", "libs/otel/src", "libs/tools/src", "agents/hello/src"]
+mypy_path = [
+    "libs/contracts/src",
+    "libs/otel/src",
+    "libs/tools/src",
+    "agents/hello/src",
+    "agents/caseflow/src",
+]
 
 [[tool.mypy.overrides]]
 module = ["google.adk.*", "vertexai.*", "google.cloud.*", "agentplatform.*", "google.genai.*"]

@@ -1,0 +1,18 @@
+[project]
+name = "civicnexus-agent-caseflow"
+version = "0.1.0"
+description = "Phase 1 vertical-slice fleet: coordinator + intake + zoning in one deployable ADK app (split into separate registry-governed agents in Phase 3)"
+requires-python = ">=3.12"
+# The deployed runtime installs src/caseflow_agent/requirements.txt; these deps
+# are for local development and tests only.
+dependencies = ["google-adk>=2.7,<3", "civicnexus-contracts"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/caseflow_agent"]
+
+[tool.uv.sources]
+civicnexus-contracts = { workspace = true }

@@ -19,6 +19,7 @@ resolution-markers = [
 [manifest]
 members = [
     "civicnexus",
+    "civicnexus-agent-caseflow",
     "civicnexus-agent-hello",
     "civicnexus-contracts",
     "civicnexus-otel",
@@ -512,6 +513,7 @@ name = "civicnexus"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "civicnexus-agent-caseflow" },
     { name = "civicnexus-agent-hello" },
     { name = "civicnexus-contracts" },
     { name = "civicnexus-otel" },
@@ -532,6 +534,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "civicnexus-agent-caseflow", editable = "agents/caseflow" },
     { name = "civicnexus-agent-hello", editable = "agents/hello" },
     { name = "civicnexus-contracts", editable = "libs/contracts" },
     { name = "civicnexus-otel", editable = "libs/otel" },
@@ -548,6 +551,21 @@ dev = [
     { name = "pytest-cov", specifier = ">=5.0" },
     { name = "ruff", specifier = ">=0.6" },
     { name = "types-pyyaml", specifier = ">=6.0" },
+]
+
+[[package]]
+name = "civicnexus-agent-caseflow"
+version = "0.1.0"
+source = { editable = "agents/caseflow" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+    { name = "google-adk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "google-adk", specifier = ">=2.7,<3" },
 ]
 
 [[package]]
