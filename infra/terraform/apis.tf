@@ -12,6 +12,7 @@ locals {
     "secretmanager.googleapis.com",    # secrets
     "cloudtrace.googleapis.com",       # tracing
     "modelarmor.googleapis.com",       # content screening
+    "vectorsearch.googleapis.com",     # backend for RAG Engine serverless mode
     "logging.googleapis.com",          # structured logs
     "monitoring.googleapis.com",       # alerting on log-based metrics
     "storage.googleapis.com",          # GCS buckets
