@@ -48,7 +48,7 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
-    state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    state = json.loads(STATE_FILE.read_text(encoding="utf-8-sig"))
     resource_name, project = state["resource_name"], state["project"]
 
     import vertexai

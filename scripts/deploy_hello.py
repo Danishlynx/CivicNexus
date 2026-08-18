@@ -59,6 +59,9 @@ def main() -> int:
     from hello_agent.agent import root_agent
     from vertexai import agent_engines
 
+    # AdkApp reads project/location from the SDK's global config, not from the
+    # Client — both must be initialized (observed on first deploy, SDK 1.164.0).
+    vertexai.init(project=project, location=region)
     client = vertexai.Client(project=project, location=region)
     app = agent_engines.AdkApp(agent=root_agent, enable_tracing=True)
 
@@ -70,7 +73,20 @@ def main() -> int:
             "description": "Phase 0 walking-skeleton agent",
             "requirements": REMOTE_REQUIREMENTS,
             "staging_bucket": f"gs://{project}-agent-staging",
-            "env_vars": {"MODEL_ID": os.environ.get("MODEL_ID", "gemini-3.5-flash")},
+            "env_vars": {
+                "MODEL_ID": os.environ.get("MODEL_ID", "gemini-3.5-flash"),
+                # Gemini 3.x models do not serve from the us-central1 regional
+                # endpoint on this project (probed 2026-08-18: HTTP 417 for all
+                # regional model calls; global OK) — route model inference via
+                # the global endpoint. Deployment + data remain us-central1.
+                "GOOGLE_CLOUD_LOCATION": "global",
+                # ADK tracing: AdkApp(enable_tracing=True) produced no traces on
+                # runtime SDK 1.164.0 (verified empirically 2026-08-18); these
+                # documented telemetry vars are the working mechanism.
+                "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
+                "OTEL_SEMCONV_STABILITY_OPT_IN": "gen_ai_latest_experimental",
+                "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "EVENT_ONLY",
+            },
         },
     )
 

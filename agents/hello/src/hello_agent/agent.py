@@ -9,6 +9,12 @@ import os
 
 from google.adk.agents import Agent
 
+# The Agent Engine runtime pre-sets GOOGLE_CLOUD_LOCATION to the deploy region,
+# but Gemini 3.x serves only from the global endpoint on this project (ADR-001
+# item 8) — so model routing must force-override it. MODEL_LOCATION is the
+# escape hatch if regional serving ever returns.
+os.environ["GOOGLE_CLOUD_LOCATION"] = os.environ.get("MODEL_LOCATION", "global")
+
 root_agent = Agent(
     name="hello_agent",
     model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
