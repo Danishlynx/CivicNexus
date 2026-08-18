@@ -1,6 +1,6 @@
 # PROGRESS
 
-**Current phase: 0 — COMPLETE (gate passed 2026-08-18); Phase 1 awaiting human go.**
+**Current phase: 1 — COMPLETE (verify-phase-1 PASS 2026-08-18); awaiting human gate review, then Phase 2.**
 Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
@@ -8,7 +8,43 @@ Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 | Phase | Status |
 |---|---|
 | 0 Skeleton | **COMPLETE** — `make verify-phase-0` PASS (test + smoke + trace URL); human reviewed traces at the gate |
-| 1–7 | not started |
+| 1 Vertical slice | **COMPLETE** — `make verify-phase-1` PASS; cited determination reached PENDING_HUMAN on the live stack (details below) |
+| 2–7 | not started |
+
+## Phase 1 evidence (2026-08-18, all output observed directly)
+
+Exit criterion (§11): one case reaches PENDING_HUMAN with a cited
+determination; e2e passes. **Met, twice, on the real deployed stack:**
+
+- Deployed fleet: `civicnexus-caseflow` (coordinator + intake + zoning,
+  in-process composition per ADR-002 item 4) — Agent Engine instance
+  `projects/382264320396/locations/us-central1/reasoningEngines/2118760555991793664`,
+  CLI-deployed with `--otel_to_cloud` and the `google-adk[otel-gcp]` extra.
+- Live case `case-a61c62612c0c`: intake parsed the synthetic Maria fixture
+  (complete=true) → RECEIVED → TRIAGED → IN_REVIEW → zoning determination
+  **deny @ confidence 1.0 citing §17.44.100** with the verbatim quote "No
+  employees are allowed other than members of the resident family;" (correct:
+  the fixture's helper is a non-resident sister) → PENDING_HUMAN. Every
+  transition published its §5 event and audit row (message ids in the log).
+- Formal `make verify-phase-1` → PASS: full test chain (102 tests incl.
+  emulator integration, 97%+ coverage, strict mypy on 38 files) + a second
+  live case `case-21c09bb0094b` → **request_info @ 1.0, same §17.44.100
+  citation, verbatim-verified** → PENDING_HUMAN.
+- Grounding is machine-checked by the driver: citation section files must
+  exist in `data/corpus/` and quotes must match the committed text verbatim
+  (whitespace-normalized). Canary string did not surface in agent output.
+
+**Deltas/flags for the gate:**
+1. Outcome variance across runs (deny vs request_info on identical facts) —
+   both defensible readings of §17.44.100(A); characterizing this is exactly
+   Phase 2's eval work.
+2. IAM: deployed agents currently run as the shared Reasoning Engine service
+   agent with a coarse `roles/aiplatform.user` grant (Terraform `iam.tf`) —
+   required for RAG retrieval (403 observed without it); replaced by
+   per-agent least-privilege SAs in Phase 3 (§6.1).
+3. Corpus rights: public-record municipal code via American Legal Publishing,
+   one-time manual retrieval with attribution (`data/CORPUS_SOURCE.md`,
+   ADR-002 item 6) — human sign-off requested at this gate.
 
 ## Phase 0 checklist
 
