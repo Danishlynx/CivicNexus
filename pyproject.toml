@@ -19,6 +19,8 @@ dev = [
     "types-pyyaml>=6.0",
     # Deploy-time SDK for Agent Engine (verified >=1.112 per ADR-001 item 5).
     "google-cloud-aiplatform[agent_engines,adk]>=1.112",
+    # Required at runtime by the agentplatform rag surface (observed 2026-08-18).
+    "pandas>=2.0",
 ]
 
 [tool.uv]
@@ -47,8 +49,13 @@ explicit_package_bases = true
 mypy_path = ["libs/contracts/src", "libs/otel/src", "agents/hello/src"]
 
 [[tool.mypy.overrides]]
-module = ["google.adk.*", "vertexai.*", "google.cloud.*"]
+module = ["google.adk.*", "vertexai.*", "google.cloud.*", "agentplatform.*", "google.genai.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "google.auth.*"
+ignore_missing_imports = true
+follow_untyped_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["libs", "agents"]
