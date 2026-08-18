@@ -1,0 +1,56 @@
+[project]
+name = "civicnexus"
+version = "0.1.0"
+description = "Governed multi-agent platform for municipal permit casework (workspace root)"
+requires-python = ">=3.12"
+dependencies = [
+    "civicnexus-contracts",
+    "civicnexus-otel",
+    "civicnexus-agent-hello",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "pre-commit>=3.8",
+    # Deploy-time SDK for Agent Engine (verified >=1.112 per ADR-001 item 5).
+    "google-cloud-aiplatform[agent_engines,adk]>=1.112",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["libs/contracts", "libs/otel", "agents/hello"]
+
+[tool.uv.sources]
+civicnexus-contracts = { workspace = true }
+civicnexus-otel = { workspace = true }
+civicnexus-agent-hello = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = ["libs/contracts/src", "libs/otel/src", "agents/hello/src"]
+
+[[tool.mypy.overrides]]
+module = ["google.adk.*", "vertexai.*", "google.cloud.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["libs", "agents"]
+# Coverage gate ≥80% on libs (ARCHITECTURE.md §10); the civicnexus namespace is
+# exactly the libs/ code, so scoping coverage to it scopes the gate to libs.
+addopts = "-q --cov=civicnexus --cov-report=term-missing --cov-fail-under=80"

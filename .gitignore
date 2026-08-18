@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+
+# Secrets / env — no SA key files, ever (CLAUDE.md prime directive 3)
+.env
+.env.*
+*.tfvars
+service-account*.json
+*-key.json
+
+# Deploy-time local state (resource names of deployed agents)
+.deploy/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Node (console, Phase 6)
+node_modules/
+.next/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
