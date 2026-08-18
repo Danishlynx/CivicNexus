@@ -1,0 +1,25 @@
+# Local GCP emulators for integration tests (ADR-002 item 5: the dev machine
+# has JRE 8 only; the emulators need Java 21+, so they run containerized).
+#
+#   docker compose -f docker-compose.emulators.yaml up -d
+#   $env:FIRESTORE_EMULATOR_HOST = "127.0.0.1:8087"
+#   $env:PUBSUB_EMULATOR_HOST   = "127.0.0.1:8085"
+#   uv run pytest libs/tools
+services:
+  firestore:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command: >
+      gcloud emulators firestore start
+      --host-port=0.0.0.0:8087
+      --project=civicnexus-emulator
+    ports:
+      - "127.0.0.1:8087:8087"
+
+  pubsub:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command: >
+      gcloud beta emulators pubsub start
+      --host-port=0.0.0.0:8085
+      --project=civicnexus-emulator
+    ports:
+      - "127.0.0.1:8085:8085"
