@@ -16,11 +16,14 @@ from civicnexus.contracts.case import (
 )
 from civicnexus.contracts.determinations import Citation, Determination, DeterminationOutcome
 from civicnexus.contracts.events import Actor, EventEnvelope, EventType
+from civicnexus.contracts.intake import Application
+from civicnexus.contracts.review import ReviewFinding
 
 __all__ = [
     "ALLOWED_TRANSITIONS",
     "Actor",
     "Applicant",
+    "Application",
     "Budget",
     "Case",
     "CaseState",
@@ -29,6 +32,7 @@ __all__ = [
     "DeterminationOutcome",
     "EventEnvelope",
     "EventType",
+    "ReviewFinding",
     "Timer",
     "can_transition",
     "is_human_only",
