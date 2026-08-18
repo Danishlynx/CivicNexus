@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (gitignored) and fill in. Get both values from the
+# GCP setup guide in PROGRESS.md / the session notes.
+project_id         = "your-project-id"
+billing_account_id = "XXXXXX-XXXXXX-XXXXXX"
