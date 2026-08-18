@@ -36,11 +36,17 @@ Exit criteria: `make smoke` green + a concrete Cloud Trace URL recorded below.
 - [x] Multi-agent spec-compliance review of the scaffold: 31 findings raised,
       30 confirmed after adversarial refutation, fixes applied (2 consciously
       deferred — see "Known gaps" below)
-- [ ] `make bootstrap` (terraform apply) — **blocked on B-002** (needs PROJECT_ID,
-      billing account ID, gcloud auth)
-- [ ] Hello agent deployed to Agent Engine
-- [ ] `make smoke` green against the deployment
-- [ ] Trace URL (must contain a concrete trace id): *(pending deploy)*
+- [x] `make bootstrap` PASS — 20 APIs, budget `338dd463` with 3 alert
+      thresholds (INR-denominated: account currency is INR, see evidence),
+      staging bucket `civicnexus-hack26-agent-staging` (B-002 resolved)
+- [x] Hello agent deployed to Agent Engine — live instance
+      `projects/382264320396/locations/us-central1/reasoningEngines/7337306624207355904`
+      (CLI-built with `--otel_to_cloud`; model calls route via the global
+      endpoint per ADR-001 items 8–9)
+- [x] `make smoke` PASS — agent replied over the deployed stack (4 passing runs)
+- [ ] Trace URL (must contain a concrete trace id): **blocked on B-005** — no
+      traces reach the Cloud Trace v1 API from any documented mechanism; human
+      console check requested at the gate
 
 ## Evidence log
 
@@ -55,6 +61,20 @@ Exit criteria: `make smoke` green + a concrete Cloud Trace URL recorded below.
 - **2026-08-18 — build-time research:** live-docs verification with source URLs
   recorded in ADR-001 (model string `gemini-3.5-flash` confirmed; SDK deploy
   surface confirmed; `--otel_to_cloud` supersedes deprecated `--trace_to_cloud`).
+- **2026-08-18 — GCP bring-up (all outputs observed directly):**
+  - Project `civicnexus-hack26` created by the human; billing linked to
+    `0181F3-EBFDD3-297923` (INR-denominated — budget uses INR equivalents:
+    ₹13,000 ceiling, alerts ₹4,333/₹8,667/₹12,133 ≈ $50/$100/$140, gross spend).
+  - Manual bootstrap step (recorded per prime directive 6): `gcloud services
+    enable serviceusage.googleapis.com cloudresourcemanager.googleapis.com` —
+    required before the first terraform apply on any fresh project; both APIs
+    are also in the Terraform list so state stays authoritative.
+  - `make bootstrap` → PASS (three runs to green: Service Usage chicken-and-egg,
+    propagation retry, then budget currency fix).
+  - `make deploy` → PASS; `make smoke` → PASS ×4, e.g. reply: "Yes, the
+    CivicNexus hello agent is alive and online."
+  - Tracing: **not working** despite three mechanisms tried — full detail in
+    B-005 and ADR-001 item 10. This is the sole open Phase 0 exit criterion.
 
 ## Known gaps (deliberate, tracked)
 

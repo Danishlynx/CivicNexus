@@ -12,11 +12,10 @@ Remove entries as they are confirmed or refuted (refutations become ADRs/BLOCKER
   only the Developer-API table was fetchable). `gemini-3.5-flash-lite`
   (~$0.30/$2.50) is the cost-guard candidate for high-volume paths — human
   decision at the Phase 1 gate. `MODEL_ID` env var is the single override point.
-- **A-3 — Deploy surface verified; query surface not.** The Agent Engine deploy
-  API in `scripts/deploy_hello.py` matches live docs (ADR-001 item 5). The
-  query call in `scripts/smoke.py` (`stream_query`) could not be confirmed from
-  live docs and fails loudly with diagnostics if drifted — finalize at first
-  real deploy.
+- **A-3 — RESOLVED 2026-08-18: query surface verified live.** `stream_query`
+  on the object returned by `client.agent_engines.get(...)` works against the
+  deployed instance (four passing smoke runs). Deploy-path consolidation onto
+  the ADK CLI is Phase 1 work (ADR-001 item 9).
 - **A-4 — Namespace-package layout** (`civicnexus.contracts`, `civicnexus.otel`
   under `libs/*/src/`) is the monorepo convention. Reversible while the codebase is
   small; becomes an ADR if anything forces a change.

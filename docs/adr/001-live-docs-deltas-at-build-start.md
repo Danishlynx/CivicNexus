@@ -53,6 +53,29 @@ following confirmed deltas against ARCHITECTURE.md.
 7. **`google_vertex_ai_reasoning_engine` exists in the GA provider** — agent
    deployment could be Terraform-native. Phase 0 uses the SDK path per the
    `make deploy` contract (deploy from source); revisit at Phase 3.
+8. **(Observed at first deploy, 2026-08-18, not from docs.)** Gemini models do
+   not serve from the us-central1 regional endpoint on this project — direct
+   probes of `gemini-3.5-flash`, `-flash-lite`, `gemini-3-flash`, and
+   `gemini-2.5-flash` all return HTTP 417 regionally, while the global endpoint
+   serves 3.5-flash and 3.5-flash-lite fine. Consequence: agents set
+   `GOOGLE_CLOUD_LOCATION=global` so **model inference routes globally, which
+   loosens §6.6's region pinning for inference traffic** (deployment, storage,
+   and all data stay us-central1). Flag for the human at the Phase 0/1 gate.
+   Also observed: SDK 1.164.0 deprecates `vertexai.Client` in favor of
+   `agentplatform.Client` (rebrand reaching the SDK; docs still show the old
+   one), and `AdkApp` requires global `vertexai.init(...)`, not just a Client.
+9. **(Observed at first deploy.)** SDK-created instances (`spec.package_spec`,
+   pickled) and CLI-created instances (`spec.deployment_source`, source-built)
+   are **incompatible for updates** — the API refuses to switch an instance
+   between them. The live hello instance (7337306624207355904) is CLI-built;
+   `make deploy` consolidates on the CLI path in Phase 1. The CLI runtime also
+   pre-sets `GOOGLE_CLOUD_LOCATION` to the deploy region, so the global model
+   routing (item 8) must force-override, which `agents/hello` now does.
+10. **(Observed, unresolved — see BLOCKERS B-005.)** None of the three
+   documented tracing mechanisms (SDK `enable_tracing=True`, telemetry env
+   vars, CLI `--otel_to_cloud`) produced traces queryable via the Cloud Trace
+   v1 API. Phase 1 instruments our own OTel export per ARCHITECTURE §8 rather
+   than relying on platform auto-tracing.
 
 ## Decision
 
