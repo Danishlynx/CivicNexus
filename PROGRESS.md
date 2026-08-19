@@ -45,6 +45,11 @@ determination; e2e passes. **Met, twice, on the real deployed stack:**
 3. Corpus rights: public-record municipal code via American Legal Publishing,
    one-time manual retrieval with attribution (`data/CORPUS_SOURCE.md`,
    ADR-002 item 6) — human sign-off requested at this gate.
+4. Cost hygiene (post-gate, 2026-08-18): the Phase 0 hello instance was
+   decommissioned — caseflow supersedes it and idle Agent Engine instances are
+   the main idle-cost candidate. Evidence is unaffected (git history, traces,
+   this file); redeployable any time via `scripts/deploy_hello.py`. Exactly
+   one instance remains deployed: `civicnexus-caseflow`.
 
 ## Phase 0 checklist
 

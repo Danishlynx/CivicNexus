@@ -22,4 +22,10 @@ Remove entries as they are confirmed or refuted (refutations become ADRs/BLOCKER
 - **A-5 — Windows + Git Bash/cmd is the only dev machine.** Makefile recipes are
   single-line and cmd/sh-portable; CI (Cloud Build, Linux) is the arbiter of "works".
 - **A-6 — Personal billing, not hackathon credits** (see BLOCKERS B-001). Budget
-  alert amounts unchanged at $50/$100/$140 of a $150 ceiling.
+  alert amounts unchanged at $50/$100/$140 equivalents (INR-denominated) of a
+  ~$150 ceiling.
+- **A-7 — No automated billing kill switch, by explicit decision (2026-08-18).**
+  GCP budgets alert but never stop spending; the budget→Pub/Sub→detach-billing
+  pattern was offered and declined — email alerts plus the CLAUDE.md cost guard
+  (stop and flag at >$10/day projected) are the agreed protection. Revisit only
+  if an alert actually fires.
