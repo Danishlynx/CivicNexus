@@ -22,7 +22,9 @@ from civicnexus.contracts import (
     EventType,
     ReviewFinding,
 )
-from civicnexus.tools import CaseStore, EventPublisher, check_grounding, query_json
+from civicnexus.contracts.permit_types import load_permit_types
+from civicnexus.tools import CaseStore, EventPublisher, query_json
+from civicnexus.verifier import verify_finding
 
 STATE_FILE = Path(".deploy/caseflow_agent.json")
 FIXTURE = Path("data/fixtures/maria_application.txt")
@@ -117,15 +119,58 @@ def main() -> int:
     )
     review_msg = json.dumps({"task": "review", "application": application.model_dump()})
     finding = ReviewFinding.model_validate(query_json(remote, review_msg, user_prefix="run-case"))
-    grounding_failures = check_grounding(finding.citations, CORPUS_DIR)
-    if grounding_failures:
-        for failure in grounding_failures:
-            print(f"run_case: GROUNDING FAILURE: {failure}", file=sys.stderr)
-        return 1
+
+    # §7.3 gate: verify; on first failure, VERIFICATION_FAILED round-trip and
+    # one retry with the critique; second failure still lands PENDING_HUMAN,
+    # report attached, for the clerk to see.
+    permit_types = load_permit_types(Path("config/permit_types.yaml"))
+    permit_cfg = permit_types.get(application.permit_type)
+    allowed = permit_cfg.allowed_outcomes if permit_cfg else []
+    report = verify_finding(
+        finding,
+        application=application.model_dump(),
+        permit_allowed_outcomes=allowed,
+        corpus_dir=CORPUS_DIR,
+    )
+    if not report.passed:
+        print(f"run_case: verifier FAILED first pass: {report.critique}")
+        store.transition(
+            case_id,
+            CaseState.VERIFICATION_FAILED,
+            EventType.VERIFICATION_FAILED,
+            traceparent=traceparent,
+            payload={"failures": report.failures},
+        )
+        store.transition(
+            case_id,
+            CaseState.IN_REVIEW,
+            EventType.REVIEW_REQUESTED,
+            traceparent=traceparent,
+            payload={"retry": True},
+        )
+        retry_msg = json.dumps(
+            {
+                "task": "review",
+                "application": application.model_dump(),
+                "verifier_critique": report.critique or "; ".join(report.failures),
+            }
+        )
+        finding = ReviewFinding.model_validate(
+            query_json(remote, retry_msg, user_prefix="run-case")
+        )
+        report = verify_finding(
+            finding,
+            application=application.model_dump(),
+            permit_allowed_outcomes=allowed,
+            corpus_dir=CORPUS_DIR,
+        )
+    print(f"run_case: verifier {'PASSED' if report.passed else 'failed twice (clerk sees report)'}")
+
     determination = finding.to_determination(
         agent_id="zoning",
         agent_version=AGENT_VERSION,
         trace_id=traceparent.split("-")[1],
+        verifier_report=report.as_payload(),
     )
     store.add_determination(case_id, determination, traceparent=traceparent)
 

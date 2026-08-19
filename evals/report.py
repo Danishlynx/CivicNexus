@@ -40,6 +40,13 @@ def main() -> int:
         f"| Citation recall | {metrics.citation_recall:.2%} | — |",
         f"| Groundedness first-pass | {metrics.groundedness_first_pass:.2%} "
         f"| ≥ {GATES['groundedness_first_pass']:.0%} |",
+        "| Verifier first-pass (§7.3 headline) | "
+        + (
+            f"{metrics.verifier_first_pass:.2%}"
+            if metrics.verifier_first_pass is not None
+            else "n/a"
+        )
+        + " | reported |",
         f"| Canary leak rate | {metrics.leak_rate:.2%} | = 0 |",
         f"| Latency p50 / p95 | {metrics.latency_p50_s:.0f}s / {metrics.latency_p95_s:.0f}s | — |",
         f"| Tokens (run total) | {metrics.tokens_total:,} | — |",

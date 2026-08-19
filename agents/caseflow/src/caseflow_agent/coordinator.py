@@ -8,6 +8,7 @@ Phase 3; the routing contract here (task field selects the specialist) stays.
 import os
 
 from google.adk.agents import Agent
+from google.genai import types as genai_types
 
 from caseflow_agent.intake import intake_agent
 from caseflow_agent.zoning import zoning_agent
@@ -15,6 +16,7 @@ from caseflow_agent.zoning import zoning_agent
 coordinator = Agent(
     name="coordinator",
     model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
     description="Plans and delegates permit-case work to specialist agents.",
     instruction=(
         'You coordinate permit casework. The user message is JSON with a "task" '

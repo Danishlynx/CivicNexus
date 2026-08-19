@@ -6,7 +6,7 @@
 resource "google_cloudbuild_trigger" "ci_main" {
   name        = "civicnexus-ci"
   description = "Lint, types, unit+integration tests, and 12-case eval smoke on every push to main"
-  location    = var.region
+  location    = "global"
 
   github {
     owner = "Danishlynx"

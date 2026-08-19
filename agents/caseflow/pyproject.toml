@@ -1,6 +1,6 @@
 [project]
 name = "civicnexus-agent-caseflow"
-version = "0.1.0"
+version = "0.2.0"
 description = "Phase 1 vertical-slice fleet: coordinator + intake + zoning in one deployable ADK app (split into separate registry-governed agents in Phase 3)"
 requires-python = ">=3.12"
 # The deployed runtime installs src/caseflow_agent/requirements.txt; these deps

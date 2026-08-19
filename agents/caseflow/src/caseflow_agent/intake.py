@@ -3,6 +3,7 @@
 import os
 
 from google.adk.agents import Agent
+from google.genai import types as genai_types
 
 from caseflow_agent.schemas import ApplicationOut
 
@@ -10,6 +11,7 @@ intake_agent = Agent(
     name="intake",
     mode="single_turn",
     model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
     description="Parses a raw permit application into a structured form and flags missing items.",
     instruction=(
         "You parse permit applications for a city permit office.\n"

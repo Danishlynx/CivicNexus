@@ -9,7 +9,7 @@ routes globally — the client here is constructed with an explicit location.
 import os
 from typing import Any
 
-_TOP_K = 6
+_TOP_K = 10
 
 
 def lookup_municipal_code(query: str, _client: Any | None = None) -> dict[str, Any]:
