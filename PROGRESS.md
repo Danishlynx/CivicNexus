@@ -9,7 +9,30 @@ Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 |---|---|
 | 0 Skeleton | **COMPLETE** — `make verify-phase-0` PASS (test + smoke + trace URL); human reviewed traces at the gate |
 | 1 Vertical slice | **COMPLETE** — `make verify-phase-1` PASS; cited determination reached PENDING_HUMAN on the live stack (details below) |
-| 2–7 | not started |
+| 2 Evals first | **BUILT; gate review pending** — harness + 20 verified cases + 5 live runs recorded; accuracy gate honestly red (B-006); CI trigger blocked on 2nd-gen GitHub connection (human step) |
+| 3–7 | not started |
+
+## Phase 2 evidence (2026-08-19, all output observed directly)
+
+- **PermitBench**: 20 golden cases across 15 corpus sections; 15 drafted by a
+  5-drafter/5-verifier adversarial pipeline (every expectation attacked
+  against the statute text before acceptance), 5 hand-authored on §17.44.100;
+  12-case smoke subset; canaries in every doc; loader enforces that expected
+  citations exist in the corpus. Runner (backoff per §7.5, per-case error
+  isolation), metrics with §9.4 gates, auto-generated `docs/eval-report.md`.
+- **Five full live runs** (~$5 total): 80% → 70% → 80% → 65% → 70% decision
+  accuracy; groundedness 90–100%; citation P/R 0.88–0.95; leak rate 0 every
+  run. Config locked after run 5 (temp 0, ordered decision rule with
+  hedged-facts clause, caseflow v0.2.0). Full analysis and the two headline
+  failure classes (over-asking; one verbatim-quote-from-wrong-section
+  approval) in B-006 — the Phase 5 verifier is the designed remedy for both.
+- **Eval harness caught a real regression before it shipped** (run 4's 65%
+  from a plausible-looking prompt clause) — the subsystem is doing its job.
+- **CI**: build config with Firestore-emulator sidecar + eval-smoke step
+  committed; trigger blocked: Google no longer accepts new triggers on
+  1st-gen GitHub connections (bare 400s; confirmed via docs), so the human
+  redoes the connect on the 2nd-gen path in us-central1, then the trigger is
+  Terraform-applied.
 
 ## Phase 1 evidence (2026-08-18, all output observed directly)
 

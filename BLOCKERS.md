@@ -5,6 +5,30 @@ paths, recommendation, who acts.
 
 ---
 
+## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, by design honest)
+
+**Symptom:** Five full PermitBench runs (2026-08-19, 20 cases each, live stack):
+80% → 70% (same config: run variance) → 80% (temp 0 + ordered decision rule) →
+65% (cross-reference clause — regression, reverted) → 70% (final locked
+config). Groundedness 90–100% and citation P/R ~0.90–0.95 throughout; leaks 0.
+The failure mode is decisions, not law: dominated by over-asking
+(request_info where the code as stated already decides), plus one
+wrong-section approval (cannabis case citing the ADU section — verbatim quote,
+inapplicable statute).
+
+**Paths:**
+1. Keep prompt-tuning: measured to be whack-a-mole at n=20 single runs; the
+   third variant regressed 15 points. Diminishing and statistically muddy.
+2. Proceed with the roadmap: Phase 5's groundedness verifier adds the
+   entailment check (catches wrong-section citations) and the
+   critique-and-retry loop (§7.3) that directly targets over-asking;
+   per-agent retrieval improvements land with the Phase 3 fleet split.
+   Track this blocker; re-measure after each.
+
+**Recommendation:** Path 2 — the thresholds stay untouched (prime directive
+9), the gate stays visibly red in every eval report until the system earns
+it. **Human decides at the Phase 2 gate whether to advance with this open.**
+
 ## B-005 — "No traces from the hello agent" — RESOLVED 2026-08-18 (was a read-path gap, not a write failure)
 
 **Resolution (human console check at the gate):** Trace Explorer shows 24 spans
