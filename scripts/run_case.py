@@ -9,11 +9,9 @@ real corpus sections and quote them verbatim.
 
 import json
 import os
-import re
 import secrets
 import sys
 from pathlib import Path
-from typing import Any
 
 from civicnexus.contracts import (
     Actor,
@@ -24,7 +22,7 @@ from civicnexus.contracts import (
     EventType,
     ReviewFinding,
 )
-from civicnexus.tools import CaseStore, EventPublisher
+from civicnexus.tools import CaseStore, EventPublisher, check_grounding, query_json
 
 STATE_FILE = Path(".deploy/caseflow_agent.json")
 FIXTURE = Path("data/fixtures/maria_application.txt")
@@ -34,60 +32,6 @@ AGENT_VERSION = "0.1.0"
 
 def _traceparent() -> str:
     return f"00-{secrets.token_hex(16)}-{secrets.token_hex(8)}-01"
-
-
-def _extract_text(event: Any) -> str:
-    if isinstance(event, str):
-        return event
-    content = event.get("content") if isinstance(event, dict) else getattr(event, "content", None)
-    if content is None:
-        return ""
-    parts = content.get("parts") if isinstance(content, dict) else getattr(content, "parts", None)
-    if not parts:
-        return ""
-    texts = []
-    for part in parts:
-        text = part.get("text") if isinstance(part, dict) else getattr(part, "text", None)
-        if isinstance(text, str):
-            texts.append(text)
-    return "".join(texts)
-
-
-def _query_json(remote: Any, message: str) -> dict[str, Any]:
-    """Return the last JSON object in the stream.
-
-    A delegation run emits several text events (specialist output, coordinator
-    echo); the final valid JSON is the authoritative reply.
-    """
-    # Fresh identity per query: a shared session parks the conversation with
-    # the previously delegated specialist and derails coordinator routing.
-    events = list(remote.stream_query(user_id=f"run-case-{secrets.token_hex(4)}", message=message))
-    texts = [t for t in (_extract_text(e).strip() for e in events) if t]
-    if not texts:
-        raise RuntimeError(f"agent produced no text; raw events: {events!r}")
-    for text in reversed(texts):
-        candidate = re.sub(r"^```(?:json)?|```$", "", text, flags=re.MULTILINE).strip()
-        try:
-            parsed: dict[str, Any] = json.loads(candidate)
-        except json.JSONDecodeError:
-            continue
-        return parsed
-    raise RuntimeError(f"no JSON object in agent reply; texts: {texts!r}")
-
-
-def _check_grounding(finding: ReviewFinding) -> list[str]:
-    """Return grounding failures: unknown sections or non-verbatim quotes."""
-    failures = []
-    for citation in finding.citations:
-        section_file = CORPUS_DIR / f"{citation.chunk_id}.txt"
-        if not section_file.exists():
-            failures.append(f"citation names unknown section {citation.chunk_id}")
-            continue
-        section_text = " ".join(section_file.read_text(encoding="utf-8").split())
-        quote = " ".join(citation.quote.split())
-        if quote not in section_text:
-            failures.append(f"quote not verbatim in {citation.chunk_id}: {citation.quote[:60]!r}")
-    return failures
 
 
 def main() -> int:
@@ -126,7 +70,7 @@ def main() -> int:
             "application": f"<<<APPLICATION>>>\n{raw_application}\n<<<END APPLICATION>>>",
         }
     )
-    application = Application.model_validate(_query_json(remote, intake_msg))
+    application = Application.model_validate(query_json(remote, intake_msg, user_prefix="run-case"))
     print(
         f"run_case: intake parsed applicant={application.applicant_name!r} "
         f"complete={application.complete} missing={application.missing_items}"
@@ -172,8 +116,8 @@ def main() -> int:
         payload={"capabilities": ["zoning"]},
     )
     review_msg = json.dumps({"task": "review", "application": application.model_dump()})
-    finding = ReviewFinding.model_validate(_query_json(remote, review_msg))
-    grounding_failures = _check_grounding(finding)
+    finding = ReviewFinding.model_validate(query_json(remote, review_msg, user_prefix="run-case"))
+    grounding_failures = check_grounding(finding.citations, CORPUS_DIR)
     if grounding_failures:
         for failure in grounding_failures:
             print(f"run_case: GROUNDING FAILURE: {failure}", file=sys.stderr)

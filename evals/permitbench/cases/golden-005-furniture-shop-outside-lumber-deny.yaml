@@ -1,0 +1,16 @@
+id: golden-005-furniture-shop-outside-lumber-deny
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-005-furniture-shop-outside-lumber-deny.txt
+applicant_profile:
+  name: Edward Patel
+  email: edward.steele@example.test
+  address: 02087 Jared Islands (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.100
+  must_request: []
+tags:
+- smoke
+- clean

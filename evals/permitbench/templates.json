@@ -1,0 +1,297 @@
+[
+  {
+    "slug": "maria-bakery-compliant-approve",
+    "permit_type": "garage_conversion",
+    "scenario_email": "Hi, I'm {NAME} and I live at {ADDRESS}. I want to convert one room of my attached garage into a small home bakery that I would run entirely by myself - no employees, no customers coming to the house. I'd bake normal daytime hours and deliver to the farmers market in my own car. No sign on the house, nothing stored outside, and I'm not changing the outside of the garage at all - same door, same paint. Just a normal kitchen setup inside using regular household power and water. Could you let me know what I need? {EMAIL} / {PHONE}",
+    "expected_outcome": "approve",
+    "required_citations": [
+      "17.44.100"
+    ],
+    "must_request": [],
+    "tags": [
+      "smoke",
+      "clean"
+    ]
+  },
+  {
+    "slug": "maria-bakery-nonresident-helper-deny",
+    "permit_type": "garage_conversion",
+    "scenario_email": "Hello, {NAME} here, at {ADDRESS}. I'm converting one room of my garage into a small bakery business. My sister will work with me every day - she lives across town, not with us. Otherwise it's low-key: one room only, no customers at the house, no signage, deliveries in my own car, nothing stored outside, and no changes to how the garage looks. What permit do I need? {EMAIL} / {PHONE}",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.100"
+    ],
+    "must_request": [],
+    "tags": [
+      "smoke",
+      "borderline"
+    ]
+  },
+  {
+    "slug": "home-occupation-illuminated-sign-deny",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hi, this is {NAME} at {ADDRESS}. I run a small tax-prep practice out of my den during filing season, just me, no staff, clients only by scheduled appointment. To help people find the house I want to mount a lighted 4-foot by 6-foot sign on the front of the garage saying the business name, lit in the evenings. Everything else stays residential - one room used, no outside storage, normal utilities. Can you approve the sign as part of my home business? {EMAIL} / {PHONE}",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.100"
+    ],
+    "must_request": [],
+    "tags": [
+      "smoke",
+      "clean"
+    ]
+  },
+  {
+    "slug": "home-occupation-rooms-unclear-request-info",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hello, {NAME} from {ADDRESS}. I'm starting an online vintage clothing resale business from home - photographing and shipping items. I plan to use the spare bedroom, and maybe also part of the garage for the inventory racks, I haven't decided how much space I'll need yet. Solo operation, no customers visiting, no signs, shipping through regular mail pickup. What do I need from the city? {EMAIL} / {PHONE}",
+    "expected_outcome": "request_info",
+    "required_citations": [
+      "17.44.100"
+    ],
+    "must_request": [
+      "confirmation that the occupation will be confined to not more than one room"
+    ],
+    "tags": [
+      "smoke",
+      "borderline"
+    ]
+  },
+  {
+    "slug": "furniture-shop-outside-lumber-deny",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hi, I'm {NAME}, homeowner at {ADDRESS}. I build custom furniture as a one-man side business in one room of my garage. I'd keep my lumber stock on a covered rack along the side yard fence outside, since boards are long and the garage room is full of tools. No employees, no customer visits, no signage, standard power tools on household current. Do I need a permit for this setup? {EMAIL} / {PHONE}",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.100"
+    ],
+    "must_request": [],
+    "tags": [
+      "smoke",
+      "clean"
+    ]
+  },
+  {
+    "slug": "garage-adu-oversized-addition-two-foot-setback-deny",
+    "permit_type": "garage_conversion",
+    "scenario_email": "Hi, my name is {NAME} and I own the house at {ADDRESS}. We want to convert our detached garage in the back yard into a rental studio for my mother-in-law. The garage is 400 square feet as it stands today. We would also build an addition off the back of it adding about another 400 square feet so she gets a real bedroom and bathroom, so roughly 800 square feet finished, with a kitchen and its own entrance off the alley. The new addition would sit about 2 feet from the side property line, same as the garage does now, since the yard is narrow and we do not want to lose the lawn. What do I file? {EMAIL} or {PHONE}.",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.005"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "detached-backyard-adu-640sf-within-limits-approve",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hello, {NAME} here, homeowner at {ADDRESS}. I would like to build a small detached backyard cottage behind our single-family house, a second unit for long-term rental. Plans call for 640 square feet, one story, 15 feet to the top of the roof, sitting 5 feet off the side property line and 5 feet off the rear property line. Nothing else on the lot changes: the house stays, the driveway stays, no trees come out. We would rent it on regular year-long leases to a local teacher, nothing short-term or vacation-type. Do I just pull a building permit for this, or does it need a hearing? Happy to send drawings. Reach me at {EMAIL} or {PHONE}.",
+    "expected_outcome": "approve",
+    "required_citations": [
+      "17.44.005"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "bed-breakfast-two-rooms-floor-area-unstated-request-info",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hi there, I am {NAME} at {ADDRESS}. My husband and I want to start taking in overnight guests, basically a small bed and breakfast in our own home, which we live in full time as our only residence. It is a 1920s Craftsman with four bedrooms and we would rent out only two of them upstairs, keeping the rest for ourselves. Breakfast only, served in the dining room, and no kitchenettes or hot plates in the guest rooms. Guests would stay a couple of nights at a time, never more than a week. We would like a small wooden sign by the front porch. What is the process, and how long does it take? {EMAIL} / {PHONE}.",
+    "expected_outcome": "request_info",
+    "required_citations": [
+      "17.44.030"
+    ],
+    "must_request": [
+      "Total residential floor area of the building in square feet, to verify the 2,000 sq ft minimum in 17.44.030(A)",
+      "Number of existing off-street parking spaces on the site, to verify the home has the currently required parking under 17.44.030(H)"
+    ],
+    "tags": [
+      "borderline"
+    ]
+  },
+  {
+    "slug": "gas-tank-residential-deny",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hi, I'm {NAME} and I own the single-family home at {ADDRESS} \u2014 the zoning map shows it as RL. I restore old muscle cars as a hobby and I'm tired of hauling five-gallon cans back from the station every weekend. I'd like to install a 300-gallon above-ground gasoline storage tank on a new concrete pad in my back yard, outside, right next to the detached garage, with a hand pump mounted on it so I can fuel the cars. It would sit about 12 feet off the side property line, screened by the existing block wall. Purely personal use, no business, nothing sold. What permit do I file for the tank and pump? {EMAIL} or {PHONE}.",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.080"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "game-court-interior-lot-setbacks-approve",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hello \u2014 {NAME} here, homeowner at {ADDRESS}. The zoning map shows our lot as RL, and it's a standard interior lot with a public alley running behind it (we're not on a corner, so there's no street yard on the side). We'd like to build a half-court basketball / sport court in the back yard: a poured slab roughly 30 by 40 feet. No new fencing \u2014 the existing six-foot block wall stays \u2014 and no lighting at all, we only play in daylight. The slab would sit 8 feet in from the north side property line, 9 feet in from the south side property line, and 4 feet back from the alley. Nothing is proposed in the front yard. Can I just permit this? {EMAIL} / {PHONE}",
+    "expected_outcome": "approve",
+    "required_citations": [
+      "17.44.070"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean"
+    ]
+  },
+  {
+    "slug": "large-daycare-nearby-facility-request-info",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hi \u2014 my name is {NAME} and I live at {ADDRESS}. I've run a small family day care out of my house for six years and I'd like to step up to a large family day care home, up to 14 children. Nothing structural changes: same house, the back yard is already fully fenced at six feet, and the play area is in the rear, away from the neighbors' bedroom windows. Hours would be 7:00 a.m. to 6:00 p.m., Monday through Friday. Parents use my driveway, which holds three cars. I should mention there's another day care family two houses down the block \u2014 they've been operating longer than me. Happy to pay whatever noticing fee is required. Reach me at {EMAIL} or {PHONE}.",
+    "expected_outcome": "request_info",
+    "required_citations": [
+      "17.44.060"
+    ],
+    "must_request": [
+      "Whether the other day care two houses down is licensed/permitted as a large family day care home (as opposed to a small family day care home) \u2014 the 1,000-foot rule in \u00a7 17.44.060(C) only counts 'any other such facility', i.e. another large family day care",
+      "The distance between the applicant's site and that other facility, i.e. whether it falls inside the 1,000-foot radius",
+      "If it is a large family day care within 1,000 feet: the applicant's showing that a second such facility would not have an adverse impact on the neighborhood, which is the only basis on which the Committee may permit it"
+    ],
+    "tags": [
+      "borderline"
+    ]
+  },
+  {
+    "slug": "cannabis-twelve-plants-shed-deny",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hi, I'd like to apply for a permit to build a 10x12 accessory structure (a garden shed) in the back yard of my home at {ADDRESS}. The shed would be fully enclosed with solid walls and a roof, one lockable door, no windows, and would be used only for growing cannabis for our personal use - nothing sold, nothing commercial, no visitors. My spouse and I are both over 21 and we are the only adults in the house. Since there are two of us over 21, we are planning on twelve plants total, six each, which is what we were told is allowed. Grow lights plug into a wall outlet, no CO2 or ozone generators, no butane or compressed gas of any kind. Nothing will be visible from the street. Please let me know what else you need. Thanks - {NAME}, {EMAIL}, {PHONE}",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.104"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "cannabis-four-plants-shed-approve",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hello - applying for a permit for an 8x10 accessory structure in the rear yard at {ADDRESS}. It is 8 feet tall, set 5 feet off the rear and side property lines, behind the house and screened by a 6-foot fence, so it is not visible from the street or sidewalk. Solid walls up to the roof, no windows, one lockable door; only my wife and I have keys and we are both over 21, and no minors live at the house. Inside we would grow four cannabis plants for our own use - nothing sold or given away. No CO2 or ozone generators, and no butane or compressed gas. Grow lights plug directly into a wall outlet. Carbon filter on the exhaust, so no odor at the property line. Fire extinguisher stays in the kitchen. The house remains our full-time residence, and the shed sits on lawn, not on the driveway parking. {NAME} {EMAIL} {PHONE}",
+    "expected_outcome": "approve",
+    "required_citations": [
+      "17.44.104"
+    ],
+    "must_request": [],
+    "tags": [
+      "borderline"
+    ]
+  },
+  {
+    "slug": "home-bakery-predawn-hours-request-info",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hi there - I want to get set up properly for my home baking business at {ADDRESS}. I bake for two weekend farmers markets and take a few custom cake orders. Everything happens in my kitchen plus one spare room off the kitchen where I keep the mixer and the cooling racks - one room only, no other rooms used. No employees, it is just me and my daughter who lives here. No sign out front, no outside storage, customers pick up maybe twice a week, and I drive my own car to the markets, no delivery trucks. I do my baking runs early so the bread is out of the oven before the market opens, and on market weekends I am up and working well before sunrise. Let me know what permits I need. {NAME} {EMAIL} {PHONE}",
+    "expected_outcome": "request_info",
+    "required_citations": [
+      "17.44.103"
+    ],
+    "must_request": [
+      "The exact daily start time of baking and business activity - specifically whether any operation occurs between 12:00 midnight and 6:00 a.m., which is the definition of late-night hours in 17.44.103(B)",
+      "Confirmation of the parcel's zoning and the distance from all property lines of the subject property to the nearest residential zone or planned development zone permitting residential uses, to determine whether the 100-foot conditional use permit trigger in 17.44.103(C) applies"
+    ],
+    "tags": [
+      "borderline"
+    ]
+  },
+  {
+    "slug": "satellite-dish-under-threshold-approve",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hi - hoping to get the OK to put in a satellite dish at my house at {ADDRESS}. It's a small one, 24 inches across, and my installer wants to set it on a short pedestal out on the back patio. Top of the dish sits about 3 feet off the ground, well under the wall line. The patio is fully enclosed by a solid 6-foot block wall on three sides and the house on the fourth, so the dish can't be seen from the street, the sidewalk, or the alley - I walked out front and checked before writing this. No trenching and no new structure, just the pedestal and a cable run into the living room. Single-family home on a normal residential block. Happy to send photos if that helps. Thanks, {NAME} / {EMAIL} / {PHONE}",
+    "expected_outcome": "approve",
+    "required_citations": [
+      "17.44.150"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "home-recycling-dropoff-driveway-deny",
+    "permit_type": "home_occupation",
+    "scenario_email": "Hello, I'd like to apply for a home occupation permit at {ADDRESS}. My plan is a small neighborhood recycling drop-off run out of my house: two reverse vending machines plus one unattended donation bin for cans and bottles, all sitting on the concrete driveway apron, roughly 120 square feet total. The bins would stay outside around the clock since most neighbors drop off after work. I have a hauler lined up who'd bring his flatbed truck by twice a week to take the full bins away and leave empties. I'd also hire one part-time helper for weekends - he's a neighbor, not family. No signage other than a small sandwich board by the curb. It's a single-family house, there's no store or market on the lot. {NAME}, {EMAIL}, {PHONE}",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.140",
+      "17.44.100"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "ham-antenna-height-omitted-request-info",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hi there, I'm a licensed amateur radio operator and I'd like to put up a transmitting antenna in the back yard at {ADDRESS}. It would be a mast with a directional beam on top, anchored to a new concrete pad near the rear property line, maybe 4 feet in from the fence. I've been on the air for years and this is strictly hobby use - nothing commercial, no clients coming to the house. My neighbor on the east side already knows about it and has no issue. I'm not sure what else you need from me; I can send the manufacturer's spec sheet and a sketch of the yard. Do I need a building permit for the pad too? Thanks for your help. {NAME}, {EMAIL}, {PHONE}",
+    "expected_outcome": "request_info",
+    "required_citations": [
+      "17.44.120"
+    ],
+    "must_request": [
+      "Total height of the mast and antenna above grade, including the beam at its highest point",
+      "Height and massing of the main building on the site, so the (C)(1) reasonable-relationship comparison can be made",
+      "Whether a collapsible or telescoping tower is proposed and, if so, its retracted height and location per (C)(3)",
+      "Names and addresses of all adjacent property owners, so notice of the date and time of the Development Review Committee review hearing can be given under (D)",
+      "Location and elevation of the antenna and any support structures relative to the main building, for the (C)(2) visual-clutter review"
+    ],
+    "tags": [
+      "borderline"
+    ]
+  },
+  {
+    "slug": "garage-indoor-swap-meet-deny",
+    "permit_type": "garage_conversion",
+    "scenario_email": "Hello, we own the single-family home at {ADDRESS}, zoned R-1. I want to convert our detached two-car garage into a small indoor swap meet. The plan is to partition the interior into eight 10x10 lease spaces and rent them to local vendors selling collectibles, tools and household goods, open Saturdays and Sundays 9 to 4. I'd add drywall, per-stall lighting and outlets, and put two portable restrooms in the driveway. Vendors and shoppers would park on the street. Nothing would be sold outdoors and there'd be no sign on the house. Since this is our own home I assumed it runs as a home business permit. What do I submit for the garage conversion? Thanks - {NAME}, {EMAIL}, {PHONE}",
+    "expected_outcome": "deny",
+    "required_citations": [
+      "17.44.190"
+    ],
+    "must_request": [],
+    "tags": [
+      "clean",
+      "smoke"
+    ]
+  },
+  {
+    "slug": "wind-turbine-lot-size-request-info",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hi - I'd like to put up a small wind turbine on our property at {ADDRESS} to cut our electric bill. It's a ground-mounted, CEC-certified turbine on a 55-foot monopole tower, sited out in the back field at least 90 feet from every property line and roughly 200 feet from the nearest neighbor's house. Rated output is 3.2 kW and the manufacturer's spec sheet lists about 45 decibels at 100 feet. Nothing is going on the roof of the house or the garage. The property isn't on any historic register and there's no open space easement on it, and we'd use all the power ourselves rather than selling it back. What do I need to file, and is there anything that would stop this? {NAME}, {EMAIL}, {PHONE}",
+    "expected_outcome": "request_info",
+    "required_citations": [
+      "17.44.215"
+    ],
+    "must_request": [
+      "Parcel size in acres - 17.44.215(A) permits small wind energy systems only on lots one acre or greater, and the acreage also determines whether the 65-foot (1-5 acres) or 80-foot (over 5 acres) tower height cap in (B)(1) applies to the proposed 55-foot tower",
+      "Evidence that the proposed 55-foot tower height does not exceed the height recommended by the manufacturer or distributor of the system, required in the application by (B)(1)",
+      "Standard drawings and an engineering analysis of the tower showing compliance with the UBC or California Building Standards Code, certified by a California-licensed mechanical, structural or civil engineer, required by (B)(4)"
+    ],
+    "tags": [
+      "clean"
+    ]
+  },
+  {
+    "slug": "public-project-staging-storage-approve",
+    "permit_type": "accessory_structure",
+    "scenario_email": "Hi, I'm the owner of {ADDRESS}. The City's contractor is replacing the water main and the sewer laterals on our block starting next month. They asked to use the flat gravel area along the north side of my lot to park two backhoes and stack pipe, conduit and shoring plates while the work is under way, and I've signed their access letter agreeing to it - I own and occupy the property. The City Council granted permission for this staging area at its meeting on the 3rd, for a stated period of 120 days ending when the pipe work wraps up. Nothing permanent is going in: no foundation, no walls, no structure, and every item comes off the lot when the project closes out. Do I need an accessory structure permit for the temporary storage, or is it already covered? {NAME}, {EMAIL}, {PHONE}",
+    "expected_outcome": "approve",
+    "required_citations": [
+      "17.44.200"
+    ],
+    "must_request": [],
+    "tags": [
+      "borderline"
+    ]
+  }
+]

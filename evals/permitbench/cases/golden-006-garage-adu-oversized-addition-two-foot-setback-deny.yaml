@@ -1,0 +1,16 @@
+id: golden-006-garage-adu-oversized-addition-two-foot-setback-deny
+permit_type: garage_conversion
+docs:
+- evals/permitbench/docs/golden-006-garage-adu-oversized-addition-two-foot-setback-deny.txt
+applicant_profile:
+  name: Charlotte Parks
+  email: charlotte.anderson@example.test
+  address: 121 Colon Burg (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.005
+  must_request: []
+tags:
+- clean
+- smoke

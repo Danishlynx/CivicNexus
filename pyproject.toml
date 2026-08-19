@@ -23,6 +23,8 @@ dev = [
     "google-cloud-aiplatform[agent_engines,adk]>=1.112",
     # Required at runtime by the agentplatform rag surface (observed 2026-08-18).
     "pandas>=2.0",
+    # Synthetic PII for the eval dataset (fixed seeds per fixture rules).
+    "faker>=26.0",
 ]
 
 [tool.uv]
@@ -68,7 +70,7 @@ ignore_missing_imports = true
 follow_untyped_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["libs", "agents"]
+testpaths = ["libs", "agents", "evals"]
 # Coverage gate ≥80% on libs (ARCHITECTURE.md §10); the civicnexus namespace is
 # exactly the libs/ code, so scoping coverage to it scopes the gate to libs.
 addopts = "-q --cov=civicnexus --cov-report=term-missing --cov-fail-under=80"

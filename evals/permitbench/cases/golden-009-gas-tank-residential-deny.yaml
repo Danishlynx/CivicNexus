@@ -1,0 +1,16 @@
+id: golden-009-gas-tank-residential-deny
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-009-gas-tank-residential-deny.txt
+applicant_profile:
+  name: Luis Smith
+  email: luis.mckay@example.test
+  address: 706 Thomas View (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.080
+  must_request: []
+tags:
+- clean
+- smoke

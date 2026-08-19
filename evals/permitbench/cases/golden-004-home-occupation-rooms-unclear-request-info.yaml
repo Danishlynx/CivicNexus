@@ -1,0 +1,17 @@
+id: golden-004-home-occupation-rooms-unclear-request-info
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-004-home-occupation-rooms-unclear-request-info.txt
+applicant_profile:
+  name: Jay Manning
+  email: jay.mclaughlin@example.test
+  address: 9934 Tucker Forge (synthetic)
+expected:
+  outcome: request_info
+  required_citations:
+  - 17.44.100
+  must_request:
+  - confirmation that the occupation will be confined to not more than one room
+tags:
+- smoke
+- borderline

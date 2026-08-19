@@ -1,0 +1,16 @@
+id: golden-018-garage-indoor-swap-meet-deny
+permit_type: garage_conversion
+docs:
+- evals/permitbench/docs/golden-018-garage-indoor-swap-meet-deny.txt
+applicant_profile:
+  name: Jason Rogers
+  email: jason.johnson@example.test
+  address: 3374 Theodore Summit (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.190
+  must_request: []
+tags:
+- clean
+- smoke

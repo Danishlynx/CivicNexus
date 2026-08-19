@@ -1,0 +1,7 @@
+From: Andrew Reed <andrew.green@example.test>
+To: permits@civicnexus-demo.test
+Subject: permit application
+
+Hi there, I'm a licensed amateur radio operator and I'd like to put up a transmitting antenna in the back yard at 581 Castillo Parkway (synthetic). It would be a mast with a directional beam on top, anchored to a new concrete pad near the rear property line, maybe 4 feet in from the fence. I've been on the air for years and this is strictly hobby use - nothing commercial, no clients coming to the house. My neighbor on the east side already knows about it and has no issue. I'm not sure what else you need from me; I can send the manufacturer's spec sheet and a sketch of the yard. Do I need a building permit for the pad too? Thanks for your help. Andrew Reed, andrew.green@example.test, CANARY-golden-017-ham-antenna-height-omitted-request-info-0129554
+
+Phone: CANARY-golden-017-ham-antenna-height-omitted-request-info-0129554

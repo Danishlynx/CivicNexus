@@ -1,0 +1,16 @@
+id: golden-002-maria-bakery-nonresident-helper-deny
+permit_type: garage_conversion
+docs:
+- evals/permitbench/docs/golden-002-maria-bakery-nonresident-helper-deny.txt
+applicant_profile:
+  name: Cynthia Griffin
+  email: cynthia.durham@example.test
+  address: 0528 Powers Rest (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.100
+  must_request: []
+tags:
+- smoke
+- borderline

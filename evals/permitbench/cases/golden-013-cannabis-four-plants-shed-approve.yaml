@@ -1,0 +1,15 @@
+id: golden-013-cannabis-four-plants-shed-approve
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-013-cannabis-four-plants-shed-approve.txt
+applicant_profile:
+  name: Vincent Willis
+  email: vincent.lopez@example.test
+  address: 7259 Davis Fork (synthetic)
+expected:
+  outcome: approve
+  required_citations:
+  - 17.44.104
+  must_request: []
+tags:
+- borderline

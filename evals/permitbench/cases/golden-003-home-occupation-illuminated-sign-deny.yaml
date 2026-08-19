@@ -1,0 +1,16 @@
+id: golden-003-home-occupation-illuminated-sign-deny
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-003-home-occupation-illuminated-sign-deny.txt
+applicant_profile:
+  name: Logan Bartlett
+  email: logan.castillo@example.test
+  address: 16677 Troy Cove (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.100
+  must_request: []
+tags:
+- smoke
+- clean

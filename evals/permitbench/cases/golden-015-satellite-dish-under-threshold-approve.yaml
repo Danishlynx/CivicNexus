@@ -1,0 +1,16 @@
+id: golden-015-satellite-dish-under-threshold-approve
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-015-satellite-dish-under-threshold-approve.txt
+applicant_profile:
+  name: Nancy Bowers
+  email: nancy.king@example.test
+  address: 059 Pamela Lakes (synthetic)
+expected:
+  outcome: approve
+  required_citations:
+  - 17.44.150
+  must_request: []
+tags:
+- clean
+- smoke

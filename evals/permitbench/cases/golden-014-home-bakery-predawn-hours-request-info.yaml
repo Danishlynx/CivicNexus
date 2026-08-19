@@ -1,0 +1,22 @@
+id: golden-014-home-bakery-predawn-hours-request-info
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-014-home-bakery-predawn-hours-request-info.txt
+applicant_profile:
+  name: Gregory Melton
+  email: gregory.green@example.test
+  address: 637 Christina Viaduct (synthetic)
+expected:
+  outcome: request_info
+  required_citations:
+  - 17.44.103
+  must_request:
+  - The exact daily start time of baking and business activity - specifically whether
+    any operation occurs between 12:00 midnight and 6:00 a.m., which is the definition
+    of late-night hours in 17.44.103(B)
+  - Confirmation of the parcel's zoning and the distance from all property lines of
+    the subject property to the nearest residential zone or planned development zone
+    permitting residential uses, to determine whether the 100-foot conditional use
+    permit trigger in 17.44.103(C) applies
+tags:
+- borderline

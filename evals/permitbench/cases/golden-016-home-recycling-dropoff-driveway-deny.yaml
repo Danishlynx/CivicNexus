@@ -1,0 +1,17 @@
+id: golden-016-home-recycling-dropoff-driveway-deny
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-016-home-recycling-dropoff-driveway-deny.txt
+applicant_profile:
+  name: Jason Schroeder
+  email: jason.erickson@example.test
+  address: 5873 Buchanan Summit (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.140
+  - 17.44.100
+  must_request: []
+tags:
+- clean
+- smoke

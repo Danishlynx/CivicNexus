@@ -1,0 +1,25 @@
+id: golden-019-wind-turbine-lot-size-request-info
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-019-wind-turbine-lot-size-request-info.txt
+applicant_profile:
+  name: Tiffany Smith
+  email: tiffany.west@example.test
+  address: 541 Matthews Haven (synthetic)
+expected:
+  outcome: request_info
+  required_citations:
+  - 17.44.215
+  must_request:
+  - Parcel size in acres - 17.44.215(A) permits small wind energy systems only on
+    lots one acre or greater, and the acreage also determines whether the 65-foot
+    (1-5 acres) or 80-foot (over 5 acres) tower height cap in (B)(1) applies to the
+    proposed 55-foot tower
+  - Evidence that the proposed 55-foot tower height does not exceed the height recommended
+    by the manufacturer or distributor of the system, required in the application
+    by (B)(1)
+  - Standard drawings and an engineering analysis of the tower showing compliance
+    with the UBC or California Building Standards Code, certified by a California-licensed
+    mechanical, structural or civil engineer, required by (B)(4)
+tags:
+- clean

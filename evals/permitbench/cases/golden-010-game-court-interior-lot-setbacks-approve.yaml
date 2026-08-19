@@ -1,0 +1,15 @@
+id: golden-010-game-court-interior-lot-setbacks-approve
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-010-game-court-interior-lot-setbacks-approve.txt
+applicant_profile:
+  name: Michael Hamilton
+  email: michael.shaw@example.test
+  address: 46197 Johnson Bridge (synthetic)
+expected:
+  outcome: approve
+  required_citations:
+  - 17.44.070
+  must_request: []
+tags:
+- clean

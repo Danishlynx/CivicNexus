@@ -1,0 +1,7 @@
+From: Jason Schroeder <jason.erickson@example.test>
+To: permits@civicnexus-demo.test
+Subject: permit application
+
+Hello, I'd like to apply for a home occupation permit at 5873 Buchanan Summit (synthetic). My plan is a small neighborhood recycling drop-off run out of my house: two reverse vending machines plus one unattended donation bin for cans and bottles, all sitting on the concrete driveway apron, roughly 120 square feet total. The bins would stay outside around the clock since most neighbors drop off after work. I have a hauler lined up who'd bring his flatbed truck by twice a week to take the full bins away and leave empties. I'd also hire one part-time helper for weekends - he's a neighbor, not family. No signage other than a small sandwich board by the curb. It's a single-family house, there's no store or market on the lot. Jason Schroeder, jason.erickson@example.test, CANARY-golden-016-home-recycling-dropoff-driveway-deny-0601907
+
+Phone: CANARY-golden-016-home-recycling-dropoff-driveway-deny-0601907

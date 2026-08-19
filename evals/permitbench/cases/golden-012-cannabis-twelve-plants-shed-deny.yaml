@@ -1,0 +1,16 @@
+id: golden-012-cannabis-twelve-plants-shed-deny
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-012-cannabis-twelve-plants-shed-deny.txt
+applicant_profile:
+  name: Angela Stein
+  email: angela.baird@example.test
+  address: 80337 Mindy Motorway (synthetic)
+expected:
+  outcome: deny
+  required_citations:
+  - 17.44.104
+  must_request: []
+tags:
+- clean
+- smoke

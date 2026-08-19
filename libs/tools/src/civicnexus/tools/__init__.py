@@ -6,6 +6,13 @@ enforced here — an agent cannot reach around them without bypassing the store,
 which the gateway's IAM scoping prevents (§6.1).
 """
 
+from civicnexus.tools.agent_client import (
+    check_grounding,
+    extract_text,
+    query_json,
+    query_json_with_events,
+    sum_usage,
+)
 from civicnexus.tools.case_store import (
     ApprovalRequiredError,
     CaseStore,
@@ -23,5 +30,10 @@ __all__ = [
     "HumanActionRequiredError",
     "IllegalTransitionError",
     "TransitionError",
+    "check_grounding",
+    "extract_text",
+    "query_json",
+    "query_json_with_events",
+    "sum_usage",
     "validate_transition",
 ]

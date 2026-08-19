@@ -1,0 +1,16 @@
+id: golden-001-maria-bakery-compliant-approve
+permit_type: garage_conversion
+docs:
+- evals/permitbench/docs/golden-001-maria-bakery-compliant-approve.txt
+applicant_profile:
+  name: Jennifer Johnson
+  email: jennifer.myers@example.test
+  address: 4287 Lisa Estate (synthetic)
+expected:
+  outcome: approve
+  required_citations:
+  - 17.44.100
+  must_request: []
+tags:
+- smoke
+- clean

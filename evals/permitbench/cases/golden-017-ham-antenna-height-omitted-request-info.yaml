@@ -1,0 +1,25 @@
+id: golden-017-ham-antenna-height-omitted-request-info
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-017-ham-antenna-height-omitted-request-info.txt
+applicant_profile:
+  name: Andrew Reed
+  email: andrew.green@example.test
+  address: 581 Castillo Parkway (synthetic)
+expected:
+  outcome: request_info
+  required_citations:
+  - 17.44.120
+  must_request:
+  - Total height of the mast and antenna above grade, including the beam at its highest
+    point
+  - Height and massing of the main building on the site, so the (C)(1) reasonable-relationship
+    comparison can be made
+  - Whether a collapsible or telescoping tower is proposed and, if so, its retracted
+    height and location per (C)(3)
+  - Names and addresses of all adjacent property owners, so notice of the date and
+    time of the Development Review Committee review hearing can be given under (D)
+  - Location and elevation of the antenna and any support structures relative to the
+    main building, for the (C)(2) visual-clutter review
+tags:
+- borderline

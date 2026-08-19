@@ -1,0 +1,15 @@
+id: golden-020-public-project-staging-storage-approve
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-020-public-project-staging-storage-approve.txt
+applicant_profile:
+  name: Devin King
+  email: devin.richard@example.test
+  address: 67231 Bradshaw Spurs (synthetic)
+expected:
+  outcome: approve
+  required_citations:
+  - 17.44.200
+  must_request: []
+tags:
+- borderline

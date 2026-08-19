@@ -1,0 +1,24 @@
+id: golden-011-large-daycare-nearby-facility-request-info
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-011-large-daycare-nearby-facility-request-info.txt
+applicant_profile:
+  name: Ann Schultz
+  email: ann.adams@example.test
+  address: 7004 Lisa Lane (synthetic)
+expected:
+  outcome: request_info
+  required_citations:
+  - 17.44.060
+  must_request:
+  - Whether the other day care two houses down is licensed/permitted as a large family
+    day care home (as opposed to a small family day care home) — the 1,000-foot rule
+    in § 17.44.060(C) only counts 'any other such facility', i.e. another large family
+    day care
+  - The distance between the applicant's site and that other facility, i.e. whether
+    it falls inside the 1,000-foot radius
+  - 'If it is a large family day care within 1,000 feet: the applicant''s showing
+    that a second such facility would not have an adverse impact on the neighborhood,
+    which is the only basis on which the Committee may permit it'
+tags:
+- borderline

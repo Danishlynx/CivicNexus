@@ -7,3 +7,13 @@ garage_conversion:
   required_capabilities: [zoning]
   allowed_outcomes: [approve, deny, request_info]
   sla_days: 14
+
+home_occupation:
+  required_capabilities: [zoning]
+  allowed_outcomes: [approve, deny, request_info]
+  sla_days: 10
+
+accessory_structure:
+  required_capabilities: [zoning]
+  allowed_outcomes: [approve, deny, request_info]
+  sla_days: 14

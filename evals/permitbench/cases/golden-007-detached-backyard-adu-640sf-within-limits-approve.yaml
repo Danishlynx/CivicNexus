@@ -1,0 +1,16 @@
+id: golden-007-detached-backyard-adu-640sf-within-limits-approve
+permit_type: accessory_structure
+docs:
+- evals/permitbench/docs/golden-007-detached-backyard-adu-640sf-within-limits-approve.txt
+applicant_profile:
+  name: Brian Allen
+  email: brian.beard@example.test
+  address: 604 Carr Manors (synthetic)
+expected:
+  outcome: approve
+  required_citations:
+  - 17.44.005
+  must_request: []
+tags:
+- clean
+- smoke

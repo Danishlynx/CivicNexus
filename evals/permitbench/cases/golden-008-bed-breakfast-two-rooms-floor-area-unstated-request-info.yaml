@@ -1,0 +1,19 @@
+id: golden-008-bed-breakfast-two-rooms-floor-area-unstated-request-info
+permit_type: home_occupation
+docs:
+- evals/permitbench/docs/golden-008-bed-breakfast-two-rooms-floor-area-unstated-request-info.txt
+applicant_profile:
+  name: Victoria Robinson
+  email: victoria.walker@example.test
+  address: 1483 Joann Spur (synthetic)
+expected:
+  outcome: request_info
+  required_citations:
+  - 17.44.030
+  must_request:
+  - Total residential floor area of the building in square feet, to verify the 2,000
+    sq ft minimum in 17.44.030(A)
+  - Number of existing off-street parking spaces on the site, to verify the home has
+    the currently required parking under 17.44.030(H)
+tags:
+- borderline
