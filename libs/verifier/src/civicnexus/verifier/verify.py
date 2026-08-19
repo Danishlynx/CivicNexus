@@ -1,0 +1,158 @@
+"""The four-step verification of a review finding (ARCHITECTURE §7.3).
+
+Steps 1 and 2 are deterministic string checks against the committed corpus text —
+the same ground truth the citations claim. Step 3 is a structured entailment
+check by a cheap model call (injectable for tests). Step 4 checks outcome
+legality for the permit type. The report is attached to the determination and
+persists to the audit trail; it never silently disappears.
+"""
+
+import json
+import os
+from collections.abc import Callable
+from pathlib import Path
+
+from civicnexus.contracts import DeterminationOutcome, ReviewFinding
+from pydantic import BaseModel, ConfigDict, Field
+
+EntailmentFn = Callable[[str], "EntailmentVerdict"]
+
+
+class EntailmentVerdict(BaseModel):
+    """Structured yes/no from the entailment check."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    supported: bool
+    critique: str
+
+
+class VerifierReport(BaseModel):
+    """Outcome of all four §7.3 steps for one finding."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    passed: bool
+    sections_exist: bool
+    quotes_verbatim: bool
+    outcome_entailed: bool
+    outcome_legal: bool
+    failures: list[str] = Field(default_factory=list)
+    critique: str = ""
+
+    def as_payload(self) -> dict[str, object]:
+        """Shape stored in Determination.verifier_report."""
+        return self.model_dump(mode="json")
+
+
+_ENTAILMENT_PROMPT = """You are a strict verification gate for municipal permit determinations.
+
+APPLICATION FACTS (JSON):
+{application}
+
+PROPOSED DETERMINATION: {outcome}
+REVIEWER RATIONALE: {rationale}
+
+CITED PROVISIONS (full section text follows each citation):
+{citations_block}
+
+Question: do the cited provisions, applied to the application facts as stated,
+support the proposed determination?
+- For approve: every applicable cited requirement is satisfied by the stated facts.
+- For deny: at least one cited provision is unambiguously violated by a stated fact.
+- For request_info: something the cited provisions make decision-critical is
+  genuinely absent from the stated facts. If the stated facts already decide the
+  case either way, request_info is NOT supported.
+
+Answer as strict JSON: {{"supported": true/false, "critique": "one or two sentences;
+if unsupported, say exactly what the reviewer got wrong and what the correct
+reading is"}}"""
+
+
+def _default_entailment(prompt: str) -> EntailmentVerdict:
+    """Entailment via Gemini Flash on the global endpoint (ADR-001 item 8)."""
+    from google import genai
+    from google.genai import types as genai_types
+
+    client = genai.Client(
+        vertexai=True,
+        project=os.environ.get("PROJECT_ID", os.environ.get("GOOGLE_CLOUD_PROJECT", "")),
+        location=os.environ.get("MODEL_LOCATION", "global"),
+    )
+    response = client.models.generate_content(
+        model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
+        contents=prompt,
+        config=genai_types.GenerateContentConfig(
+            temperature=0.0,
+            response_mime_type="application/json",
+            response_schema=EntailmentVerdict,
+        ),
+    )
+    return EntailmentVerdict.model_validate(json.loads(response.text or "{}"))
+
+
+def verify_finding(
+    finding: ReviewFinding,
+    *,
+    application: dict[str, object],
+    permit_allowed_outcomes: list[DeterminationOutcome],
+    corpus_dir: Path,
+    entailment: EntailmentFn | None = None,
+) -> VerifierReport:
+    """Run all four §7.3 checks; cheap deterministic steps gate the model call."""
+    failures: list[str] = []
+
+    section_texts: dict[str, str] = {}
+    sections_exist = True
+    for citation in finding.citations:
+        section_file = corpus_dir / f"{citation.chunk_id}.txt"
+        if not section_file.exists():
+            sections_exist = False
+            failures.append(f"cited section {citation.chunk_id} does not exist in the corpus")
+        else:
+            section_texts[citation.chunk_id] = section_file.read_text(encoding="utf-8")
+
+    quotes_verbatim = True
+    for citation in finding.citations:
+        text = section_texts.get(citation.chunk_id)
+        if text is None:
+            continue
+        if " ".join(citation.quote.split()) not in " ".join(text.split()):
+            quotes_verbatim = False
+            failures.append(
+                f"quote is not a verbatim span of {citation.chunk_id}: {citation.quote[:60]!r}"
+            )
+
+    outcome_legal = finding.outcome in permit_allowed_outcomes
+    if not outcome_legal:
+        failures.append(f"outcome {finding.outcome.value} is not allowed for this permit type")
+
+    outcome_entailed = False
+    if sections_exist and quotes_verbatim and outcome_legal:
+        citations_block = "\n\n".join(
+            f"[{c.chunk_id}] quoted: {c.quote!r}\nFULL SECTION:\n{section_texts[c.chunk_id]}"
+            for c in finding.citations
+        )
+        prompt = _ENTAILMENT_PROMPT.format(
+            application=json.dumps(application, ensure_ascii=False),
+            outcome=finding.outcome.value,
+            rationale=finding.rationale,
+            citations_block=citations_block,
+        )
+        verdict = (entailment or _default_entailment)(prompt)
+        outcome_entailed = verdict.supported
+        if not verdict.supported:
+            failures.append(f"entailment: {verdict.critique}")
+        critique = verdict.critique
+    else:
+        critique = "; ".join(failures)
+
+    return VerifierReport(
+        passed=sections_exist and quotes_verbatim and outcome_entailed and outcome_legal,
+        sections_exist=sections_exist,
+        quotes_verbatim=quotes_verbatim,
+        outcome_entailed=outcome_entailed,
+        outcome_legal=outcome_legal,
+        failures=failures,
+        critique=critique,
+    )

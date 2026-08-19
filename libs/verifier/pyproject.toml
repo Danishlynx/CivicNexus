@@ -1,0 +1,16 @@
+[project]
+name = "civicnexus-verifier"
+version = "0.1.0"
+description = "Groundedness verifier (§7.3): no determination proceeds unverified"
+requires-python = ">=3.12"
+dependencies = ["civicnexus-contracts", "google-genai>=1.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/civicnexus"]
+
+[tool.uv.sources]
+civicnexus-contracts = { workspace = true }

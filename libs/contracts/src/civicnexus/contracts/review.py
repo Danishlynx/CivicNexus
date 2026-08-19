@@ -20,9 +20,14 @@ class ReviewFinding(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
 
     def to_determination(
-        self, *, agent_id: str, agent_version: str, trace_id: str = ""
+        self,
+        *,
+        agent_id: str,
+        agent_version: str,
+        trace_id: str = "",
+        verifier_report: dict[str, object] | None = None,
     ) -> Determination:
-        """Stamp caller-known identity onto the model-produced finding."""
+        """Stamp caller-known identity (and the §7.3 report) onto the finding."""
         return Determination(
             agent_id=agent_id,
             agent_version=agent_version,
@@ -30,5 +35,6 @@ class ReviewFinding(BaseModel):
             citations=list(self.citations),
             rationale=self.rationale,
             confidence=self.confidence,
+            verifier_report=verifier_report,
             trace_id=trace_id,
         )

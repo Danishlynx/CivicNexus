@@ -24,6 +24,7 @@ members = [
     "civicnexus-contracts",
     "civicnexus-otel",
     "civicnexus-tools",
+    "civicnexus-verifier",
 ]
 
 [[package]]
@@ -518,6 +519,7 @@ dependencies = [
     { name = "civicnexus-contracts" },
     { name = "civicnexus-otel" },
     { name = "civicnexus-tools" },
+    { name = "civicnexus-verifier" },
 ]
 
 [package.dev-dependencies]
@@ -540,6 +542,7 @@ requires-dist = [
     { name = "civicnexus-contracts", editable = "libs/contracts" },
     { name = "civicnexus-otel", editable = "libs/otel" },
     { name = "civicnexus-tools", editable = "libs/tools" },
+    { name = "civicnexus-verifier", editable = "libs/verifier" },
 ]
 
 [package.metadata.requires-dev]
@@ -618,6 +621,21 @@ requires-dist = [
     { name = "civicnexus-otel", editable = "libs/otel" },
     { name = "google-cloud-firestore", specifier = ">=2.16" },
     { name = "google-cloud-pubsub", specifier = ">=2.21" },
+]
+
+[[package]]
+name = "civicnexus-verifier"
+version = "0.1.0"
+source = { editable = "libs/verifier" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+    { name = "google-genai" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "google-genai", specifier = ">=1.0" },
 ]
 
 [[package]]
