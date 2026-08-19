@@ -1,10 +1,27 @@
-# CI skeleton (Phase 0). PR trigger wiring lands with Terraform once the project exists.
-# Gates per ARCHITECTURE.md §10: lint, types, unit; gitleaks and terraform fmt per §6.5.
-# Images pinned to match the locally verified tool versions.
+# CI (§9.4): every push to main runs the full local chain plus the 12-case
+# eval smoke against the deployed fleet. Nightly full runs join with the
+# scheduler in a later step. Images pinned to the locally verified versions.
 steps:
+  - id: firestore-emulator
+    name: gcr.io/cloud-builders/docker
+    args:
+      - run
+      - -d
+      - --network=cloudbuild
+      - --name=firestore
+      - gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+      - gcloud
+      - emulators
+      - firestore
+      - start
+      - --host-port=0.0.0.0:8087
+      - --project=civicnexus-emulator
+
   - id: python-checks
     name: python:3.12-slim
     entrypoint: bash
+    env:
+      - FIRESTORE_EMULATOR_HOST=firestore:8087
     args:
       - -c
       - |
@@ -13,8 +30,22 @@ steps:
         uv sync --frozen
         uv run ruff check .
         uv run ruff format --check .
-        uv run mypy libs agents scripts
+        uv run mypy libs agents scripts evals
         uv run pytest
+
+  - id: eval-smoke
+    name: python:3.12-slim
+    entrypoint: bash
+    env:
+      - PROJECT_ID=$PROJECT_ID
+      - REGION=us-central1
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        pip install --quiet uv
+        uv sync --frozen
+        uv run python -m evals.runner --tag smoke
 
   - id: gitleaks
     name: ghcr.io/gitleaks/gitleaks:v8.30.1
