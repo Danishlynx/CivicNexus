@@ -3,20 +3,29 @@
 # BLOCKERS B-002 resolution style per prime directive 6); the trigger and the
 # build identity's permissions live here.
 
+# 2nd-gen path: Google no longer accepts new triggers on 1st-gen GitHub App
+# connections (bare 400s; confirmed against live docs 2026-08-19). The v2
+# connection + repo link were created via console OAuth + gcloud
+# (`gcloud builds repositories create CivicNexus --connection=github-danishlynx`);
+# the trigger lives here.
 resource "google_cloudbuild_trigger" "ci_main" {
   name        = "civicnexus-ci"
   description = "Lint, types, unit+integration tests, and 12-case eval smoke on every push to main"
-  location    = "global"
+  location    = var.region
 
-  github {
-    owner = "Danishlynx"
-    name  = "CivicNexus"
+  repository_event_config {
+    repository = "projects/${var.project_id}/locations/${var.region}/connections/github-danishlynx/repositories/CivicNexus"
     push {
       branch = "^main$"
     }
   }
 
   filename = "cloudbuild.yaml"
+
+  # New projects have no legacy Cloud Build SA; triggers must name an identity.
+  # The compute default SA already carries roles/aiplatform.user for the
+  # eval-smoke step; cloudbuild.yaml sets CLOUD_LOGGING_ONLY as this requires.
+  service_account = "projects/${var.project_id}/serviceAccounts/${data.google_project.this.number}-compute@developer.gserviceaccount.com"
 
   depends_on = [google_project_service.enabled]
 }
