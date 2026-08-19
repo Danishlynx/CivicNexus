@@ -29,6 +29,18 @@ inapplicable statute).
 9), the gate stays visibly red in every eval report until the system earns
 it. **Human decides at the Phase 2 gate whether to advance with this open.**
 
+**Addendum (2026-08-19, evening):** After the verifier landed (runs 6–7:
+stable 80%, groundedness 100%, zero crashes), the remaining approved lever —
+upgrading the zoning reviewer to a Pro-tier model — was probed and is
+**unavailable on this project**: every Pro and newer-Flash variant returns
+HTTP 417 on the global endpoint; the project's roster is exactly
+gemini-3.5-flash and flash-lite. The accuracy ceiling is therefore partly
+bounded by the model roster available to a fresh personal GCP project.
+Optional non-blocking human action: request expanded model access via the
+console (typically takes days). The three remaining misses stay documented;
+ensemble voting remains the one untried lever (expected value ≈ one marginal
+case, does not address the consistent misses).
+
 ## B-005 — "No traces from the hello agent" — RESOLVED 2026-08-18 (was a read-path gap, not a write failure)
 
 **Resolution (human console check at the gate):** Trace Explorer shows 24 spans
