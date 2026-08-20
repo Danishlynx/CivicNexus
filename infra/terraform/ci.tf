@@ -30,6 +30,21 @@ resource "google_cloudbuild_trigger" "ci_main" {
   depends_on = [google_project_service.enabled]
 }
 
+# The named build SA (compute default) needs Cloud Build's own working set —
+# log writing and builder permissions — or builds die with INTERNAL_ERROR
+# before any step runs (observed on first triggered build, 2026-08-19).
+resource "google_project_iam_member" "compute_default_builder" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${data.google_project.this.number}-compute@developer.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "compute_default_log_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${data.google_project.this.number}-compute@developer.gserviceaccount.com"
+}
+
 # The eval-smoke step queries the deployed Agent Engine instance as the build
 # identity. Cover both identities Cloud Build may run as (legacy build SA and
 # the compute default SA, depending on project settings).
