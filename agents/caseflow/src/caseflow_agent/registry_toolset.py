@@ -1,0 +1,128 @@
+"""Registry-backed dynamic toolset — the hot-add mechanism (ADR-003, ratified).
+
+On every invocation the coordinator's tool list is rebuilt from the registry:
+one consult tool per **APPROVED** agent card. The approved-only filter is the
+mandatory tool-poisoning defense (human ruling 2026-08-20; §6.7 threat
+"lookalike/unapproved agent registered") — a card that is PENDING or
+QUARANTINED never becomes a tool, so approving a new agent makes it
+dispatchable on the next case with no redeploy anywhere, and quarantining one
+removes it just as fast.
+
+Remote calls use the proven ``:streamQuery`` transport (ruled 2026-08-20;
+A2A-proper deferred to the Phase 6 managed-mode attempt). Registry calls carry
+a Google-signed ID token for the Cloud Run leg, per the ratified auth planes.
+"""
+
+import json
+import os
+from collections.abc import Callable
+from typing import Any
+
+from google.adk.tools.base_tool import BaseTool
+from google.adk.tools.base_toolset import BaseToolset
+from google.adk.tools.function_tool import FunctionTool
+
+_TIMEOUT_S = 30.0
+
+
+def _registry_url() -> str:
+    return os.environ.get("REGISTRY_URL", "").rstrip("/")
+
+
+def _id_token(audience: str) -> str:
+    """Google-signed ID token for the registry's Cloud Run audience."""
+    import google.auth.transport.requests
+    from google.oauth2 import id_token as id_token_mod
+
+    request = google.auth.transport.requests.Request()
+    token: str = id_token_mod.fetch_id_token(request, audience)  # type: ignore[no-untyped-call]
+    return token
+
+
+def fetch_approved_cards(capability: str | None = None) -> list[dict[str, Any]]:
+    """APPROVED cards from the registry service. Fails loud, never fails open."""
+    import httpx
+
+    base = _registry_url()
+    if not base:
+        return []
+    params: dict[str, str] = {"status": "APPROVED"}
+    if capability:
+        params["capability"] = capability
+    response = httpx.get(
+        f"{base}/agents",
+        params=params,
+        headers={"Authorization": f"Bearer {_id_token(base)}"},
+        timeout=_TIMEOUT_S,
+    )
+    response.raise_for_status()
+    cards: list[dict[str, Any]] = response.json()
+    return cards
+
+
+def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
+    """Call a remote agent engine over :streamQuery and return its JSON reply."""
+    import vertexai
+
+    from caseflow_agent.reply_parsing import last_json_object
+
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT", os.environ.get("PROJECT_ID", ""))
+    region = os.environ.get("RAG_LOCATION", "us-central1")
+    client = vertexai.Client(project=project, location=region)
+    remote = client.agent_engines.get(name=endpoint)
+    import secrets
+
+    events = list(
+        remote.stream_query(user_id=f"coordinator-{secrets.token_hex(4)}", message=task_payload)
+    )
+    return last_json_object(events)
+
+
+def _make_consult_tool(card: dict[str, Any]) -> FunctionTool:
+    """One named tool per approved card; name/doc drive the LLM's routing."""
+    agent_id = str(card["agent_id"]).replace("-", "_")
+    endpoint = str(card["endpoint"])
+    description = str(card.get("description", ""))
+
+    def consult(request: str) -> dict[str, Any]:
+        payload = json.dumps({"task": "review", "application": json.loads(request)})
+        return _consult_remote(endpoint, payload)
+
+    consult.__name__ = f"consult_{agent_id}"
+    consult.__doc__ = (
+        f"Delegate the structured application (JSON string) to the approved "
+        f"'{card['agent_id']}' specialist (v{card['version']}). {description} "
+        f"Returns the specialist's structured finding."
+    )
+    return FunctionTool(consult)
+
+
+class RegistryToolset(BaseToolset):
+    """Rebuilds consult tools from the registry on each resolution pass."""
+
+    def __init__(self, capability: str | None = None) -> None:
+        super().__init__()
+        self._capability = capability
+
+    async def get_tools(self, readonly_context: Any = None) -> list[BaseTool]:
+        try:
+            cards = fetch_approved_cards(self._capability)
+        except Exception:
+            # Fail CLOSED for dynamic capability, loud in the trace: no
+            # registry answer means no remote tools this turn — the fixed
+            # in-process specialists still work.
+            return []
+        return [_make_consult_tool(card) for card in cards]
+
+    async def close(self) -> None:  # nothing persistent to release
+        return None
+
+
+def make_consult_callable(endpoint: str) -> Callable[[str], dict[str, Any]]:
+    """Exposed for tests: the raw remote-consult callable for one endpoint."""
+
+    def consult(request: str) -> dict[str, Any]:
+        payload = json.dumps({"task": "review", "application": json.loads(request)})
+        return _consult_remote(endpoint, payload)
+
+    return consult

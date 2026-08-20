@@ -11,6 +11,7 @@ from google.adk.agents import Agent
 from google.genai import types as genai_types
 
 from caseflow_agent.intake import intake_agent
+from caseflow_agent.registry_toolset import RegistryToolset
 from caseflow_agent.zoning import zoning_agent
 
 coordinator = Agent(
@@ -23,11 +24,21 @@ coordinator = Agent(
         "field.\n"
         '- task "intake": delegate the contained raw application to the intake '
         "agent.\n"
-        '- task "review": delegate the contained structured application to the '
-        "zoning agent.\n"
-        "Return the specialist's JSON output verbatim as your entire reply - no "
-        "commentary, no code fences. If the task field is missing or unknown, "
-        'reply with {"error": "unknown task"}.'
+        '- task "review": the message contains the structured application and a '
+        '"capabilities" list naming the reviews this permit type requires. For '
+        'the "zoning" capability, delegate to the zoning agent. For any OTHER '
+        "capability, use the matching consult_<agent> tool if one is available "
+        "- these tools are the registry's currently APPROVED specialists. If a "
+        "required capability has no matching specialist, note it in the output "
+        'as {"missing_capability": "<name>"} alongside the findings you did '
+        "obtain.\n"
+        "When a review requires multiple capabilities, collect every "
+        'specialist\'s finding and reply with JSON: {"findings": '
+        '[{"capability": ..., "finding": <specialist JSON>}]}. For a single '
+        "zoning-only review, return the zoning agent's JSON verbatim.\n"
+        "Return ONLY JSON - no commentary, no code fences. If the task field "
+        'is missing or unknown, reply with {"error": "unknown task"}.'
     ),
     sub_agents=[intake_agent, zoning_agent],
+    tools=[RegistryToolset()],
 )
