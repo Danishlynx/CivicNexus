@@ -31,8 +31,10 @@ eval-smoke:
 eval-full:
 	@uv run python -m evals.runner --report && echo PASS: make eval-full || (echo FAIL: make eval-full && exit 1)
 
+# Needs REGISTRY_URL + PROJECT_ID env and APPROVER=<human email> make-var.
+# Each run deploys/uses billable resources - run with the human's OK.
 demo-hotadd:
-	@echo FAIL: demo-hotadd not implemented until Phase 3 && exit 1
+	@uv run python scripts/demo_hotadd.py --approver $(APPROVER) && echo PASS: make demo-hotadd || (echo FAIL: make demo-hotadd && exit 1)
 
 demo-injection:
 	@echo FAIL: demo-injection not implemented until Phase 5 && exit 1

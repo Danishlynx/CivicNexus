@@ -34,7 +34,13 @@ def main() -> int:
     session = AuthorizedSession(credentials)  # type: ignore[no-untyped-call]
     role = f"projects/{project}/roles/{ROLE_ID}"
 
-    for caller, state_files in MATRIX.items():
+    matrix = {caller: list(files) for caller, files in MATRIX.items()}
+    # demo_hotadd extends the coordinator's row at demo time (approved flow).
+    hotadd_extra = os.environ.get("HOTADD_EXTRA")
+    if hotadd_extra:
+        matrix["sa-caseflow"].append(hotadd_extra)
+
+    for caller, state_files in matrix.items():
         member = f"serviceAccount:{caller}@{project}.iam.gserviceaccount.com"
         for state_file in state_files:
             state = json.loads(Path(state_file).read_text(encoding="utf-8-sig"))

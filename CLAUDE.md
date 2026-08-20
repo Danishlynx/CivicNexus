@@ -64,6 +64,10 @@ variant ran and which claim it proves. "Works under lean config X" is not
 **IAM evidence standard:** every grant names the role, the principal, and the
 reason in the evidence log — never summarized as "standard roles."
 
+**Eval spend rule (added 2026-08-20, after the first budget alert fired as
+designed):** full eval runs require the human's per-run OK. Estimates are
+ceilings to verify against the billing page, never assumed.
+
 ## Session loop (every working session)
 
 1. Read `PROGRESS.md` (current phase, last evidence) and `BLOCKERS.md`.

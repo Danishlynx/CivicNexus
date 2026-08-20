@@ -29,6 +29,12 @@ for this fresh project.
 **Recommendation:** Path 1 today; escalate to the human with Path 2 options
 if unresolved. **Nobody acts yet; re-check scheduled.**
 
+**Update (2026-08-20 evening):** still 404 after ~5h. A cheap second-service
+diagnostic was offered and the human declined it (cost prudence after the
+first budget alert) — the wait-path holds. Everything hot-add-shaped is
+built and committed (demo script, matrix hook, make target) so the demo is
+runnable within minutes of the edge healing.
+
 ## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, by design honest)
 
 **Symptom:** Five full PermitBench runs (2026-08-19, 20 cases each, live stack):
