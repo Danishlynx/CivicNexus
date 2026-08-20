@@ -36,3 +36,6 @@ node_modules/
 Thumbs.db
 .idea/
 .vscode/
+
+# Deploy-time generated per-agent config (SA binding, env)
+.agent_engine_config.json
