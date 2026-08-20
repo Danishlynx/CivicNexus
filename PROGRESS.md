@@ -9,8 +9,22 @@ Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 |---|---|
 | 0 Skeleton | **COMPLETE** — `make verify-phase-0` PASS (test + smoke + trace URL); human reviewed traces at the gate |
 | 1 Vertical slice | **COMPLETE** — `make verify-phase-1` PASS; cited determination reached PENDING_HUMAN on the live stack (details below) |
-| 2 Evals first | **BUILT; gate review pending** — harness + 20 verified cases + 5 live runs recorded; accuracy gate honestly red (B-006); CI trigger blocked on 2nd-gen GitHub connection (human step) |
-| 3–7 | not started |
+| 2 Evals first | **COMPLETE (gate passed 2026-08-20)** — human decision at gate: lock the honest 80% baseline, advance with B-006 open. Harness + 20 verified cases + 7 recorded runs; verifier built early; CI live (2nd-gen trigger, smoke on every push) |
+| 3 Fleet + governance | IN PROGRESS — ADR-003 ratified w/ conditions; registry contracts + service drafted; A2A spike run (see ADR-003 evidence record); CI green end-to-end |
+| 4–7 | not started |
+
+## IAM evidence log (per Working Agreement: role + principal + reason, always)
+
+| Date | Role | Principal | Reason |
+|---|---|---|---|
+| 2026-08-18 | roles/aiplatform.user | service-382264320396@gcp-sa-aiplatform-re.iam.gserviceaccount.com (Reasoning Engine service agent) | deployed agents must query the RAG corpus (fixed the 403 on ragCorpora.get) |
+| 2026-08-19 | roles/aiplatform.user | 382264320396@cloudbuild.gserviceaccount.com | CI eval-smoke step queries the deployed engine |
+| 2026-08-19 | roles/aiplatform.user | 382264320396-compute@developer.gserviceaccount.com | same, for whichever identity Cloud Build runs as |
+| 2026-08-20 | roles/cloudbuild.builds.builder | 382264320396-compute@developer.gserviceaccount.com | named build SA needs Cloud Build's working set; INTERNAL_ERROR before any step otherwise |
+| 2026-08-20 | roles/logging.logWriter | 382264320396-compute@developer.gserviceaccount.com | build logs with CLOUD_LOGGING_ONLY under a named SA |
+
+Standing note: all grants above are Terraform-managed (iam.tf, ci.tf). Future
+IAM changes are ask-first per the Working Agreement in CLAUDE.md.
 
 ## Phase 2 evidence (2026-08-19, all output observed directly)
 
