@@ -5,6 +5,30 @@ paths, recommendation, who acts.
 
 ---
 
+## B-007 — Cloud Run URLs unroutable at Google's edge (OPEN; platform anomaly)
+
+**Symptom (2026-08-20):** `civicnexus-registry` deploys Ready
+(CONDITION_SUCCEEDED, healthy container, uvicorn serving, both default URLs
+present in the v2 API object, ingress ALL, GA stage) — yet BOTH its run.app
+URLs return Google's generic edge 404 to anonymous AND authenticated
+callers, from the developer machine AND from inside GCP (Cloud Build probe).
+Full delete+recreate via Terraform did not change it. Every controllable knob
+verified correct; the failure is in Google's frontend routing registration
+for this fresh project.
+
+**Paths:**
+1. Wait (edge registration anomalies on new projects have resolved in
+   hours in the wild) while building everything that doesn't need the URL —
+   deny test, per-resource IAM, demo scripts written against the HTTP API.
+2. If still dead after ~a day: interim fallback where demo drivers use the
+   RegistryStore library directly against Firestore (human-side ADC), and/or
+   the coordinator toolset gets a Firestore read path — an architecture
+   deviation (bypasses the service policy boundary) that would need a human
+   ruling per the Working Agreement.
+
+**Recommendation:** Path 1 today; escalate to the human with Path 2 options
+if unresolved. **Nobody acts yet; re-check scheduled.**
+
 ## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, by design honest)
 
 **Symptom:** Five full PermitBench runs (2026-08-19, 20 cases each, live stack):

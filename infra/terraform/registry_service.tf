@@ -36,6 +36,9 @@ resource "google_cloud_run_v2_service" "registry" {
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL" # auth enforced by IAM; no unauthenticated access
 
+  # Hackathon service; replaceability matters more than delete-protection.
+  deletion_protection = false
+
   template {
     service_account = google_service_account.registry.email
     scaling {

@@ -55,5 +55,8 @@ steps:
     name: hashicorp/terraform:1.15.8
     args: ["fmt", "-check", "-recursive", "infra/terraform"]
 
+# Verifier-era smoke runs ~15 min (retry loop + pacing); default 10m kills it.
+timeout: 2400s
+
 options:
   logging: CLOUD_LOGGING_ONLY
