@@ -10,6 +10,9 @@ dependencies = [
     "civicnexus-verifier",
     "civicnexus-agent-hello",
     "civicnexus-agent-caseflow",
+    "civicnexus-agent-safety",
+    "civicnexus-agent-letters",
+    "civicnexus-agent-treepres",
     "civicnexus-registry",
 ]
 
@@ -40,6 +43,9 @@ members = [
     "libs/verifier",
     "agents/hello",
     "agents/caseflow",
+    "agents/safety",
+    "agents/letters",
+    "agents/treepres",
     "services/registry",
 ]
 
@@ -50,6 +56,9 @@ civicnexus-tools = { workspace = true }
 civicnexus-verifier = { workspace = true }
 civicnexus-agent-hello = { workspace = true }
 civicnexus-agent-caseflow = { workspace = true }
+civicnexus-agent-safety = { workspace = true }
+civicnexus-agent-letters = { workspace = true }
+civicnexus-agent-treepres = { workspace = true }
 civicnexus-registry = { workspace = true }
 
 [tool.ruff]
@@ -75,6 +84,9 @@ mypy_path = [
     "libs/verifier/src",
     "agents/hello/src",
     "agents/caseflow/src",
+    "agents/safety/src",
+    "agents/letters/src",
+    "agents/treepres/src",
     "services/registry/src",
 ]
 

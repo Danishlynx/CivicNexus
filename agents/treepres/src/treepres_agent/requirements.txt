@@ -1,0 +1,6 @@
+# Remote runtime requirements for the deployed caseflow app.
+# Pins match the locally verified environment (uv.lock); otel-gcp extra per
+# BLOCKERS B-005 (full instrumentation needs it).
+google-cloud-aiplatform[agent_engines,adk]==1.164.0
+google-adk[otel-gcp]==2.7.1
+pandas==3.0.5

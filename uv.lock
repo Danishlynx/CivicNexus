@@ -21,6 +21,9 @@ members = [
     "civicnexus",
     "civicnexus-agent-caseflow",
     "civicnexus-agent-hello",
+    "civicnexus-agent-letters",
+    "civicnexus-agent-safety",
+    "civicnexus-agent-treepres",
     "civicnexus-contracts",
     "civicnexus-otel",
     "civicnexus-registry",
@@ -517,6 +520,9 @@ source = { virtual = "." }
 dependencies = [
     { name = "civicnexus-agent-caseflow" },
     { name = "civicnexus-agent-hello" },
+    { name = "civicnexus-agent-letters" },
+    { name = "civicnexus-agent-safety" },
+    { name = "civicnexus-agent-treepres" },
     { name = "civicnexus-contracts" },
     { name = "civicnexus-otel" },
     { name = "civicnexus-registry" },
@@ -541,6 +547,9 @@ dev = [
 requires-dist = [
     { name = "civicnexus-agent-caseflow", editable = "agents/caseflow" },
     { name = "civicnexus-agent-hello", editable = "agents/hello" },
+    { name = "civicnexus-agent-letters", editable = "agents/letters" },
+    { name = "civicnexus-agent-safety", editable = "agents/safety" },
+    { name = "civicnexus-agent-treepres", editable = "agents/treepres" },
     { name = "civicnexus-contracts", editable = "libs/contracts" },
     { name = "civicnexus-otel", editable = "libs/otel" },
     { name = "civicnexus-registry", editable = "services/registry" },
@@ -586,6 +595,51 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "google-adk", specifier = ">=2.7,<3" }]
+
+[[package]]
+name = "civicnexus-agent-letters"
+version = "0.1.0"
+source = { editable = "agents/letters" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+    { name = "google-adk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "google-adk", specifier = ">=2.7,<3" },
+]
+
+[[package]]
+name = "civicnexus-agent-safety"
+version = "0.1.0"
+source = { editable = "agents/safety" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+    { name = "google-adk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "google-adk", specifier = ">=2.7,<3" },
+]
+
+[[package]]
+name = "civicnexus-agent-treepres"
+version = "0.1.0"
+source = { editable = "agents/treepres" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+    { name = "google-adk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "google-adk", specifier = ">=2.7,<3" },
+]
 
 [[package]]
 name = "civicnexus-contracts"

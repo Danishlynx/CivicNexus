@@ -17,6 +17,7 @@ from civicnexus.contracts.case import (
 from civicnexus.contracts.determinations import Citation, Determination, DeterminationOutcome
 from civicnexus.contracts.events import Actor, EventEnvelope, EventType
 from civicnexus.contracts.intake import Application
+from civicnexus.contracts.letters import LetterDraft
 from civicnexus.contracts.registry import AgentCard, AgentStatus, can_change_status
 from civicnexus.contracts.review import ReviewFinding
 
@@ -35,6 +36,7 @@ __all__ = [
     "DeterminationOutcome",
     "EventEnvelope",
     "EventType",
+    "LetterDraft",
     "ReviewFinding",
     "Timer",
     "can_change_status",
