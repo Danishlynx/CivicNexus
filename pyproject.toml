@@ -10,6 +10,7 @@ dependencies = [
     "civicnexus-verifier",
     "civicnexus-agent-hello",
     "civicnexus-agent-caseflow",
+    "civicnexus-registry",
 ]
 
 [dependency-groups]
@@ -39,6 +40,7 @@ members = [
     "libs/verifier",
     "agents/hello",
     "agents/caseflow",
+    "services/registry",
 ]
 
 [tool.uv.sources]
@@ -48,10 +50,15 @@ civicnexus-tools = { workspace = true }
 civicnexus-verifier = { workspace = true }
 civicnexus-agent-hello = { workspace = true }
 civicnexus-agent-caseflow = { workspace = true }
+civicnexus-registry = { workspace = true }
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI's dependency-injection idiom is a function call in a default (B008).
+"services/*/src/*/app.py" = ["B008"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
@@ -68,6 +75,7 @@ mypy_path = [
     "libs/verifier/src",
     "agents/hello/src",
     "agents/caseflow/src",
+    "services/registry/src",
 ]
 
 [[tool.mypy.overrides]]

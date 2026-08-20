@@ -23,6 +23,7 @@ members = [
     "civicnexus-agent-hello",
     "civicnexus-contracts",
     "civicnexus-otel",
+    "civicnexus-registry",
     "civicnexus-tools",
     "civicnexus-verifier",
 ]
@@ -518,6 +519,7 @@ dependencies = [
     { name = "civicnexus-agent-hello" },
     { name = "civicnexus-contracts" },
     { name = "civicnexus-otel" },
+    { name = "civicnexus-registry" },
     { name = "civicnexus-tools" },
     { name = "civicnexus-verifier" },
 ]
@@ -541,6 +543,7 @@ requires-dist = [
     { name = "civicnexus-agent-hello", editable = "agents/hello" },
     { name = "civicnexus-contracts", editable = "libs/contracts" },
     { name = "civicnexus-otel", editable = "libs/otel" },
+    { name = "civicnexus-registry", editable = "services/registry" },
     { name = "civicnexus-tools", editable = "libs/tools" },
     { name = "civicnexus-verifier", editable = "libs/verifier" },
 ]
@@ -603,6 +606,27 @@ requires-dist = [
 name = "civicnexus-otel"
 version = "0.1.0"
 source = { editable = "libs/otel" }
+
+[[package]]
+name = "civicnexus-registry"
+version = "0.1.0"
+source = { editable = "services/registry" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+    { name = "civicnexus-otel" },
+    { name = "fastapi" },
+    { name = "google-cloud-firestore" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "civicnexus-otel", editable = "libs/otel" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "google-cloud-firestore", specifier = ">=2.16" },
+    { name = "uvicorn", specifier = ">=0.30" },
+]
 
 [[package]]
 name = "civicnexus-tools"
