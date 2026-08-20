@@ -82,6 +82,16 @@ resource "google_service_account_iam_member" "deployer_act_as" {
   member             = "user:danishlynx@gmail.com"
 }
 
+# Human-authorized 2026-08-20 (deny-matrix ask): the test harness impersonates
+# exactly these two identities to PROVE the per-resource matrix (positive and
+# negative cases). Scoped to the two SAs, never project-wide.
+resource "google_service_account_iam_member" "harness_token_creator" {
+  for_each           = toset(["sa-caseflow", "sa-safety"])
+  service_account_id = google_service_account.agents[each.key].name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "user:danishlynx@gmail.com"
+}
+
 # Human-authorized 2026-08-20 (item c): Data Access audit logs for Vertex —
 # reason: the deliberate-deny test must produce an auditable 403 entry.
 resource "google_project_iam_audit_config" "aiplatform_data_access" {
