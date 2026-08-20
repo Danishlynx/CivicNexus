@@ -43,6 +43,27 @@ flag the conflict in `BLOCKERS.md`.
     your training memory is stale by definition. When docs contradict ARCHITECTURE.md,
     follow the docs and record the delta as an ADR.
 
+## Working Agreement (amendment, ratified by the human 2026-08-20)
+
+**ASK FIRST:** any IAM/permission change (role + principal + reason named in the
+ask); anything creating billed infrastructure or projecting past ~$10/day;
+anything touching data deletion or retention; any change to guardrails, eval
+thresholds, or SAFE_MODE; any deviation from a ratified ADR or ruling.
+
+**PROCEED AND REPORT:** retries, lint/format/tests, reading logs and docs, code
+that implements an already-ratified decision, spike variations under the
+evidence-precision rule.
+
+**AMBIGUOUS:** one-line flag before acting. The flag costs a minute; the
+reverse costs trust.
+
+**Evidence-precision rule:** spike/experiment writeups state exactly which
+variant ran and which claim it proves. "Works under lean config X" is not
+"works." Claims never drift wider than the test that produced them.
+
+**IAM evidence standard:** every grant names the role, the principal, and the
+reason in the evidence log — never summarized as "standard roles."
+
 ## Session loop (every working session)
 
 1. Read `PROGRESS.md` (current phase, last evidence) and `BLOCKERS.md`.
