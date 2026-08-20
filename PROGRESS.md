@@ -25,6 +25,9 @@ Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 | 2026-08-20 | roles/aiplatform.user | sa-caseflow@, sa-safety@, sa-letters@, sa-treepres@civicnexus-hack26.iam.gserviceaccount.com (4 grants, human-authorized in advance) | per-agent identities (§6.1/ADR-003): each agent calls models + queries the RAG corpus |
 | 2026-08-20 | Data Access audit logs (DATA_READ, DATA_WRITE) on aiplatform.googleapis.com | project-wide audit config, human-authorized in advance | the deliberate-deny test must produce an auditable 403 entry |
 | 2026-08-20 | roles/iam.serviceAccountUser (scoped to the 4 sa-* accounts only) | user:danishlynx@gmail.com | deployer must hold actAs to bind agent SAs to runtimes; asked and approved before applying |
+| 2026-08-20 | NEW sa-registry + roles/datastore.user | sa-registry@civicnexus-hack26.iam.gserviceaccount.com | registry service reads/writes registry_agents in Firestore; approved (4-item registry ask) |
+| 2026-08-20 | roles/run.invoker on civicnexus-registry | sa-caseflow@… and user:danishlynx@gmail.com | coordinator toolset queries approved cards; human approves/quarantines. No public access. Approved (registry ask) |
+| 2026-08-20 | **REVOKED** roles/aiplatform.user from all 4 agent SAs; granted custom role civicnexusAgentBase (endpoints.predict + ragCorpora get/query + ragEngineConfigs.get + own-session ops) | sa-caseflow@, sa-safety@, sa-letters@, sa-treepres@ | approved least-privilege redesign: broad role contained reasoningEngines query/create/update/DELETE project-wide, breaking deny-by-default. Session perms added after a verified sessions.create denial (staged rollout: safety converted + smoke-passed first, then all). Invoke rights stay per-resource via custom role civicnexusEngineCaller (created; bindings pending deny-test wiring) |
 
 Standing note: all grants above are Terraform-managed (iam.tf, ci.tf). Future
 IAM changes are ask-first per the Working Agreement in CLAUDE.md.

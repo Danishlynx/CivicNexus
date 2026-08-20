@@ -16,8 +16,57 @@ resource "google_service_account" "agents" {
   display_name = each.value
 }
 
+# IAM redesign (human-approved 2026-08-20): agents hold ONLY the custom base
+# role. roles/aiplatform.user turned out to include reasoningEngines
+# query/create/update/DELETE project-wide — revoked. Rollout is staged via
+# local.converted_sas (safety first, smoke-verified, then all).
+locals {
+  converted_sas = ["sa-safety", "sa-caseflow", "sa-letters", "sa-treepres"]
+}
+
+resource "google_project_iam_custom_role" "agent_base" {
+  role_id     = "civicnexusAgentBase"
+  title       = "CivicNexus agent base"
+  description = "Exactly what a reviewer agent needs: model calls + read/query the RAG corpus."
+  permissions = [
+    "aiplatform.endpoints.predict",
+    "aiplatform.ragCorpora.get",
+    "aiplatform.ragCorpora.query",
+    "aiplatform.ragEngineConfigs.get",
+    # Runtime plumbing: the agent's ADK session service manages its own
+    # sessions under the agent identity (verified: sessions.create denial
+    # broke the min-role smoke). Project-scoped for now; invoke rights stay
+    # per-resource — refinement noted in ADR-003.
+    "aiplatform.sessions.create",
+    "aiplatform.sessions.get",
+    "aiplatform.sessions.list",
+    "aiplatform.sessions.update",
+    "aiplatform.sessionEvents.append",
+    "aiplatform.sessionEvents.list",
+  ]
+}
+
+resource "google_project_iam_custom_role" "engine_caller" {
+  role_id     = "civicnexusEngineCaller"
+  title       = "CivicNexus engine caller"
+  description = "Query one specific agent engine (granted per-resource, never project-wide)."
+  permissions = [
+    "aiplatform.reasoningEngines.get",
+    "aiplatform.reasoningEngines.query",
+  ]
+}
+
+resource "google_project_iam_member" "agents_base_role" {
+  for_each = toset(local.converted_sas)
+  project  = var.project_id
+  role     = google_project_iam_custom_role.agent_base.id
+  member   = "serviceAccount:${google_service_account.agents[each.key].email}"
+}
+
+# Legacy broad role remains ONLY on not-yet-converted SAs during the staged
+# rollout; this block empties as conversion completes.
 resource "google_project_iam_member" "agents_aiplatform_user" {
-  for_each = local.agent_sas
+  for_each = { for k, v in local.agent_sas : k => v if !contains(local.converted_sas, k) }
   project  = var.project_id
   role     = "roles/aiplatform.user"
   member   = "serviceAccount:${google_service_account.agents[each.key].email}"

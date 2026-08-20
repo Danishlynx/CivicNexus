@@ -1,0 +1,16 @@
+# Builds the registry image from the repo root context (monorepo libs visible).
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - us-central1-docker.pkg.dev/$PROJECT_ID/civicnexus/registry:v0.1.0
+      - -f
+      - services/registry/Dockerfile
+      - .
+
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/civicnexus/registry:v0.1.0
+
+options:
+  logging: CLOUD_LOGGING_ONLY
