@@ -69,7 +69,11 @@ def _fetch_via_firestore(capability: str | None) -> list[dict[str, Any]]:
     """
     from google.cloud import firestore
 
-    db = firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT") or None)
+    # PROJECT_ID (the id, baked at deploy) first: the runtime's
+    # GOOGLE_CLOUD_PROJECT holds the project NUMBER, which Firestore's
+    # default-database lookup rejects (engine log, 2026-08-21).
+    project = os.environ.get("PROJECT_ID") or os.environ.get("GOOGLE_CLOUD_PROJECT") or None
+    db = firestore.Client(project=project)
     query = db.collection("registry_agents").where("status", "==", "APPROVED")
     if capability:
         query = query.where("capabilities", "array_contains", capability)

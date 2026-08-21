@@ -65,7 +65,12 @@ def main() -> int:
     sa_email = f"{args.service_account}@{project}.iam.gserviceaccount.com"
     state_file = Path(args.state_file)
 
-    env_lines = [f"MODEL_ID={os.environ.get('MODEL_ID', 'gemini-3.5-flash')}\n"]
+    env_lines = [
+        f"MODEL_ID={os.environ.get('MODEL_ID', 'gemini-3.5-flash')}\n",
+        # Always bake the project ID: the runtime's GOOGLE_CLOUD_PROJECT is
+        # the project NUMBER, which Firestore rejects (B-009 evidence).
+        f"PROJECT_ID={project}\n",
+    ]
     if args.needs_corpus:
         env_lines.append(f"CORPUS_NAME={_resolve_corpus(project, region)}\n")
         env_lines.append(f"RAG_LOCATION={region}\n")

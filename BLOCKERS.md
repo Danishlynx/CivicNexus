@@ -5,6 +5,46 @@ paths, recommendation, who acts.
 
 ---
 
+## B-009 — demo run 2: two engine-side defects; composition crash is a demo-reliability trap (OPEN, fix decision with human)
+
+**Symptom (2026-08-21, run 2 of demo-hotadd):** BEFORE review crashed
+mid-stream. Engine logs (Cloud Logging, both tracebacks captured) show:
+
+1. **Firestore project-number 404 (root-caused, fix coded):**
+   `_fetch_via_firestore` used `GOOGLE_CLOUD_PROJECT`, which the Agent
+   Engine runtime sets to the project NUMBER; Firestore's default-database
+   lookup rejects number form ("The database (default) does not exist for
+   project 382264320396"). The fail-closed guard worked and the new
+   exception logging captured it — the toolset degraded to zero tools
+   honestly. Fix: bake PROJECT_ID (the id) into engine .env; toolset
+   prefers it. CODED, awaiting the next approved redeploy.
+
+2. **Sticky-delegation composition trap (decision needed):** ADK
+   `sub_agents` transfer makes the last-speaking agent own the final
+   reply. On MULTI-capability reviews, if the zoning specialist (strict
+   `output_schema=ReviewFindingOut`) is the last responder, its schema
+   rejects the coordinator-style composed reply
+   (`{"findings": [...], "missing_capability": ...}`) — engine raises
+   ValidationError into the stream. Which agent speaks last is
+   LLM-path-dependent: run 1 BEFORE composed from the coordinator (fine),
+   run 2 BEFORE did not (crash). Single-capability eval replies satisfy
+   the schema, which is why 7 PermitBench runs never saw this. As-is, the
+   demo (and the submission video) is nondeterministically unreliable.
+
+**Paths for defect 2:**
+1. Re-wire fixed specialists as `AgentTool`s of the coordinator (tool
+   calls always return to the caller → the coordinator deterministically
+   composes; zoning's schema still binds zoning's own reply). Architecture
+   change to Phase-1-ratified wiring → needs human ratification + a
+   verification eval-smoke before trusting it (billable).
+2. Prompt-level patches steering who speaks last — brittle against the
+   exact failure observed; rejected as primary.
+3. Accept nondeterminism and re-run until green — unacceptable for a
+   video that must be one continuous unedited take.
+
+**Recommendation:** Path 1 + eval-smoke. **Human decides (ratification +
+spend).**
+
 ## B-008 — Local terraform.tfstate truncated to 0 bytes — RESOLVED 2026-08-21
 
 **Resolution:** Human ran the one-line restore (Path 1). Verified: state file
