@@ -71,6 +71,8 @@ def main() -> int:
         env_lines.append(f"RAG_LOCATION={region}\n")
     if os.environ.get("REGISTRY_URL"):
         env_lines.append(f"REGISTRY_URL={os.environ['REGISTRY_URL']}\n")
+    if os.environ.get("REGISTRY_MODE"):  # B-007 interim: firestore read path
+        env_lines.append(f"REGISTRY_MODE={os.environ['REGISTRY_MODE']}\n")
     (agent_dir / ".env").write_text("".join(env_lines), encoding="utf-8")
     (agent_dir / ".agent_engine_config.json").write_text(
         json.dumps({"service_account": sa_email}, indent=2), encoding="utf-8"
