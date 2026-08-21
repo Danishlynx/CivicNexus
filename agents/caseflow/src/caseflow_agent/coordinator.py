@@ -13,6 +13,7 @@ the final composition.
 """
 
 import json
+import logging
 import os
 from typing import Any
 
@@ -69,8 +70,16 @@ class SafeAgentTool(AgentTool):
             request = _specialist_request(self.agent.name, original)
             if request:
                 args = {"request": request}
+            else:
+                logging.getLogger("caseflow.coordinator").warning(
+                    "deterministic input fallback: %s got the LLM-typed request "
+                    "(original message unusable)",
+                    self.agent.name,
+                )
         except Exception:
-            pass
+            logging.getLogger("caseflow.coordinator").exception(
+                "deterministic input fallback: %s (extraction raised)", self.agent.name
+            )
         try:
             result = await super().run_async(args=args, tool_context=tool_context)
         except Exception as exc:
