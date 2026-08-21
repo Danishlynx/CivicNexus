@@ -26,12 +26,16 @@ class TestFleetStructure:
 
         assert root_agent.output_schema is None
 
-    def test_specialists_run_single_turn(self) -> None:
+    def test_specialists_carry_no_mode(self) -> None:
+        """ADR-004: AgentTool's private Runner REJECTS single_turn roots
+        (runners.py root-mode gate) — mode must stay unset on fresh import
+        so the Runner defaults it. This test enshrines the fix for the
+        blocker the pre-deploy verification caught."""
         from caseflow_agent.intake import intake_agent
         from caseflow_agent.zoning import zoning_agent
 
-        assert intake_agent.mode == "single_turn"
-        assert zoning_agent.mode == "single_turn"
+        assert intake_agent.mode is None
+        assert zoning_agent.mode is None
 
     def test_zoning_carries_the_retrieval_tool(self) -> None:
         from caseflow_agent.zoning import zoning_agent

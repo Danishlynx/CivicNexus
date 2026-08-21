@@ -61,3 +61,29 @@ in control and uses the sub-agent's output as input."
   Phase 2 baseline; the hot-add demo (run 3) is the multi-capability proof.
 - Revisit if ADK's workflow runtime later validates only the outermost
   node's schema (watch release notes at upgrade time).
+
+## Addendum (same day): pre-deploy verification findings, incorporated
+
+An adversarial verification pass over this change (3 read-only agents vs
+installed ADK source + repo consumers + billable-step mechanics) found and
+fixed BEFORE any billable step:
+
+1. **Specialists must NOT carry `mode='single_turn'` once they are
+   AgentTools** — the tool's private Runner rejects single_turn ROOT agents
+   with a hard ValueError (reproduced offline against the repo's real agent
+   objects). `mode` removed from intake/zoning; structure test enshrines
+   `mode is None`.
+2. **`SafeAgentTool` containment**: with no on_tool_error callbacks, a
+   raised tool exception aborts the whole billed invocation; the subclass
+   catches and returns `{"error": ...}` to the model (the framework's own
+   single-turn wrapper pattern).
+3. **verifier_critique forwarding** made explicit in the coordinator
+   instruction (the §7.3 retry loop depends on the critique reaching the
+   zoning reviewer; the first instruction draft would have stripped it —
+   directly gate-threatening for eval-smoke).
+4. **Legacy `scripts/deploy_caseflow.py` deleted** — it regenerated the
+   engine .env without PROJECT_ID/REGISTRY_MODE, silently re-introducing
+   B-009 defect 1 on any future use. `scripts/deploy_agent.py` is the only
+   deploy path.
+5. `_consult_remote` now prefers PROJECT_ID (consistency; last number-first
+   usage on the demo path).

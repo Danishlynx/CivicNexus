@@ -13,6 +13,7 @@ the final composition.
 """
 
 import os
+from typing import Any
 
 from google.adk.agents import Agent
 from google.adk.tools.agent_tool import AgentTool
@@ -21,6 +22,22 @@ from google.genai import types as genai_types
 from caseflow_agent.intake import intake_agent
 from caseflow_agent.registry_toolset import RegistryToolset
 from caseflow_agent.zoning import zoning_agent
+
+
+class SafeAgentTool(AgentTool):
+    """AgentTool whose failures return to the model instead of raising.
+
+    With no on_tool_error callbacks, a raised tool exception aborts the whole
+    (billed) invocation. Mirror the framework's own single-turn wrapper
+    pattern: catch, and hand the model a structured error it can react to.
+    """
+
+    async def run_async(self, *, args: dict[str, Any], tool_context: Any) -> Any:
+        try:
+            return await super().run_async(args=args, tool_context=tool_context)
+        except Exception as exc:
+            return {"error": f"{type(exc).__name__}: {exc}"}
+
 
 coordinator = Agent(
     name="coordinator",
@@ -44,7 +61,10 @@ coordinator = Agent(
         "obtain.\n"
         "Every tool call's request must be the application data itself - never "
         "pass your own draft reply or another specialist's finding into a "
-        "tool.\n"
+        "tool. One exception: if the message contains a verifier_critique "
+        "field, include it verbatim in the zoning tool request alongside the "
+        "application JSON - the zoning reviewer needs it to correct its "
+        "finding.\n"
         "When a review requires multiple capabilities, collect every "
         'specialist\'s finding and reply with JSON: {"findings": '
         '[{"capability": ..., "finding": <specialist JSON>}]}. For a single '
@@ -52,5 +72,5 @@ coordinator = Agent(
         "Return ONLY JSON - no commentary, no code fences. If the task field "
         'is missing or unknown, reply with {"error": "unknown task"}.'
     ),
-    tools=[AgentTool(intake_agent), AgentTool(zoning_agent), RegistryToolset()],
+    tools=[SafeAgentTool(intake_agent), SafeAgentTool(zoning_agent), RegistryToolset()],
 )

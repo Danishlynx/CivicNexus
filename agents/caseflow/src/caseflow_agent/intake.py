@@ -9,7 +9,8 @@ from caseflow_agent.schemas import ApplicationOut
 
 intake_agent = Agent(
     name="intake",
-    mode="single_turn",
+    # No mode: as an AgentTool root it must NOT be single_turn — the tool's
+    # private Runner rejects single_turn roots (ADR-004).
     model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
     generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
     description="Parses a raw permit application into a structured form and flags missing items.",

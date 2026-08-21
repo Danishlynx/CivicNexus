@@ -93,7 +93,9 @@ def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
 
     from caseflow_agent.reply_parsing import last_json_object
 
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT", os.environ.get("PROJECT_ID", ""))
+    # PROJECT_ID first for consistency with the Firestore path (aiplatform
+    # accepts number form, but one convention beats two).
+    project = os.environ.get("PROJECT_ID") or os.environ.get("GOOGLE_CLOUD_PROJECT", "")
     region = os.environ.get("RAG_LOCATION", "us-central1")
     client = vertexai.Client(project=project, location=region)
     remote = client.agent_engines.get(name=endpoint)
