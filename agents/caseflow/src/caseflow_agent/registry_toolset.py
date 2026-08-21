@@ -14,6 +14,7 @@ a Google-signed ID token for the Cloud Run leg, per the ratified auth planes.
 """
 
 import json
+import logging
 import os
 from collections.abc import Callable
 from typing import Any
@@ -130,9 +131,13 @@ class RegistryToolset(BaseToolset):
         try:
             cards = fetch_approved_cards(self._capability)
         except Exception:
-            # Fail CLOSED for dynamic capability, loud in the trace: no
-            # registry answer means no remote tools this turn — the fixed
-            # in-process specialists still work.
+            # Fail CLOSED: no registry answer means no remote tools this
+            # turn — the fixed in-process specialists still work. Stdlib
+            # logging (not libs/otel, which is outside the deployed dep set)
+            # so the swallowed cause reaches Cloud Logging.
+            logging.getLogger("caseflow.registry_toolset").exception(
+                "registry fetch failed; failing closed with no remote tools"
+            )
             return []
         return [_make_consult_tool(card) for card in cards]
 

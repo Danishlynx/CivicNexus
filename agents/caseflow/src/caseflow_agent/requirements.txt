@@ -4,3 +4,6 @@
 google-cloud-aiplatform[agent_engines,adk]==1.164.0
 google-adk[otel-gcp]==2.7.1
 pandas==3.0.5
+# B-007 interim (ADR-003 addendum): REGISTRY_MODE=firestore reads the card
+# store directly. Absence of this pin fail-closed the toolset on 2026-08-21.
+google-cloud-firestore==2.28.1

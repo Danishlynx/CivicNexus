@@ -5,7 +5,18 @@ paths, recommendation, who acts.
 
 ---
 
-## B-008 — Local terraform.tfstate truncated to 0 bytes (OPEN; recovery ready, one human command)
+## B-008 — Local terraform.tfstate truncated to 0 bytes — RESOLVED 2026-08-21
+
+**Resolution:** Human ran the one-line restore (Path 1). Verified: state file
+is a byte-exact match of the backup (106,633 bytes, serial 120); `terraform
+plan` against it shows exactly `1 to add, 0 to change, 0 to destroy` — the
+already-live `caseflow_registry_read_interim` grant awaiting adoption into
+state; the three destroyed east resources refreshed away cleanly. The
+adoption `apply` is pending (agent sandbox blocks terraform apply; the
+command is in PROGRESS.md for the human — it makes no real-world change).
+**Lesson carried forward:** a Terraform run that exits non-zero at the END
+of an apply is treated as a state-integrity event, not display noise —
+check the state file immediately.
 
 **Symptom (2026-08-21):** `infra/terraform/terraform.tfstate` is 0 bytes
 (timestamp matches the tail of the east-teardown apply, which exited 255 —
