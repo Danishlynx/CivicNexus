@@ -92,6 +92,18 @@ resource "google_service_account_iam_member" "harness_token_creator" {
   member             = "user:danishlynx@gmail.com"
 }
 
+# Human-authorized 2026-08-21 (B-007 interim ask): roles/datastore.viewer →
+# sa-caseflow — reason: the coordinator reads APPROVED cards from
+# registry_agents directly while Google's edge won't route the registry
+# service (ADR-003 addendum). Read-only. Firestore has no row-level IAM, so
+# the grant is datastore-wide (§6.1 acknowledged limitation). REMOVE when
+# reverting to REGISTRY_MODE=http.
+resource "google_project_iam_member" "caseflow_registry_read_interim" {
+  project = var.project_id
+  role    = "roles/datastore.viewer"
+  member  = "serviceAccount:${google_service_account.agents["sa-caseflow"].email}"
+}
+
 # Human-authorized 2026-08-20 (item c): Data Access audit logs for Vertex —
 # reason: the deliberate-deny test must produce an auditable 403 entry.
 resource "google_project_iam_audit_config" "aiplatform_data_access" {
