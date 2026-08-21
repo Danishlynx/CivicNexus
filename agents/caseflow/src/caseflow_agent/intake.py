@@ -5,6 +5,7 @@ import os
 from google.adk.agents import Agent
 from google.genai import types as genai_types
 
+from caseflow_agent.model_callbacks import strip_identity
 from caseflow_agent.schemas import ApplicationOut
 
 intake_agent = Agent(
@@ -29,4 +30,5 @@ intake_agent = Agent(
         "the application."
     ),
     output_schema=ApplicationOut,
+    before_model_callback=strip_identity,
 )
