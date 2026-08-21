@@ -307,3 +307,5 @@ lands: alerts track gross spend, so thresholds behave the same; the Phase 5
 full-eval budget conversation gets easier.
 
 **Run 4 (2026-08-21 night): baseline-parity payloads deployed; gate RED 0.42; demo auto-skipped (no wasted spend). Payload-shape hypothesis FALSIFIED. Fidelity stable (groundedness 1.00 x3, citations 0.96/1.00). Tuesday order: (1) strip framework identity SI block via before_model_callback (audit-isolated suspect, ~5-line change); (2) Pro-at-decision ablation; (3) revert-hybrid fallback (proven 80%).**
+
+**Run 5 (identity-strip): RED 0.50. Citations now perfect (1.00/1.00), groundedness 1.00 x4 — fidelity fully solved. Both cheap suspects falsified. Tuesday: go STRAIGHT to the revert-hybrid (proven-80% transfer wiring for evals + deterministic demo-only composition) — highest-confidence path (~85-90%) — with the Pro-at-decision ablation as the accuracy play on top. Note: one 2518s case with ServerError retries; baseline smoke subset itself may carry variance (B-006 measured 65-80% swings).**
