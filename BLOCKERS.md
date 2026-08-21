@@ -205,3 +205,11 @@ application-default login` on this machine. `make bootstrap`, agent deploy, and
 
 **Recommendation:** Path 2 if eligibility allows (free money, deadline is before
 freeze) — otherwise Path 1 unchanged. The cost guard stays regardless of who pays.
+
+**Update (2026-08-21):** Human submitted the $150 hackathon credit form (a
+week ahead of its Aug 28 deadline); arrival expected ~Mon Aug 24. Until the
+credit is VISIBLE on the billing page, nothing changes: personal money is
+still what's being spent, so the eval-spend rule, per-run OKs, push
+batching, and the ₹13,000 ceiling all stay exactly as they are. When it
+lands: alerts track gross spend, so thresholds behave the same; the Phase 5
+full-eval budget conversation gets easier.
