@@ -61,7 +61,23 @@ degrades findings to request_info. The verifier is working as designed;
 the echo is the defect. (Predicted as RISK by the pre-deploy verification:
 "the coordinator's echo is now the single point of parse".)
 
-**Proposed fix (verification in progress before any ask): deterministic
+**Final status 2026-08-21 (STOPPED, resume Tuesday):** deterministic
+composition + deterministic input both deployed. Measured across two gated
+runs: groundedness 0.67→1.00 (stable), citation P/R 0.96/1.00 (best ever),
+leaks 0, crashes 0, network losses 0 — both fidelity regressions
+STRUCTURALLY FIXED. Decision accuracy 0.42→0.50, still below the 0.85 gate
+and the old wiring's 11/12 on this subset. Remaining misses are the
+fact-hinged borderline set (003/004/007/009/015 churn between outcomes;
+cannabis 012 is the known baseline miss, 550s of retries). Hypotheses for
+Tuesday, in order: (1) zoning's effective context shape under the private
+Runner differs subtly from the node path despite identical input text
+(include_contents semantics — diff the actual LLM request via trace);
+(2) decision-rule prompt interacts with the tool-call framing;
+(3) Pro-at-decision-step lever (roster now open) as measured ablation.
+NO further spend today per the human's ruling. Everything committed;
+this entry + FAILURES.md F12 are the cold-start handoff.
+
+**Original proposal record — deterministic
 composition** — specialist/consult tools stash their validated dicts into
 session state; an after_agent_callback composes the final reply in code
 (intake verbatim / zoning verbatim / findings+missing_capability), making
