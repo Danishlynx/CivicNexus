@@ -45,6 +45,30 @@ mid-stream. Engine logs (Cloud Logging, both tracebacks captured) show:
 **Recommendation:** Path 1 + eval-smoke. **Human decides (ratification +
 spend).**
 
+**Update (2026-08-21 evening) — re-wiring deployed; eval-smoke gate RED;
+new mechanism isolated.** The AgentTool wiring (ADR-004 + addendum fixes)
+deployed cleanly and produced ZERO validation crashes — the original B-009
+crash mechanism is confirmed fixed. But the 12-case smoke gate failed:
+accuracy 3/8 scoreable (4 cases unscoreable: local DNS flaps — B-003 — and
+one 81-min hang ending in server disconnect). Per-case diff vs the
+2026-08-19 locked baseline shows **4 clean regressions, all
+request_info, all with verifier_first_pass=False + retried=True**
+(golden-007/-009/-015/-016; baseline OK on all four). Mechanism: the
+coordinator now ECHOES the zoning dict as its final reply, and the
+groundedness verifier requires byte-exact verbatim quotes — LLM re-typing
+corrupts quotes, verifier fails first pass, and the critique-retry
+degrades findings to request_info. The verifier is working as designed;
+the echo is the defect. (Predicted as RISK by the pre-deploy verification:
+"the coordinator's echo is now the single point of parse".)
+
+**Proposed fix (verification in progress before any ask): deterministic
+composition** — specialist/consult tools stash their validated dicts into
+session state; an after_agent_callback composes the final reply in code
+(intake verbatim / zoning verbatim / findings+missing_capability), making
+quotes byte-exact by construction for BOTH eval and demo paths. LLM
+routes; code composes. Design being verified against ADK source by a
+3-agent read-only pass before ratification + spend ask.
+
 ## B-008 — Local terraform.tfstate truncated to 0 bytes — RESOLVED 2026-08-21
 
 **Resolution:** Human ran the one-line restore (Path 1). Verified: state file
