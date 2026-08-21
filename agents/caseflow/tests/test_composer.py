@@ -99,3 +99,36 @@ def test_unknown_task_and_totality() -> None:
 def test_zoning_finding_unavailable_fails_closed() -> None:
     reply = _reply({"task": "review", "capabilities": ["zoning"]}, {})
     assert reply == {"error": "zoning finding unavailable"}
+
+
+def test_specialist_request_baseline_parity() -> None:
+    """B-009 final: specialists get the BARE application (measured-80% shape),
+    never the task envelope; zoning gets the critique injected on retries."""
+    from caseflow_agent.coordinator import _specialist_request
+
+    app = {"permit_type": "garage_conversion", "project_description": "640sf ADU"}
+    msg = json.dumps({"task": "review", "application": app, "capabilities": ["zoning"]})
+    assert _specialist_request("zoning", msg) == json.dumps(app)
+
+    retry = json.dumps({"task": "review", "application": app, "verifier_critique": "quote 2"})
+    assert json.loads(_specialist_request("zoning", retry) or "") == {
+        **app,
+        "verifier_critique": "quote 2",
+    }
+
+    intake_msg = json.dumps(
+        {"task": "intake", "application": "<<<APPLICATION>>>hi<<<END APPLICATION>>>"}
+    )
+    assert _specialist_request("intake", intake_msg) == "<<<APPLICATION>>>hi<<<END APPLICATION>>>"
+
+    assert _specialist_request("zoning", "not json") is None
+    assert _specialist_request("zoning", json.dumps({"task": "review"})) is None
+
+
+def test_specialists_include_contents_none() -> None:
+    """Baseline parity: the node path forced include_contents='none'."""
+    from caseflow_agent.intake import intake_agent
+    from caseflow_agent.zoning import zoning_agent
+
+    assert intake_agent.include_contents == "none"
+    assert zoning_agent.include_contents == "none"

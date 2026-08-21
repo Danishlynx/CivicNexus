@@ -25,6 +25,32 @@ from caseflow_agent.registry_toolset import RegistryToolset
 from caseflow_agent.zoning import zoning_agent
 
 
+def _specialist_request(agent_name: str, original: str) -> str | None:
+    """Baseline-parity payload, extracted in code (never LLM-retyped).
+
+    The measured-80% wiring fed specialists the BARE application — intake
+    got the raw text, zoning got the application dict (with the
+    verifier_critique injected as a field on retries, which zoning's
+    instruction explicitly handles). Handing zoning the whole task envelope
+    instead measurably degraded borderline decisions (B-009 final runs).
+    Returns None when the original message is unusable — caller falls back
+    to the LLM-typed request.
+    """
+    try:
+        message = json.loads(original)
+        application = message.get("application")
+        if application is None:
+            return None
+        if agent_name == "intake":
+            return application if isinstance(application, str) else json.dumps(application)
+        payload = dict(application) if isinstance(application, dict) else {"data": application}
+        if "verifier_critique" in message:
+            payload["verifier_critique"] = message["verifier_critique"]
+        return json.dumps(payload)
+    except Exception:
+        return None
+
+
 class SafeAgentTool(AgentTool):
     """AgentTool whose failures return to the model instead of raising.
 
@@ -34,16 +60,15 @@ class SafeAgentTool(AgentTool):
     """
 
     async def run_async(self, *, args: dict[str, Any], tool_context: Any) -> Any:
-        # Deterministic INPUT leg (B-009 final form): the LLM-typed request
-        # loses decision-critical facts (measured: fact-hinged cases degrade
-        # to request_info). Feed the specialist the ORIGINAL user message —
-        # byte-identical to the input the 80%-baseline wiring gave it. The
+        # Deterministic INPUT leg (B-009 final form): extract the
+        # baseline-parity payload from the ORIGINAL message in code. The
         # LLM's arg is only the trigger; code owns what flows through.
         try:
             content = tool_context.user_content
             original = "".join(p.text or "" for p in content.parts) if content else ""
-            if original.strip():
-                args = {"request": original}
+            request = _specialist_request(self.agent.name, original)
+            if request:
+                args = {"request": request}
         except Exception:
             pass
         try:
