@@ -305,3 +305,5 @@ still what's being spent, so the eval-spend rule, per-run OKs, push
 batching, and the ₹13,000 ceiling all stay exactly as they are. When it
 lands: alerts track gross spend, so thresholds behave the same; the Phase 5
 full-eval budget conversation gets easier.
+
+**Run 4 (2026-08-21 night): baseline-parity payloads deployed; gate RED 0.42; demo auto-skipped (no wasted spend). Payload-shape hypothesis FALSIFIED. Fidelity stable (groundedness 1.00 x3, citations 0.96/1.00). Tuesday order: (1) strip framework identity SI block via before_model_callback (audit-isolated suspect, ~5-line change); (2) Pro-at-decision ablation; (3) revert-hybrid fallback (proven 80%).**
