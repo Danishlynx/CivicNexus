@@ -5,6 +5,40 @@ paths, recommendation, who acts.
 
 ---
 
+## B-008 — Local terraform.tfstate truncated to 0 bytes (OPEN; recovery ready, one human command)
+
+**Symptom (2026-08-21):** `infra/terraform/terraform.tfstate` is 0 bytes
+(timestamp matches the tail of the east-teardown apply, which exited 255 —
+that exit code was a real state-write failure, not display noise as first
+assessed). `terraform plan` therefore proposes creating all 66 resources
+from scratch. **No apply was run against the empty state — caught at plan.**
+
+**Recovery assets:** `terraform.tfstate.backup` (106,633 bytes, serial 120,
+29 resources, valid JSON — verified) was written seconds before the
+truncation and reflects the world minus the three already-destroyed east
+resources. A second copy is parked in the session scratchpad. The build
+agent's attempts to restore it (file copy; `terraform state push`) were
+blocked by the permission sandbox — restoring state is a human-run step.
+
+**Paths:**
+1. Human runs, from `infra/terraform/`:
+   `Copy-Item terraform.tfstate.backup terraform.tfstate -Force`
+   then the agent runs `terraform plan` (with the registry image var) to
+   confirm the only real diff is the already-committed
+   `caseflow_registry_read_interim` grant (already applied via gcloud —
+   plan should show it as create; apply reconciles state with reality).
+   The three east resources will refresh away as already-deleted.
+2. `terraform import` of all 29 resources into fresh state — hours of
+   error-prone work; strictly worse.
+
+**Recommendation:** Path 1 — one command, then the agent reconciles.
+**Human acts (one line); agent verifies after.**
+
+**Interim consequence honestly recorded:** the approved datastore.viewer
+grant for sa-caseflow was applied via gcloud instead of Terraform (directive
+6 manual-unblock clause) — the TF resource is committed, so reconciliation
+is automatic once state is restored.
+
 ## B-007 — Cloud Run URLs unroutable at Google's edge (OPEN; platform anomaly)
 
 **Symptom (2026-08-20):** `civicnexus-registry` deploys Ready
