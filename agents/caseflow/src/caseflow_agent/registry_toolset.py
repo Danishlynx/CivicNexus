@@ -39,8 +39,7 @@ def _id_token(audience: str) -> str:
     return token
 
 
-def fetch_approved_cards(capability: str | None = None) -> list[dict[str, Any]]:
-    """APPROVED cards from the registry service. Fails loud, never fails open."""
+def _fetch_via_http(capability: str | None) -> list[dict[str, Any]]:
     import httpx
 
     base = _registry_url()
@@ -58,6 +57,29 @@ def fetch_approved_cards(capability: str | None = None) -> list[dict[str, Any]]:
     response.raise_for_status()
     cards: list[dict[str, Any]] = response.json()
     return cards
+
+
+def _fetch_via_firestore(capability: str | None) -> list[dict[str, Any]]:
+    """B-007 interim (human-ruled 2026-08-21): read registry_agents directly.
+
+    The approved-only filter lives IN THE QUERY — status == APPROVED — so the
+    tool-poisoning defense is identical to the HTTP path. Reverts to the
+    registry service when Google's edge routes it (see ADR-003 / B-007).
+    """
+    from google.cloud import firestore
+
+    db = firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT") or None)
+    query = db.collection("registry_agents").where("status", "==", "APPROVED")
+    if capability:
+        query = query.where("capabilities", "array_contains", capability)
+    return [card for snapshot in query.stream() if (card := snapshot.to_dict()) is not None]
+
+
+def fetch_approved_cards(capability: str | None = None) -> list[dict[str, Any]]:
+    """APPROVED cards only. Mode: REGISTRY_MODE=http (default) | firestore."""
+    if os.environ.get("REGISTRY_MODE", "http") == "firestore":
+        return _fetch_via_firestore(capability)
+    return _fetch_via_http(capability)
 
 
 def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:

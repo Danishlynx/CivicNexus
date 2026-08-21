@@ -56,6 +56,49 @@ resource "google_cloud_run_v2_service" "registry" {
   depends_on = [google_project_service.enabled]
 }
 
+# B-007 experiment (human-approved 2026-08-21): identical service in a second
+# region to test whether Google's edge routes it. Removed if it fails; becomes
+# the primary if it works.
+variable "registry_east_enabled" {
+  type    = bool
+  default = false
+}
+
+resource "google_cloud_run_v2_service" "registry_east" {
+  count               = var.registry_east_enabled && var.registry_image != "" ? 1 : 0
+  name                = "civicnexus-registry"
+  location            = "us-east1"
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
+
+  template {
+    service_account = google_service_account.registry.email
+    scaling {
+      max_instance_count = 2
+    }
+    containers {
+      image = var.registry_image
+      env {
+        name  = "PROJECT_ID"
+        value = var.project_id
+      }
+    }
+  }
+
+  depends_on = [google_project_service.enabled]
+}
+
+resource "google_cloud_run_v2_service_iam_member" "registry_east_invokers" {
+  for_each = var.registry_east_enabled && var.registry_image != "" ? {
+    caseflow = "serviceAccount:sa-caseflow@${var.project_id}.iam.gserviceaccount.com"
+    human    = "user:danishlynx@gmail.com"
+  } : {}
+  name     = google_cloud_run_v2_service.registry_east[0].name
+  location = "us-east1"
+  role     = "roles/run.invoker"
+  member   = each.value
+}
+
 # Deny-by-default invokers: ONLY these principals may call the registry.
 # (No allUsers binding anywhere — unauthenticated requests never reach the app.)
 resource "google_cloud_run_v2_service_iam_member" "registry_invokers" {

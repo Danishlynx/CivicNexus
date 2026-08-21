@@ -35,6 +35,30 @@ first budget alert) — the wait-path holds. Everything hot-add-shaped is
 built and committed (demo script, matrix hook, make target) so the demo is
 runnable within minutes of the edge healing.
 
+**Ruling (2026-08-21, human):** "Try second region, else Firestore-direct."
+Executed:
+- Second region: identical service deployed to **us-east1** via Terraform
+  (`registry_east_enabled`). Its run.app URL returned the SAME generic edge
+  404 (anonymous and authenticated). Conclusion hardened: the anomaly is
+  **project-wide**, not regional. East service destroyed same day (zero
+  residual cost).
+- Fallback active: **Firestore-direct interim.** `REGISTRY_MODE=firestore`
+  makes the coordinator toolset read `registry_agents` directly
+  (`status == "APPROVED"` filter in the query — the tool-poisoning defense
+  is unchanged), and `demo_hotadd.py` registers/approves via the
+  RegistryStore library under the human's ADC identity, preserving the
+  PENDING→APPROVED lifecycle, guards, and audit fields. Unit-tested
+  (dispatch + query-filter tests). Honest deviation cost: the Cloud Run
+  policy boundary (per-principal invoker IAM) is bypassed for reads;
+  Firestore has no row-level IAM, so the read grant is datastore-wide
+  (§6.1 already acknowledges this limitation). Reverts to the HTTP path
+  (flip env var, redeploy) the moment Google's edge routes the service.
+  Recorded in ADR-003 addendum.
+
+**Status: fallback ruled and implemented; blocker remains OPEN against
+Google's edge** (the registry service stays deployed; re-probe before
+Phase 6 managed-mode work).
+
 ## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, by design honest)
 
 **Symptom:** Five full PermitBench runs (2026-08-19, 20 cases each, live stack):

@@ -31,7 +31,8 @@ eval-smoke:
 eval-full:
 	@uv run python -m evals.runner --report && echo PASS: make eval-full || (echo FAIL: make eval-full && exit 1)
 
-# Needs REGISTRY_URL + PROJECT_ID env and APPROVER=<human email> make-var.
+# Needs PROJECT_ID env, APPROVER=<human email> make-var, and either
+# REGISTRY_URL or REGISTRY_MODE=firestore (B-007 interim, ADR-003 addendum).
 # Each run deploys/uses billable resources - run with the human's OK.
 demo-hotadd:
 	@uv run python scripts/demo_hotadd.py --approver $(APPROVER) && echo PASS: make demo-hotadd || (echo FAIL: make demo-hotadd && exit 1)

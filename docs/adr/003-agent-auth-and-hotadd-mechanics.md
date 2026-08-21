@@ -104,3 +104,29 @@ instance deleted after the test.
 - The gateway's role for engine↔engine legs shifts to policy/screening/audit
   (allowlists, Model Armor, rate limits), with platform IAM enforcing
   identity underneath — defense in depth rather than a single choke point.
+
+## Addendum (2026-08-21): B-007 Firestore-direct interim for registry reads
+
+The registry service deploys healthy but its run.app URLs are unroutable at
+Google's edge — **project-wide**, proven by an identical us-east1 deployment
+404ing the same way (B-007; east service destroyed after the test). Human
+ruling 2026-08-21: "Try second region, else Firestore-direct."
+
+**Interim mechanism (`REGISTRY_MODE=firestore`):**
+- The coordinator's dynamic toolset reads `registry_agents` directly from
+  Firestore. The mandatory approved-only filter (decision 3) moves INTO the
+  query (`status == "APPROVED"`, plus capability `array_contains`) — the
+  tool-poisoning defense is structurally identical.
+- Demo drivers register/approve through the `RegistryStore` library (same
+  lifecycle guards, same transition table, same audit fields) under the
+  human's ADC identity instead of the HTTP API.
+
+**Honest deviation:** reads bypass the Cloud Run policy boundary
+(per-principal `run.invoker` IAM). Firestore offers no row-level IAM, so
+sa-caseflow's read grant is datastore-scoped (limitation already acknowledged
+in §6.1). Writes in the interim happen only under the human's own identity.
+
+**Reversion condition:** flip `REGISTRY_MODE` back to `http` and redeploy the
+coordinator the moment the edge routes the service. The registry service and
+its invoker policy stay deployed and authoritative throughout; the interim is
+a read-path detour, not a redesign.

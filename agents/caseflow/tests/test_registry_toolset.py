@@ -52,6 +52,59 @@ def test_no_registry_url_means_no_tools(monkeypatch: pytest.MonkeyPatch) -> None
     assert registry_toolset.fetch_approved_cards() == []
 
 
+def test_firestore_mode_dispatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """REGISTRY_MODE=firestore routes to the interim path, never HTTP."""
+    called: dict[str, Any] = {}
+
+    def fake_firestore(capability: str | None) -> list[dict[str, Any]]:
+        called["capability"] = capability
+        return [CARD]
+
+    def no_http(capability: str | None) -> list[dict[str, Any]]:
+        raise AssertionError("HTTP path must not run in firestore mode")
+
+    monkeypatch.setenv("REGISTRY_MODE", "firestore")
+    monkeypatch.setattr(registry_toolset, "_fetch_via_firestore", fake_firestore)
+    monkeypatch.setattr(registry_toolset, "_fetch_via_http", no_http)
+
+    assert registry_toolset.fetch_approved_cards("tree_preservation") == [CARD]
+    assert called["capability"] == "tree_preservation"
+
+
+def test_firestore_query_filters_approved(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The tool-poisoning defense holds in the interim path: the status filter
+    is part of the Firestore QUERY, not post-hoc filtering in Python."""
+    filters: list[tuple[str, str, Any]] = []
+
+    class _Snapshot:
+        def to_dict(self) -> dict[str, Any]:
+            return CARD
+
+    class _Query:
+        def where(self, field: str, op: str, value: Any) -> "_Query":
+            filters.append((field, op, value))
+            return self
+
+        def stream(self) -> list[_Snapshot]:
+            return [_Snapshot()]
+
+    class _Client:
+        def __init__(self, project: str | None = None) -> None: ...
+        def collection(self, name: str) -> _Query:
+            filters.append(("__collection__", "==", name))
+            return _Query()
+
+    import google.cloud.firestore as firestore_mod
+
+    monkeypatch.setattr(firestore_mod, "Client", _Client)
+
+    cards = registry_toolset._fetch_via_firestore("tree_preservation")
+    assert cards == [CARD]
+    assert ("__collection__", "==", "registry_agents") in filters
+    assert ("status", "==", "APPROVED") in filters
+    assert ("capabilities", "array_contains", "tree_preservation") in filters
+
+
 def test_toolset_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(capability: str | None = None) -> list[dict[str, Any]]:
         raise RuntimeError("registry unreachable")

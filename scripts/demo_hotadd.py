@@ -11,7 +11,10 @@ The scripted, repeatable sequence the video shows live:
 5. AFTER: the same case runs again — the coordinator's registry toolset now
    builds consult_tree_preservation and routes to it. Nothing redeployed.
 
-Requires: REGISTRY_URL routable (B-007), caseflow rebound with REGISTRY_URL.
+Requires: REGISTRY_URL routable, caseflow rebound with REGISTRY_URL — OR the
+B-007 interim: REGISTRY_MODE=firestore (here and on the caseflow engine), in
+which case register/approve go through the RegistryStore library under the
+human's ADC identity (same lifecycle, same guards; see ADR-003 addendum).
 Each full run deploys/uses billable resources — run only with the human's OK.
 """
 
@@ -60,6 +63,46 @@ def _registry(method: str, path: str, body: dict[str, Any] | None = None) -> req
     )
 
 
+def _firestore_mode() -> bool:
+    return os.environ.get("REGISTRY_MODE", "http") == "firestore"
+
+
+def _register_and_approve_firestore(endpoint: str, approver: str) -> None:
+    """B-007 interim: same lifecycle, same guards, via the store library.
+
+    The human's ADC identity performs both actions; the approval names the
+    approver exactly as the HTTP path would.
+    """
+    from civicnexus.contracts import AgentCard, AgentStatus
+    from google.cloud import firestore
+    from registry.store import DuplicateCardError, RegistryStore
+
+    store = RegistryStore(firestore.Client(project=os.environ.get("PROJECT_ID")))
+    card = AgentCard(
+        agent_id="tree-preservation",
+        version=CARD_VERSION,
+        display_name="Tree preservation reviewer",
+        description="Reviews applications for impact on protected trees and landscaping.",
+        capabilities=["tree_preservation"],
+        endpoint=endpoint,
+    )
+    try:
+        store.register(card)
+        print(f"demo_hotadd: registered tree-preservation@{CARD_VERSION} (PENDING)")
+    except DuplicateCardError:
+        print(f"demo_hotadd: tree-preservation@{CARD_VERSION} already registered (re-run)")
+    current = store.get("tree-preservation", CARD_VERSION)
+    if current.status is not AgentStatus.APPROVED:
+        store.change_status(
+            "tree-preservation",
+            CARD_VERSION,
+            AgentStatus.APPROVED,
+            actor=approver,
+            human_actor=True,
+        )
+    print(f"demo_hotadd: APPROVED by {approver}")
+
+
 def _review(message_extra: dict[str, Any]) -> dict[str, Any]:
     import vertexai
     from civicnexus.tools import query_json
@@ -85,8 +128,12 @@ def main() -> int:
     args = parser.parse_args()
 
     project = os.environ.get("PROJECT_ID")
-    if not project or not os.environ.get("REGISTRY_URL"):
-        print("demo_hotadd: PROJECT_ID and REGISTRY_URL are required", file=sys.stderr)
+    if not project or (not _firestore_mode() and not os.environ.get("REGISTRY_URL")):
+        print(
+            "demo_hotadd: PROJECT_ID required; REGISTRY_URL required unless "
+            "REGISTRY_MODE=firestore",
+            file=sys.stderr,
+        )
         return 1
 
     # 1. BEFORE: capability has no approved specialist.
@@ -122,33 +169,39 @@ def main() -> int:
             return 1
     endpoint = json.loads(TREEPRES_STATE.read_text(encoding="utf-8-sig"))["resource_name"]
 
-    register = _registry(
-        "POST",
-        "/agents",
-        {
-            "agent_id": "tree-preservation",
-            "version": CARD_VERSION,
-            "display_name": "Tree preservation reviewer",
-            "description": "Reviews applications for impact on protected trees and landscaping.",
-            "capabilities": ["tree_preservation"],
-            "endpoint": endpoint,
-        },
-    )
-    if register.status_code not in (201, 409):  # 409 = already registered (re-run)
-        print(f"demo_hotadd: registration failed: {register.status_code} {register.text}")
-        return 1
-    print(f"demo_hotadd: registered tree-preservation@{CARD_VERSION} (PENDING)")
+    if _firestore_mode():
+        # 2b+3. Register (PENDING) then human approval, via the store library.
+        _register_and_approve_firestore(endpoint, args.approver)
+    else:
+        register = _registry(
+            "POST",
+            "/agents",
+            {
+                "agent_id": "tree-preservation",
+                "version": CARD_VERSION,
+                "display_name": "Tree preservation reviewer",
+                "description": (
+                    "Reviews applications for impact on protected trees and landscaping."
+                ),
+                "capabilities": ["tree_preservation"],
+                "endpoint": endpoint,
+            },
+        )
+        if register.status_code not in (201, 409):  # 409 = already registered (re-run)
+            print(f"demo_hotadd: registration failed: {register.status_code} {register.text}")
+            return 1
+        print(f"demo_hotadd: registered tree-preservation@{CARD_VERSION} (PENDING)")
 
-    # 3. THE HUMAN approves — the moment the demo pivots on.
-    approve = _registry(
-        "POST",
-        f"/agents/tree-preservation/{CARD_VERSION}/approve",
-        {"actor": args.approver, "human_actor": True},
-    )
-    if approve.status_code != 200:
-        print(f"demo_hotadd: approval failed: {approve.status_code} {approve.text}")
-        return 1
-    print(f"demo_hotadd: APPROVED by {args.approver}")
+        # 3. THE HUMAN approves — the moment the demo pivots on.
+        approve = _registry(
+            "POST",
+            f"/agents/tree-preservation/{CARD_VERSION}/approve",
+            {"actor": args.approver, "human_actor": True},
+        )
+        if approve.status_code != 200:
+            print(f"demo_hotadd: approval failed: {approve.status_code} {approve.text}")
+            return 1
+        print(f"demo_hotadd: APPROVED by {args.approver}")
 
     # 4. Access matrix: coordinator may now consult the new engine.
     matrix = subprocess.run(
