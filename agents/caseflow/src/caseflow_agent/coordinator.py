@@ -12,6 +12,7 @@ inside the tool call, and the coordinator (no output schema) always owns
 the final composition.
 """
 
+import json
 import os
 from typing import Any
 
@@ -34,9 +35,91 @@ class SafeAgentTool(AgentTool):
 
     async def run_async(self, *, args: dict[str, Any], tool_context: Any) -> Any:
         try:
-            return await super().run_async(args=args, tool_context=tool_context)
+            result = await super().run_async(args=args, tool_context=tool_context)
         except Exception as exc:
-            return {"error": f"{type(exc).__name__}: {exc}"}
+            result = {"error": f"{type(exc).__name__}: {exc}"}
+        name = self.agent.name
+        if isinstance(result, dict) and "error" not in result:
+            plain = json.loads(json.dumps(result))
+            tool_context.state[f"temp:civicnexus:finding:{name}"] = plain
+            return plain
+        detail = result.get("error") if isinstance(result, dict) else str(result)
+        tool_context.state[f"temp:civicnexus:error:{name}"] = detail
+        return result
+
+
+_FINDING_PREFIX = "temp:civicnexus:finding:"
+_ERROR_PREFIX = "temp:civicnexus:error:"
+
+
+def compose_reply(callback_context: Any) -> genai_types.Content | None:
+    """Deterministic final reply: the LLM routes, this code composes.
+
+    Fixes the measured echo-infidelity regression (B-009 update): findings
+    reach the wire byte-exact from the specialists' validated dicts, never
+    re-typed by the model. Appended as the LAST content event — every repo
+    client takes the last JSON object, so this is the authoritative reply.
+
+    Total by design: a raised callback aborts the whole billed invocation,
+    so every failure path returns parseable fail-closed JSON instead.
+    Valid ONLY while the coordinator is the ROOT agent (chat mode): as a
+    single_turn workflow node this callback's role='model' Content would
+    collide with the node's single-output rule (offline repro in ADR-004
+    addendum 2). Known skip mode: if the flow sets end_invocation mid-run
+    (auth interrupts, plugin aborts) the callback never fires and the raw
+    LLM text stands — fail-closed at the consumer's validator.
+    """
+    try:
+        content = callback_context.user_content
+        raw = "".join(p.text or "" for p in content.parts) if content and content.parts else ""
+        message = json.loads(raw)
+        state = callback_context.state.to_dict()
+        findings = {
+            k[len(_FINDING_PREFIX) :]: v for k, v in state.items() if k.startswith(_FINDING_PREFIX)
+        }
+        errors = {
+            k[len(_ERROR_PREFIX) :]: v for k, v in state.items() if k.startswith(_ERROR_PREFIX)
+        }
+        task = message.get("task")
+        reply: dict[str, Any]
+        if task == "intake":
+            reply = findings.get(
+                "intake", {"error": errors.get("intake", "intake finding unavailable")}
+            )
+        elif task == "review":
+            requested = [str(c) for c in (message.get("capabilities") or ["zoning"])]
+            if requested == ["zoning"]:
+                # Bare dict, no envelope: the graders validate extra="forbid".
+                reply = findings.get(
+                    "zoning", {"error": errors.get("zoning", "zoning finding unavailable")}
+                )
+            else:
+                reply = {
+                    "findings": [
+                        {"capability": cap, "finding": findings[cap]}
+                        for cap in requested
+                        if cap in findings
+                    ]
+                }
+                errored = [
+                    {"capability": cap, "error": errors[cap]}
+                    for cap in requested
+                    if cap not in findings and cap in errors
+                ]
+                if errored:
+                    reply["errors"] = errored
+                # Key OMITTED when nothing is missing (demo asserts on raw
+                # substring); errored specialists are NOT "missing".
+                missing = [c for c in requested if c not in findings and c not in errors]
+                if missing:
+                    reply["missing_capability"] = missing[0]
+        else:
+            reply = {"error": "unknown task"}
+    except Exception as exc:
+        reply = {"error": f"composer: {type(exc).__name__}: {exc}"}
+    return genai_types.Content(
+        role="model", parts=[genai_types.Part.from_text(text=json.dumps(reply))]
+    )
 
 
 coordinator = Agent(
@@ -73,4 +156,5 @@ coordinator = Agent(
         'is missing or unknown, reply with {"error": "unknown task"}.'
     ),
     tools=[SafeAgentTool(intake_agent), SafeAgentTool(zoning_agent), RegistryToolset()],
+    after_agent_callback=compose_reply,
 )
