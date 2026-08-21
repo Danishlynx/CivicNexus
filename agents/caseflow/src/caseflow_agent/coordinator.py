@@ -34,6 +34,18 @@ class SafeAgentTool(AgentTool):
     """
 
     async def run_async(self, *, args: dict[str, Any], tool_context: Any) -> Any:
+        # Deterministic INPUT leg (B-009 final form): the LLM-typed request
+        # loses decision-critical facts (measured: fact-hinged cases degrade
+        # to request_info). Feed the specialist the ORIGINAL user message —
+        # byte-identical to the input the 80%-baseline wiring gave it. The
+        # LLM's arg is only the trigger; code owns what flows through.
+        try:
+            content = tool_context.user_content
+            original = "".join(p.text or "" for p in content.parts) if content else ""
+            if original.strip():
+                args = {"request": original}
+        except Exception:
+            pass
         try:
             result = await super().run_async(args=args, tool_context=tool_context)
         except Exception as exc:

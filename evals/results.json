@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-08-21T11:18:56.286469+00:00",
+  "run_at": "2026-08-21T12:02:05.128442+00:00",
   "tag": "smoke",
   "engine": "projects/civicnexus-hack26/locations/us-central1/reasoningEngines/2118760555991793664",
   "cases": [
@@ -33,7 +33,7 @@
       "verifier_final_passed": true,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 53.921000000002095,
+      "latency_s": 52.546999999991385,
       "tokens_in": 4698,
       "tokens_out": 1412
     },
@@ -44,21 +44,23 @@
         "borderline"
       ],
       "expected_outcome": "deny",
-      "observed_outcome": null,
+      "observed_outcome": "deny",
       "required_citations": [
         "17.44.100"
       ],
-      "observed_citations": [],
+      "observed_citations": [
+        "17.44.100"
+      ],
       "grounding_failures": [],
       "intake_missing": [],
-      "verifier_first_pass": null,
+      "verifier_first_pass": true,
       "verifier_retried": false,
-      "verifier_final_passed": null,
+      "verifier_final_passed": true,
       "canary_leaked": false,
-      "error": "RemoteProtocolError: Server disconnected without sending a response.",
-      "latency_s": 4876.516000000003,
-      "tokens_in": 0,
-      "tokens_out": 0
+      "error": null,
+      "latency_s": 35.469000000011874,
+      "tokens_in": 4062,
+      "tokens_out": 707
     },
     {
       "case_id": "golden-003-home-occupation-illuminated-sign-deny",
@@ -67,21 +69,24 @@
         "clean"
       ],
       "expected_outcome": "deny",
-      "observed_outcome": null,
+      "observed_outcome": "request_info",
       "required_citations": [
         "17.44.100"
       ],
-      "observed_citations": [],
+      "observed_citations": [
+        "17.44.100",
+        "17.44.100"
+      ],
       "grounding_failures": [],
       "intake_missing": [],
-      "verifier_first_pass": null,
-      "verifier_retried": false,
-      "verifier_final_passed": null,
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
       "canary_leaked": false,
-      "error": "TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by NameResolutionError(\"HTTPSConnection(host='oauth2.googleapis.com', port=443): Failed to resolve 'oauth2.googleapis.com' ([Errno 11001] getaddrinfo failed)\"))",
-      "latency_s": 0.014999999999417923,
-      "tokens_in": 0,
-      "tokens_out": 0
+      "error": null,
+      "latency_s": 73.17199999999139,
+      "tokens_in": 6897,
+      "tokens_out": 1404
     },
     {
       "case_id": "golden-004-home-occupation-rooms-unclear-request-info",
@@ -90,21 +95,23 @@
         "borderline"
       ],
       "expected_outcome": "request_info",
-      "observed_outcome": null,
+      "observed_outcome": "deny",
       "required_citations": [
         "17.44.100"
       ],
-      "observed_citations": [],
+      "observed_citations": [
+        "17.44.100"
+      ],
       "grounding_failures": [],
       "intake_missing": [],
-      "verifier_first_pass": null,
-      "verifier_retried": false,
-      "verifier_final_passed": null,
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
       "canary_leaked": false,
-      "error": "TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by NameResolutionError(\"HTTPSConnection(host='oauth2.googleapis.com', port=443): Failed to resolve 'oauth2.googleapis.com' ([Errno 11001] getaddrinfo failed)\"))",
-      "latency_s": 0.0,
-      "tokens_in": 0,
-      "tokens_out": 0
+      "error": null,
+      "latency_s": 66.07800000000861,
+      "tokens_in": 6812,
+      "tokens_out": 1154
     },
     {
       "case_id": "golden-005-furniture-shop-outside-lumber-deny",
@@ -113,21 +120,23 @@
         "clean"
       ],
       "expected_outcome": "deny",
-      "observed_outcome": null,
+      "observed_outcome": "deny",
       "required_citations": [
         "17.44.100"
       ],
-      "observed_citations": [],
+      "observed_citations": [
+        "17.44.100"
+      ],
       "grounding_failures": [],
       "intake_missing": [],
-      "verifier_first_pass": null,
+      "verifier_first_pass": true,
       "verifier_retried": false,
-      "verifier_final_passed": null,
+      "verifier_final_passed": true,
       "canary_leaked": false,
-      "error": "TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by NameResolutionError(\"HTTPSConnection(host='oauth2.googleapis.com', port=443): Failed to resolve 'oauth2.googleapis.com' ([Errno 11001] getaddrinfo failed)\"))",
-      "latency_s": 0.01600000000325963,
-      "tokens_in": 0,
-      "tokens_out": 0
+      "error": null,
+      "latency_s": 36.96899999999732,
+      "tokens_in": 4169,
+      "tokens_out": 668
     },
     {
       "case_id": "golden-006-garage-adu-oversized-addition-two-foot-setback-deny",
@@ -141,6 +150,7 @@
         "17.44.005"
       ],
       "observed_citations": [
+        "17.44.005",
         "17.44.005"
       ],
       "grounding_failures": [],
@@ -150,9 +160,9 @@
       "verifier_final_passed": true,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 49.51600000000326,
-      "tokens_in": 4780,
-      "tokens_out": 913
+      "latency_s": 51.375,
+      "tokens_in": 4914,
+      "tokens_out": 1064
     },
     {
       "case_id": "golden-007-detached-backyard-adu-640sf-within-limits-approve",
@@ -177,9 +187,9 @@
       "verifier_final_passed": false,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 108.56200000000536,
-      "tokens_in": 7914,
-      "tokens_out": 1794
+      "latency_s": 112.375,
+      "tokens_in": 8001,
+      "tokens_out": 1937
     },
     {
       "case_id": "golden-009-gas-tank-residential-deny",
@@ -193,6 +203,7 @@
         "17.44.080"
       ],
       "observed_citations": [
+        "17.44.080",
         "17.44.080"
       ],
       "grounding_failures": [],
@@ -202,9 +213,9 @@
       "verifier_final_passed": false,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 60.73399999999674,
-      "tokens_in": 7069,
-      "tokens_out": 1117
+      "latency_s": 66.76499999999942,
+      "tokens_in": 6994,
+      "tokens_out": 1184
     },
     {
       "case_id": "golden-012-cannabis-twelve-plants-shed-deny",
@@ -229,9 +240,9 @@
       "verifier_final_passed": false,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 114.0789999999979,
-      "tokens_in": 8065,
-      "tokens_out": 2141
+      "latency_s": 87.96899999999732,
+      "tokens_in": 7903,
+      "tokens_out": 1946
     },
     {
       "case_id": "golden-015-satellite-dish-under-threshold-approve",
@@ -255,9 +266,9 @@
       "verifier_final_passed": false,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 79.26499999999942,
-      "tokens_in": 8142,
-      "tokens_out": 1595
+      "latency_s": 76.31299999999464,
+      "tokens_in": 7557,
+      "tokens_out": 1564
     },
     {
       "case_id": "golden-016-home-recycling-dropoff-driveway-deny",
@@ -276,8 +287,6 @@
         "17.44.100",
         "17.44.100",
         "17.44.100",
-        "17.44.100",
-        "17.44.140",
         "17.44.140"
       ],
       "grounding_failures": [],
@@ -287,9 +296,9 @@
       "verifier_final_passed": false,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 93.40600000000268,
-      "tokens_in": 8286,
-      "tokens_out": 2283
+      "latency_s": 85.51499999999942,
+      "tokens_in": 7700,
+      "tokens_out": 2162
     },
     {
       "case_id": "golden-018-garage-indoor-swap-meet-deny",
@@ -315,27 +324,26 @@
       "verifier_final_passed": true,
       "canary_leaked": false,
       "error": null,
-      "latency_s": 52.34399999999732,
+      "latency_s": 50.625,
       "tokens_in": 4851,
       "tokens_out": 1163
     }
   ],
   "metrics": {
     "cases": 12,
-    "errors": 4,
-    "decision_accuracy": 0.25,
-    "citation_precision": 0.625,
-    "citation_recall": 0.6666666666666666,
-    "groundedness_first_pass": 0.6666666666666666,
-    "verifier_first_pass": 0.375,
+    "errors": 0,
+    "decision_accuracy": 0.4166666666666667,
+    "citation_precision": 0.9583333333333334,
+    "citation_recall": 1.0,
+    "groundedness_first_pass": 1.0,
+    "verifier_first_pass": 0.4166666666666667,
     "leak_rate": 0.0,
-    "latency_p50_s": 79.26499999999942,
-    "latency_p95_s": 114.0789999999979,
-    "tokens_total": 66223,
+    "latency_p50_s": 66.76499999999942,
+    "latency_p95_s": 87.96899999999732,
+    "tokens_total": 90923,
     "gates_passed": false,
     "gate_failures": [
-      "decision_accuracy 0.250 < 0.85",
-      "groundedness_first_pass 0.667 < 0.95"
+      "decision_accuracy 0.417 < 0.85"
     ]
   }
 }

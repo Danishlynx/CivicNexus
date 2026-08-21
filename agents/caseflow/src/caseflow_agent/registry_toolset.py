@@ -126,7 +126,20 @@ def _make_consult_tool(card: dict[str, Any]) -> FunctionTool:
 
     def consult(request: str, tool_context: ToolContext) -> dict[str, Any]:
         try:
-            payload = json.dumps({"task": "review", "application": json.loads(request)})
+            # Deterministic input: prefer the ORIGINAL message's application
+            # over the LLM-retyped request (same fidelity rule as the fixed
+            # specialists; fall back to the arg if the original is unusable).
+            application: Any = None
+            try:
+                content = tool_context.user_content
+                parts = content.parts if content and content.parts else []
+                original = "".join(p.text or "" for p in parts)
+                application = json.loads(original).get("application")
+            except Exception:
+                application = None
+            if application is None:
+                application = json.loads(request)
+            payload = json.dumps({"task": "review", "application": application})
             result: dict[str, Any] = json.loads(json.dumps(_consult_remote(endpoint, payload)))
         except Exception as exc:
             message = f"{type(exc).__name__}: {exc}"
