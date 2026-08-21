@@ -140,6 +140,18 @@ console (typically takes days). The three remaining misses stay documented;
 ensemble voting remains the one untried lever (expected value ≈ one marginal
 case, does not address the consistent misses).
 
+**Addendum 2 (2026-08-21): the roster constraint above is STALE.** After the
+human found Pro cards in Model Garden, a fresh max-1-token probe per
+candidate on the global endpoint measured: `gemini-2.5-pro` AVAILABLE,
+`gemini-3.1-pro-preview` AVAILABLE, `gemini-3.6-flash` and
+`gemini-3.7-flash` AVAILABLE (control `gemini-3.5-flash` fine;
+`gemini-3-pro-preview` and `gemini-3.1-pro` are 404 — nonexistent IDs, not
+denials). Exact claim: these models each returned one successful generation
+on 2026-08-21; nothing is claimed about quota depth, latency, or eval
+accuracy. The Pro-at-decision-step lever is therefore AVAILABLE for the
+Phase 5 re-measurement — as a costed proposal with per-run OK (eval spend
+rule), not before. Phase discipline holds: no model changes mid-Phase-3.
+
 ## B-005 — "No traces from the hello agent" — RESOLVED 2026-08-18 (was a read-path gap, not a write failure)
 
 **Resolution (human console check at the gate):** Trace Explorer shows 24 spans
