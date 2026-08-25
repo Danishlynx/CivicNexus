@@ -88,20 +88,43 @@ def fetch_approved_cards(capability: str | None = None) -> list[dict[str, Any]]:
 
 
 def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
-    """Call a remote agent engine over :streamQuery and return its JSON reply."""
-    import vertexai
+    """Call a remote agent engine over raw REST :streamQuery.
+
+    Deliberately NOT the vertexai SDK: inside the engine runtime our
+    GOOGLE_CLOUD_LOCATION=global model-routing override (ADR-001 item 8)
+    poisons the SDK's endpoint resolution — consults stall against the
+    global endpoint and surface as 503 (isolated 2026-08-25: identical
+    call succeeds via explicit regional REST as sa-caseflow, hangs via SDK
+    with the override set). The regional URL here is immune to env.
+    """
+    import secrets
+
+    import google.auth
+    from google.auth.transport.requests import AuthorizedSession
 
     from caseflow_agent.reply_parsing import last_json_object
 
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT", os.environ.get("PROJECT_ID", ""))
     region = os.environ.get("RAG_LOCATION", "us-central1")
-    client = vertexai.Client(project=project, location=region)
-    remote = client.agent_engines.get(name=endpoint)
-    import secrets
-
-    events = list(
-        remote.stream_query(user_id=f"coordinator-{secrets.token_hex(4)}", message=task_payload)
-    )
+    credentials, _ = google.auth.default()
+    session = AuthorizedSession(credentials)  # type: ignore[no-untyped-call]
+    url = f"https://{region}-aiplatform.googleapis.com/v1beta1/{endpoint}:streamQuery"
+    body: Any = {
+        "class_method": "stream_query",
+        "input": {
+            "user_id": f"coordinator-{secrets.token_hex(4)}",
+            "message": task_payload,
+        },
+    }
+    response = session.post(url, json=body, timeout=300)
+    response.raise_for_status()
+    events: list[dict[str, Any]] = []
+    for line in response.text.splitlines():
+        line = line.strip()
+        if line:
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue  # partial/non-JSON stream chunk
     return last_json_object(events)
 
 
