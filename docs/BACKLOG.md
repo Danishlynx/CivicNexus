@@ -61,3 +61,5 @@ is ~dozens of generations. Estimate before running, per the spend rules.
 | Managed Agent Registry API (console shows "Not enabled"): enable via Terraform only, at the Phase 6 managed-bind attempt | Phase 6 |
 | B-007 re-probe of registry run.app URLs (revert REGISTRY_MODE to http when Google's edge heals) | Before Phase 6 |
 | Hackathon credit: form submitted 2026-08-21, expected ~Aug 24; verify on billing page, then revisit Phase 5 eval budget | ~Mon Aug 24 |
+
+## Credits update (2026-08-21 night): $150 hackathon credit reported in the main account (VERIFY on billing page before relying on it). Second personal GCP account with $300 trial exists - reserve it ONLY for the Phase 7 clean-project spin-up verification (a submission requirement); flag: Google's free-trial ToS is one-per-customer, human decides. Tuesday with credits: (1) revert-hybrid, (2) 2-3 variance runs of the gate (baseline was n=1 - affordable now), (3) Pro-at-decision ablation, (4) Phase 4 start. Cost guard + per-run OKs stay.
