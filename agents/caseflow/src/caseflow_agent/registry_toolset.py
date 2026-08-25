@@ -22,7 +22,6 @@ from typing import Any
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
-from google.adk.tools.tool_context import ToolContext
 
 _TIMEOUT_S = 30.0
 
@@ -94,9 +93,7 @@ def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
 
     from caseflow_agent.reply_parsing import last_json_object
 
-    # PROJECT_ID first for consistency with the Firestore path (aiplatform
-    # accepts number form, but one convention beats two).
-    project = os.environ.get("PROJECT_ID") or os.environ.get("GOOGLE_CLOUD_PROJECT", "")
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT", os.environ.get("PROJECT_ID", ""))
     region = os.environ.get("RAG_LOCATION", "us-central1")
     client = vertexai.Client(project=project, location=region)
     remote = client.agent_engines.get(name=endpoint)
@@ -109,46 +106,14 @@ def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
 
 
 def _make_consult_tool(card: dict[str, Any]) -> FunctionTool:
-    """One named tool per approved card; name/doc drive the LLM's routing.
-
-    Deterministic-composition contract (ADR-004 addendum 2): successes are
-    stashed json-plain under temp:civicnexus:finding:<capability> for EVERY
-    capability on the card; failures under temp:civicnexus:error:<capability>
-    — never as findings, so an erroring specialist can't masquerade as a
-    successful one in the composed reply. temp: keys never outlive the
-    invocation. Exceptions are contained (returned, not raised): a raised
-    tool aborts the whole billed run.
-    """
+    """One named tool per approved card; name/doc drive the LLM's routing."""
     agent_id = str(card["agent_id"]).replace("-", "_")
     endpoint = str(card["endpoint"])
     description = str(card.get("description", ""))
-    capabilities = [str(c) for c in card.get("capabilities", [])]
 
-    def consult(request: str, tool_context: ToolContext) -> dict[str, Any]:
-        try:
-            # Deterministic input: prefer the ORIGINAL message's application
-            # over the LLM-retyped request (same fidelity rule as the fixed
-            # specialists; fall back to the arg if the original is unusable).
-            application: Any = None
-            try:
-                content = tool_context.user_content
-                parts = content.parts if content and content.parts else []
-                original = "".join(p.text or "" for p in parts)
-                application = json.loads(original).get("application")
-            except Exception:
-                application = None
-            if application is None:
-                application = json.loads(request)
-            payload = json.dumps({"task": "review", "application": application})
-            result: dict[str, Any] = json.loads(json.dumps(_consult_remote(endpoint, payload)))
-        except Exception as exc:
-            message = f"{type(exc).__name__}: {exc}"
-            for cap in capabilities:
-                tool_context.state[f"temp:civicnexus:error:{cap}"] = message
-            return {"error": message}
-        for cap in capabilities:
-            tool_context.state[f"temp:civicnexus:finding:{cap}"] = result
-        return result
+    def consult(request: str) -> dict[str, Any]:
+        payload = json.dumps({"task": "review", "application": json.loads(request)})
+        return _consult_remote(endpoint, payload)
 
     consult.__name__ = f"consult_{agent_id}"
     consult.__doc__ = (

@@ -5,16 +5,12 @@ import os
 from google.adk.agents import Agent
 from google.genai import types as genai_types
 
-from caseflow_agent.model_callbacks import strip_identity
 from caseflow_agent.rag_tool import lookup_municipal_code
 from caseflow_agent.schemas import ReviewFindingOut
 
 zoning_agent = Agent(
     name="zoning",
-    # No mode: as an AgentTool root it must NOT be single_turn — the tool's
-    # private Runner rejects single_turn roots (ADR-004). include_contents
-    # 'none' replicates the measured-80% baseline (the node path forced it).
-    include_contents="none",
+    mode="single_turn",
     model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
     # A legal reviewer must be deterministic: identical facts, identical ruling.
     generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
@@ -47,5 +43,4 @@ zoning_agent = Agent(
     ),
     tools=[lookup_municipal_code],
     output_schema=ReviewFindingOut,
-    before_model_callback=strip_identity,
 )
