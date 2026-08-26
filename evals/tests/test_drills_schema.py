@@ -6,6 +6,7 @@ must stay meaningful before it exists. Corpus-content tests (canaries, family
 coverage) land with the artifacts.
 """
 
+import re
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -190,3 +191,77 @@ def test_pdf_carriers_are_screening_layer_only() -> None:
     text = drills.InjectionFixture.model_validate({**INJECTION, "carrier": "text"})
     assert pdf.screening_layer_only
     assert not text.screening_layer_only
+
+
+# --- The shipped corpus (non-vacuous now that the 25 artifacts exist) ---------
+
+
+def test_shipped_corpus_matches_the_expected_census() -> None:
+    drills.assert_corpus_complete()
+    assert len(drills.load_all()) == 25
+
+
+def test_gate_fixtures_are_exactly_the_denominator() -> None:
+    fixtures = drills.gate_fixtures()
+    assert len(fixtures) == drills.GATE_DENOMINATOR
+    assert {(f.family, f.seed) for f in fixtures} == {
+        (family, seed)
+        for family in drills.InjectionFamily
+        for seed in range(1, drills.SEEDS_PER_FAMILY + 1)
+    }
+    assert all(f.expected_filter in drills.BlockingFilter for f in fixtures)
+
+
+def test_out_of_scope_permit_types_are_unconfigured() -> None:
+    """The decline must be mechanical: no config entry means no allowed outcome."""
+    configured = drills.configured_permit_types()
+    cases = drills.load_all(drills.DrillKind.OUT_OF_SCOPE)
+    assert cases
+    for case in cases:
+        assert isinstance(case, drills.EnginePathCase)
+        assert case.permit_type not in configured, case.id
+        assert case.expected_outcome is drills.PipelineOutcome.ESCALATE, case.id
+
+
+def test_contradictory_permit_types_are_configured() -> None:
+    """Contradictory cases must ride the real pipeline, not the unconfigured path."""
+    configured = drills.configured_permit_types()
+    cases = drills.load_all(drills.DrillKind.CONTRADICTORY)
+    assert cases
+    for case in cases:
+        assert isinstance(case, drills.EnginePathCase)
+        assert case.permit_type in configured, case.id
+
+
+def test_request_info_expectations_name_the_contested_fact() -> None:
+    """A bare request_info label is not discriminative — the fleet returns it anyway."""
+    for case in drills.load_all():
+        if (
+            isinstance(case, drills.EnginePathCase)
+            and case.expected_outcome is drills.PipelineOutcome.REQUEST_INFO
+        ):
+            assert case.must_request, f"{case.id} asserts request_info but names no fact"
+
+
+def test_every_drill_artifact_carries_its_canary() -> None:
+    for case in drills.load_all():
+        for doc in case.doc_paths:
+            data = (drills.REPO_ROOT / doc).read_bytes()
+            assert f"CANARY-{case.id}".encode() in data, f"{case.id}: {doc}"
+
+
+def test_drill_documents_reference_no_live_domains() -> None:
+    pattern = re.compile(r"https?://[^\s\"')]+")
+    for case in drills.load_all():
+        for doc in case.doc_paths:
+            text = (drills.REPO_ROOT / doc).read_bytes().decode("utf-8", "replace")
+            for url in pattern.findall(text):
+                assert ".test" in url, f"{case.id} references a non-.test host: {url}"
+
+
+def test_text_carriers_exist_for_the_armor_off_arm() -> None:
+    """D9: only text carriers can ride the ablation arm, so some must exist."""
+    fixtures = drills.gate_fixtures()
+    text_carriers = [f for f in fixtures if not f.screening_layer_only]
+    assert text_carriers, "no fixture can ride the armor-off arm"
+    assert all(f.carrier is drills.Carrier.PDF for f in fixtures if f.screening_layer_only)

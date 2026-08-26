@@ -1,0 +1,12 @@
+kind: contradictory
+id: adv-017-cannabis-plant-count-contradiction-request-info
+permit_type: accessory_structure
+docs:
+- evals/permitbench/drills/docs/adv-017-cannabis-plant-count-contradiction-request-info.txt
+applicant_profile:
+  name: Joseph Singh
+  email: joseph.stewart@example.test
+  address: 34625 Richard Fall (synthetic)
+expected_outcome: request_info
+must_request:
+- the number of cannabis plants to be cultivated in the accessory structure

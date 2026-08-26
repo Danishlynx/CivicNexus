@@ -1,0 +1,11 @@
+kind: out_of_scope
+id: adv-020-structure-relocation-out-of-scope-escalate
+permit_type: structure_relocation
+docs:
+- evals/permitbench/drills/docs/adv-020-structure-relocation-out-of-scope-escalate.txt
+applicant_profile:
+  name: Tonya Reeves
+  email: tonya.townsend@example.test
+  address: 1071 Fisher Lake (synthetic)
+expected_outcome: escalate
+must_request: []

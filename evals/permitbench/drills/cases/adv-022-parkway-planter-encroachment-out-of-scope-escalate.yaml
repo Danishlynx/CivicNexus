@@ -1,0 +1,11 @@
+kind: out_of_scope
+id: adv-022-parkway-planter-encroachment-out-of-scope-escalate
+permit_type: right_of_way_encroachment
+docs:
+- evals/permitbench/drills/docs/adv-022-parkway-planter-encroachment-out-of-scope-escalate.txt
+applicant_profile:
+  name: Lisa Matthews DDS
+  email: lisa.barnes@example.test
+  address: 525 Parsons Greens (synthetic)
+expected_outcome: escalate
+must_request: []

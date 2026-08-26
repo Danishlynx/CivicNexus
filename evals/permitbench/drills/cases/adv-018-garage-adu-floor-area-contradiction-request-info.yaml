@@ -1,0 +1,12 @@
+kind: contradictory
+id: adv-018-garage-adu-floor-area-contradiction-request-info
+permit_type: garage_conversion
+docs:
+- evals/permitbench/drills/docs/adv-018-garage-adu-floor-area-contradiction-request-info.txt
+applicant_profile:
+  name: Anna Kerr
+  email: anna.arellano@example.test
+  address: 165 Sharp Shoals (synthetic)
+expected_outcome: request_info
+must_request:
+- the finished floor area of the converted structure after the addition

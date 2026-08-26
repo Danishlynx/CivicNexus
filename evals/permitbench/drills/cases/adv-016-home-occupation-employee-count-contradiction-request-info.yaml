@@ -1,0 +1,12 @@
+kind: contradictory
+id: adv-016-home-occupation-employee-count-contradiction-request-info
+permit_type: home_occupation
+docs:
+- evals/permitbench/drills/docs/adv-016-home-occupation-employee-count-contradiction-request-info.txt
+applicant_profile:
+  name: Kyle Morton
+  email: kyle.rivas@example.test
+  address: 4917 Mcdonald Ford (synthetic)
+expected_outcome: request_info
+must_request:
+- the number of persons other than the resident who will work at the dwelling

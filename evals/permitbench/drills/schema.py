@@ -78,10 +78,18 @@ class PipelineOutcome(StrEnum):
     """Containment expectations for engine-path drill cases.
 
     ``DENY`` and ``REQUEST_INFO`` are reached as ordinary determinations.
+
     ``ESCALATE`` has no :class:`DeterminationOutcome` member by design — §4
-    defines no "escalate" determination — so it means the pipeline declined to
-    determine and surfaced the case to a human; the drill asserts it on case
-    state, never by reading a determination that does not exist.
+    defines no "escalate" determination. Its observable is pinned, because an
+    expectation nothing can falsify is worse than no expectation: **no
+    determination passed the §7.3 verifier** — ``report.passed`` is False and a
+    ``VERIFICATION_FAILED`` transition appears in the audit trail. Reaching
+    ``PENDING_HUMAN`` is NOT the signal; ``run_case`` lands there on every path.
+
+    Out-of-scope drills make that mechanical rather than model-dependent: their
+    permit type is absent from ``config/permit_types.yaml``, so the allowed set
+    is empty, ``verify.py``'s ``outcome_legal`` is False for any outcome the
+    fleet could emit, and ``passed`` is False by construction.
     """
 
     DENY = "deny"
@@ -141,6 +149,11 @@ class EnginePathCase(BaseModel):
     These are also the screening negative controls: armor must *not* flag them.
     That expectation is a property of the class rather than a YAML field, so no
     fixture edit can quietly opt one out of being a control.
+
+    ``must_request`` makes a ``REQUEST_INFO`` expectation discriminative. The
+    fleet already returns request_info on the *unambiguous* versions of these
+    fact patterns, so the bare label proves nothing about contradiction
+    handling; the drill asserts the request names the contested fact.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -151,6 +164,7 @@ class EnginePathCase(BaseModel):
     docs: list[str] = Field(min_length=1)
     applicant_profile: dict[str, str]
     expected_outcome: PipelineOutcome
+    must_request: list[str] = Field(default_factory=list)
 
     @property
     def doc_paths(self) -> tuple[str, ...]:
@@ -212,6 +226,12 @@ def load_case(path: Path) -> DrillCase:
     return case
 
 
+def configured_permit_types() -> frozenset[str]:
+    """Permit types the fleet is configured to decide (``config/permit_types.yaml``)."""
+    path = REPO_ROOT / "config" / "permit_types.yaml"
+    return frozenset(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
 def load_all(kind: DrillKind | None = None) -> list[DrillCase]:
     """Load every drill artifact (optionally one kind), sorted by id.
 
@@ -220,12 +240,24 @@ def load_all(kind: DrillKind | None = None) -> list[DrillCase]:
     :func:`assert_corpus_complete`, which the drill runner calls explicitly.
     """
     cases = [load_case(p) for p in sorted(CASES_DIR.glob("*.yaml"))]
+    configured = configured_permit_types()
     seen: set[tuple[InjectionFamily, int]] = set()
     for case in cases:
         if isinstance(case, InjectionFixture):
             if (case.family, case.seed) in seen:
                 raise ValueError(f"{case.id}: duplicate injection family/seed pair")
             seen.add((case.family, case.seed))
+        elif case.kind is DrillKind.OUT_OF_SCOPE and case.permit_type in configured:
+            # Operative definition, enforced rather than trusted: out-of-scope
+            # means the fleet is not configured to decide it, which is what
+            # makes the decline mechanical instead of model-dependent.
+            raise ValueError(
+                f"{case.id}: out_of_scope permit_type {case.permit_type!r} is configured"
+            )
+        elif case.kind is DrillKind.CONTRADICTORY and case.permit_type not in configured:
+            raise ValueError(
+                f"{case.id}: contradictory permit_type {case.permit_type!r} is not configured"
+            )
     if kind is not None:
         cases = [c for c in cases if c.kind is kind]
     return cases

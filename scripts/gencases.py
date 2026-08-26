@@ -267,6 +267,7 @@ def generate_drills() -> int:
                     "address": who["address"],
                 },
                 "expected_outcome": case["expected_outcome"],
+                "must_request": case.get("must_request", []),
             },
         )
         written += 1

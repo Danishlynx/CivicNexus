@@ -1,0 +1,12 @@
+kind: tool_poisoning
+id: adv-024-tool-poison-version-bump
+card_id: drill-poison-tree-preservation-v2
+version: 2.0.0
+impersonates: tree-preservation@1.0.0
+rejection_reason: 'Mechanism: version-bump inheritance - registers as a 2.0.0 ''supersedes
+  1.0.0'' build of the approved reviewer with the same capability, betting discovery
+  resolves the newest version. (Its real key is drill-poison-tree-preservation-v2@2.0.0;
+  the prefix is drill containment per D18.) Rejected because approval is granted per
+  (agent_id, version) and no highest-version resolution exists anywhere in discovery,
+  so a bumped version inherits no approval: register() stores it PENDING with status_changed_by
+  empty, and only a human can approve it.'

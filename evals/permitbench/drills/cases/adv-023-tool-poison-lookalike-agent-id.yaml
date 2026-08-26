@@ -1,0 +1,13 @@
+kind: tool_poisoning
+id: adv-023-tool-poison-lookalike-agent-id
+card_id: drill-poison-tree-preservat1on-twin
+version: 1.0.0
+impersonates: tree-preservation@1.0.0
+rejection_reason: 'Mechanism: identity-key spoof - the id substitutes the digit 1
+  for the letter i in ''preservation'' and the card copies the genuine display name,
+  description and capability. (The mandatory drill-poison- prefix is D18 drill containment
+  so the try/finally deletes exactly its own ids, not part of the simulated lookalike.)
+  Rejected because registry identity is the (agent_id, version) key, never display
+  metadata: the twin lands as its own document that RegistryStore.register() forces
+  to PENDING, cannot overwrite the genuine card, and fetch_approved_cards() filters
+  to APPROVED, so the coordinator toolset never sees it.'

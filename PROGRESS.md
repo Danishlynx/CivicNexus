@@ -275,12 +275,49 @@ demo-timewarp: PASS, exit 0, FIRST attempt (one-go discipline). Chain: fixture c
   engine-path adv-016..022, cards adv-023..025. `types-reportlab` added so
   strict mypy type-checks the PDF path instead of ignoring it. Gate: **215
   passed, 8 skipped**; ruff, ruff-format, `mypy --strict` clean over 95 files.
-- **Still open in stage 3:** the drill `templates.json` content (25 artifacts)
-  is being authored; until it exists `generate_drills()` no-ops with a printed
-  skip and the drill determinism test skips honestly rather than passing
-  vacuously.
-- **Not started:** stage 3 remainder (gencases PDF branch, the 25 artifacts,
-  golden byte-identity + determinism tests), stages 4-6 (drill harness,
+- **Stage 3 COMPLETE (2026-08-26, output observed directly): all 25 drill
+  artifacts generated; census 15/4/3/3, `assert_corpus_complete()` PASSES.**
+  Content was authored by a 3-way fan-out then adversarially verified by 4
+  independent checks against the real repo and corpus. Verification returned
+  **one REJECT and three ACCEPT_WITH_FIXES** — it did real work, and every
+  blocking finding was fixed rather than argued away:
+  - **Two generator defects it caught by reading the code against the content.**
+    (1) `_drill_pdf` sliced body at 95 chars and fixture text at 95/110, so 9 of
+    15 artifacts would have rendered a mid-word fragment as the whole
+    application and the *screened* text would not have been the text the canary
+    cleared; now wraps, guarded by a test asserting the last wrapped segment is
+    present. (2) The pdf_metadata branch hardcoded keywords/author, so all three
+    seeds collapsed to /Subject and were mechanically identical despite claiming
+    three entries; a per-seed `metadata_field` now routes them, guarded by a
+    test asserting the three renderings differ.
+  - **ESCALATE had no observable — my error, now pinned (human ruling).** The
+    schema shipped it as "asserted on case state", but `run_case` lands on
+    PENDING_HUMAN on every path including double verifier failure, so nothing
+    could falsify it. Ruled: escalate = **`report.passed` False + a
+    VERIFICATION_FAILED transition**, and out-of-scope drills make it mechanical
+    by naming a permit type absent from `config/permit_types.yaml` — empty
+    allowed set → `verify.py` `outcome_legal` False for any outcome → passed
+    False by construction, model-independent.
+  - **out_of_scope redefined (human ruling), enforced not trusted.** The first
+    draft's cases were refuted: the corpus DOES reach relocation (17.44.040) and
+    transitional parking (17.44.210); one was a golden-shaped in-scope deny.
+    Operative definition is now "permit type not in config/permit_types.yaml",
+    and `load_all()` raises if an out-of-scope case names a configured type (or
+    a contradictory case an unconfigured one).
+  - **request_info made discriminative (human ruling).** results.json shows the
+    fleet already returns request_info on the *unambiguous* goldens 006 and 012,
+    so the bare label proved nothing; `EnginePathCase` gained a drills-only
+    `must_request`, and a test requires every request_info expectation to name
+    the contested fact.
+  Verified after generation: all 25 carry `CANARY-<id>` (byte-searched in the 9
+  PDFs), no non-.test host anywhere, drill artifacts regenerate byte-identically,
+  goldens untouched. Gate: **226 passed, 7 skipped**; ruff + `mypy --strict`
+  clean over 95 files.
+- **Honest scope note:** the 15/15 gate has a literal denominator on disk, but
+  it has NOT been measured — that needs the $0 armor canary (D10), which is
+  gated behind B-010 and the ADR-006 ratification asks. A-9 (fixtures can reach
+  HIGH-confidence pi_and_jailbreak MATCH) remains an assumption until then.
+- **Not started:** stages 4-6 (drill harness,
   Terraform, billed runs). No billed run has been attempted this phase; the
   ADR-006 ratification asks 1-5 and the B-010/infra session remain OPEN with
   the human, and nothing billable starts until they close.

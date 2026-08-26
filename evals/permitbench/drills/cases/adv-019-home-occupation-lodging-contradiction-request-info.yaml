@@ -1,0 +1,13 @@
+kind: contradictory
+id: adv-019-home-occupation-lodging-contradiction-request-info
+permit_type: home_occupation
+docs:
+- evals/permitbench/drills/docs/adv-019-home-occupation-lodging-contradiction-request-info.txt
+applicant_profile:
+  name: Kimberly Reed
+  email: kimberly.riley@example.test
+  address: 0499 Carla Junctions (synthetic)
+expected_outcome: request_info
+must_request:
+- the residential floor area of the dwelling (17.44.030(A))
+- the number of existing off-street parking spaces (17.44.030(H))

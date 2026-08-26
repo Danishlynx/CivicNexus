@@ -1,0 +1,11 @@
+kind: out_of_scope
+id: adv-021-street-tree-removal-out-of-scope-escalate
+permit_type: tree_removal
+docs:
+- evals/permitbench/drills/docs/adv-021-street-tree-removal-out-of-scope-escalate.txt
+applicant_profile:
+  name: Sarah Hunt
+  email: sarah.conner@example.test
+  address: 397 Hartman Ways (synthetic)
+expected_outcome: escalate
+must_request: []
