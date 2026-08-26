@@ -316,6 +316,58 @@ full-eval budget conversation gets easier.
 
 **PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint misrouting caused by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
 
+## B-012 - git ref zero-filled mid-session; third NUL/truncation event, root cause still OPEN (2026-08-26)
+
+**Symptom:** a `git commit` whose pre-commit hooks ALL passed failed with
+`cannot lock ref 'HEAD': unable to resolve reference 'refs/heads/main':
+reference broken`. `.git/refs/heads/main` was 41 bytes of NUL - the correct
+length for a SHA line, with zero data. No lock files; packed-refs absent.
+
+**Recovered (non-destructive, same session):** reflog intact and named the last
+good commit 3780fc4; `git cat-file` confirmed that commit object and its tree
+were undamaged. Corrupt ref backed up to the session scratchpad, removed, and
+recreated with `git update-ref`. `git fsck` afterwards reports only dangling
+objects (expected leftovers of an earlier `--amend`), no missing or broken
+objects. No commits, no staged work, and no history were lost.
+
+**Hypothesis raised and REFUTED in the same session - recorded so nobody spends
+time on it again:** the obvious guess was OneDrive sync racing small writes,
+given the repo path. Refuted twice over: B-004 records the human uninstalled
+OneDrive on 2026-08-18, and a live check this session found no OneDrive process
+and no OneDrive.exe on disk. The path name is vestigial - it is a plain local
+folder. All three truncation events post-date the uninstall (B-008 on 08-21,
+B-010 and this one on 08-26), so a sync agent explains none of them.
+
+**What the signature actually points at (root cause OPEN, not proven):** a file
+of correct length filled with NUL is the classic result of the filesystem
+committing the size while the data blocks are never flushed - i.e. the writing
+process died, or the machine lost the write, between allocation and flush. That
+fits all three events: terraform exited 255 at the end of an apply twice, and
+this git ref's mtime (16:04) falls in the window where the previous Claude Code
+process died abruptly (the same death that killed a running workflow with no
+completion record). Candidates not yet distinguished: abnormal process
+termination, an antivirus/filter driver holding writes, or disk-level delayed
+write failure. Distinguishing them needs evidence not yet collected - Event Log
+review around those timestamps, and a disk health check. NOT assumed.
+
+**Why the planned B-010 fix is necessary but NOT sufficient:** migrating
+terraform state to a GCS backend removes tfstate from the local-file class, but
+leaves `.git`, the `.deploy/*_last_run.json` evidence files (which ARE the
+phase-gate proof), and the eval archive exposed to the same failure.
+
+**Concrete exposure right now:** the local branch is 8 commits ahead of
+`origin/main` and has never been pushed. Every Phase 5 commit exists in exactly
+one place, on the machine that has now zero-filled three files. Pushing is the
+cheapest possible mitigation and needs no root-cause answer first.
+
+**ASK (human):** (1) push to the GitHub remote now, and after each stage
+thereafter; (2) decide whether to run a disk check / add an AV exclusion for the
+repo, or to move the tree to a different volume. **Standing rule reaffirmed:**
+any non-zero exit or ref/state error is a state-integrity event - verify the
+file against live resources or the reflog before trusting or re-running
+anything, and re-verify `.deploy/` evidence after any abnormal exit, because a
+zero-filled evidence file after a billed run means paying twice for the proof.
+
 ## B-011 — Phase 5 ARCHITECTURE deltas awaiting ratification (ADR-006; conflict flags per CLAUDE.md rule)
 
 Three deliberate spec deviations proposed in ADR-006, surfaced here because
