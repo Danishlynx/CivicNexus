@@ -40,8 +40,10 @@ demo-hotadd:
 demo-injection:
 	@echo FAIL: demo-injection not implemented until Phase 5 && exit 1
 
+# Needs PROJECT_ID and CLOCK_MULTIPLIER (e.g. 20000 = 12 days in ~52s).
+# Billable (engine queries + memory ops) - run with the human's OK per RUNBOOK.
 demo-timewarp:
-	@echo FAIL: demo-timewarp not implemented until Phase 4 && exit 1
+	@uv run python scripts/demo_timewarp.py && echo PASS: make demo-timewarp || (echo FAIL: make demo-timewarp && exit 1)
 
 dlq-replay:
 	@echo FAIL: dlq-replay not implemented until Phase 5 && exit 1
@@ -59,7 +61,7 @@ verify-phase-3:
 	@echo FAIL: verify-phase-3 not implemented until Phase 3 && exit 1
 
 verify-phase-4:
-	@echo FAIL: verify-phase-4 not implemented until Phase 4 && exit 1
+	@$(MAKE) test && $(MAKE) demo-timewarp && echo PASS: make verify-phase-4 || (echo FAIL: make verify-phase-4 && exit 1)
 
 verify-phase-5:
 	@echo FAIL: verify-phase-5 not implemented until Phase 5 && exit 1

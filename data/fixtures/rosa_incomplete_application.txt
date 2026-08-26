@@ -1,0 +1,15 @@
+From: rosa.demo@example.test (CANARY-ROSA-EMAIL-7f3a)
+Subject: Garage conversion permit application
+
+Hello permit office,
+
+I want to convert my detached garage into a small home office for my
+bookkeeping work. The property is at 88 Timewarp Terrace (synthetic)
+(CANARY-ROSA-ADDR-9c1d). I will be the only person working there, no
+customers visiting, no sign outside.
+
+I know you probably need my floor plan sketch of the garage interior but I
+have not finished drawing it yet - I will send it as soon as it is ready.
+
+Thank you,
+Rosa Demoapplicant (CANARY-ROSA-NAME-2b8e)

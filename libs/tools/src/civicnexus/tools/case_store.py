@@ -20,6 +20,7 @@ from civicnexus.contracts import (
     Determination,
     EventEnvelope,
     EventType,
+    Timer,
     can_transition,
     is_human_only,
 )
@@ -173,6 +174,19 @@ class CaseStore:
             },
             from_state=None,
             to_state=None,
+        )
+
+    def add_timer(self, case_id: str, timer: Timer) -> None:
+        """Append a §4 Timer to the case (scheduling is the caller's job —
+        the FIRING is the §5 event, not the scheduling)."""
+        from google.cloud import firestore
+
+        doc_ref = self._db.collection(self._collection).document(case_id)
+        doc_ref.update(
+            {
+                "timers": firestore.ArrayUnion([timer.model_dump(mode="json")]),
+                "updated_at": datetime.now(UTC),
+            }
         )
 
     def record_event_once(self, event_id: str) -> bool:

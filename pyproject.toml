@@ -5,6 +5,7 @@ description = "Governed multi-agent platform for municipal permit casework (work
 requires-python = ">=3.12"
 dependencies = [
     "civicnexus-contracts",
+    "civicnexus-clock",
     "civicnexus-otel",
     "civicnexus-tools",
     "civicnexus-verifier",
@@ -14,6 +15,7 @@ dependencies = [
     "civicnexus-agent-letters",
     "civicnexus-agent-treepres",
     "civicnexus-registry",
+    "google-cloud-tasks>=2.24.0",
 ]
 
 [dependency-groups]
@@ -38,6 +40,7 @@ package = false
 [tool.uv.workspace]
 members = [
     "libs/contracts",
+    "libs/clock",
     "libs/otel",
     "libs/tools",
     "libs/verifier",
@@ -51,6 +54,7 @@ members = [
 
 [tool.uv.sources]
 civicnexus-contracts = { workspace = true }
+civicnexus-clock = { workspace = true }
 civicnexus-otel = { workspace = true }
 civicnexus-tools = { workspace = true }
 civicnexus-verifier = { workspace = true }
@@ -79,6 +83,7 @@ namespace_packages = true
 explicit_package_bases = true
 mypy_path = [
     "libs/contracts/src",
+    "libs/clock/src",
     "libs/otel/src",
     "libs/tools/src",
     "libs/verifier/src",
@@ -101,6 +106,6 @@ follow_untyped_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["libs", "agents", "evals"]
-# Coverage gate ≥80% on libs (ARCHITECTURE.md §10); the civicnexus namespace is
+# Coverage gate â‰¥80% on libs (ARCHITECTURE.md Â§10); the civicnexus namespace is
 # exactly the libs/ code, so scoping coverage to it scopes the gate to libs.
 addopts = "-q --cov=civicnexus --cov-report=term-missing --cov-fail-under=80"
