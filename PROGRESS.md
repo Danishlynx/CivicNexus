@@ -15,6 +15,54 @@ Last updated: 2026-08-26. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 | 5 Armor + drills | IN PROGRESS — opened 2026-08-26 |
 | 6–7 | not started |
 
+## Session pause 2026-08-26 (evening) - cold-start handoff
+
+**Phase 5 stage status:** stages 0-3 COMPLETE. Stage 4 (harness) is 1 of 6
+scripts done. Stage 5 (terraform) APPLIED. Nothing is running; no background
+agents, no billed run in flight.
+
+**Live infrastructure now in place** (applied by the human today, `6 added,
+0 changed, 0 destroyed`): Model Armor template `civicnexus-armor`, the
+`docs-quarantine` bucket, and subscriptions `timer-fired-drill`,
+`timer-fired-dlq-replay`, `incident-raised-demo`, plus the D17 grant. Terraform
+state now lives in the versioned GCS backend (B-013), so the B-008/B-010
+truncation class is structurally closed.
+
+**Where the injection gate actually stands (measured, not assumed):**
+`2/15` at `MEDIUM_AND_ABOVE`, up from `0/15` at `HIGH`. Negative arm is
+`12 controls / 0 false positives / 0 SDP matches` at BOTH settings - the added
+sensitivity cost nothing on real content. Full reasoning, the sensitivity
+ladder, and the reporting rule are in B-014.
+
+**FIRST THING TOMORROW - B-014 step B (the only thing blocking the gate):**
+strengthen the 15 injection fixtures. The threshold lever is spent; wording is
+the remaining gap. Concretely: edit `embedded_instruction` in
+`evals/permitbench/drills/templates.json` so each fixture layers an unambiguous
+assistant-subversion marker (role negation + persona replacement, or an explicit
+override opener) ON TOP OF its family mechanism - the five families must stay
+mechanically distinct, not collapse into one detectable pattern. The two that
+already pass (adv-002, adv-003) are the model to match. Then:
+`uv run python scripts/gencases.py` -> re-canary BOTH arms
+(`PROJECT_ID=civicnexus-hack26 uv run python -m scripts.armor_canary`) ->
+record per-family results. Regeneration invalidates canary-green by D10, which
+is why the re-run is mandatory rather than optional.
+
+**Then, in order:** `evals/drill_runner.py` (15/15 gate + 7 negative controls +
+ablation arms), `scripts/demo_injection.py` (D15), `dlq_replay.py`,
+`drill_tool_poisoning.py` (D18), `compare.py`, and the real Makefile recipes
+replacing the FAIL stubs for demo-injection / dlq-replay / verify-phase-5.
+
+**Standing constraint unchanged:** every billed run still needs its own OK in a
+quota-quiet window. Nothing billed has run this phase; the canary is $0 under
+the free tier.
+
+**Known agent limitation for tomorrow:** the auto-mode classifier blocks
+`terraform apply` and `gcloud model-armor templates create` from this session.
+Everything else (init, plan, validate, gcloud reads, imports, sanitize calls)
+works. Applies have to be human-run; the command is
+`terraform -chdir=infra/terraform apply -var "registry_image=us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/registry:v0.1.0"`
+and the `-var` is mandatory or the live registry service plans as destroyed.
+
 ## IAM evidence log (per Working Agreement: role + principal + reason, always)
 
 | Date | Role | Principal | Reason |

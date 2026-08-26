@@ -198,8 +198,13 @@ def negative_arm(client: ArmorClient) -> dict[str, Any]:
         "controls": len(results),
         "false_positives": false_positives,
         # SDP findings are advisory at points 1-3 (D4) — recorded, never fatal.
+        # Match state matters: every response CARRIES an sdp entry, so testing
+        # presence would report all 12 controls as advisory and read as "SDP is
+        # flagging everything" when nothing matched at all.
         "sdp_advisory": [
-            r["name"] for r in results if any(m["filter"] == "sdp" for m in r["all_matches"])
+            r["name"]
+            for r in results
+            if any(m["filter"] == "sdp" and m["state"] == "MATCH_FOUND" for m in r["all_matches"])
         ],
     }
     _record["arms"]["negative_summary"] = arm
