@@ -393,7 +393,60 @@ ARCHITECTURE.md wins conflicts unless the human rules otherwise:
 **Status: OPEN until the human ratifies ADR-006 asks 1–5. Nothing billable
 runs before ratification + the B-010 recovery session (ADR-006 D16).**
 
-## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply (2026-08-26; recurrence of B-008 class)
+## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply - STATE RECOVERED 2026-08-26 (agent); GCS migration + one IAM grant still OPEN
+
+**Recovery completed 2026-08-26 (all output observed directly).** Insurance
+copies of both the truncated file and the backup were taken to the session
+scratchpad first. The backup validated as JSON (version 4, serial 120, 29
+resources, terraform_version 1.15.8 matching the installed CLI) and was restored
+over the 0-byte file. 16 of the 17 already-live resources were imported into
+state (Cloud Tasks queue, sa-timers, timer.fired.dlq topic, timer-fired-demo
+subscription, the publisher/actAs bindings, the 8 agent telemetry grants, and
+caseflow_registry_read_interim). State is now serial 136, 39 resources, valid.
+Import commands preserved at `.deploy/b010_imports.sh` so the sequence is
+repeatable.
+
+**TRAP FOUND AND AVOIDED - read before anyone runs plan or apply.** Running
+`terraform plan` WITHOUT `-var registry_image=...` reports **3 to destroy**:
+`google_cloud_run_v2_service.registry[0]` and both `registry_invokers` bindings.
+This is an artifact, not intent - registry_service.tf line 34 sets
+`count = var.registry_image == "" ? 0 : 1`, so an unset variable plans the LIVE
+registry service for destruction. Every plan/apply in this repo MUST pass
+`-var "registry_image=us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/registry:v0.1.0"`.
+With the variable set the same plan is **0 to destroy**. A blind apply during
+the recovery would have torn down the registry service.
+
+**NEW FINDING - the DLQ subscriber grant was never created (needs a human IAM
+ask).** The 17th import failed, and the cause is not an import-format problem:
+`gcloud pubsub subscriptions get-iam-policy timer-fired-demo` returns
+`{"etag": "ACAB"}` with NO bindings at all. The Phase 4 apply exited 255 before
+creating `google_pubsub_subscription_iam_member.dlq_subscriber`. The resource is
+committed in timers.tf; it has simply never been applied. Consequence: per
+ADR-006 D13 the Pub/Sub service agent cannot forward dead letters, so DLQ
+delivery on timer-fired-demo does not currently work and `make dlq-replay` -
+a Phase 5 exit criterion - cannot pass until the grant exists. Phase 4's
+demo-timewarp did not surface this because it never exhausted max_delivery_attempts.
+
+**Post-recovery plan state:** `1 to add, 2 to change, 0 to destroy`. The 1 add is
+the IAM grant below. The 2 changes are cosmetic - the provider stamping
+`goog-terraform-provisioned = "true"` onto the two imported Pub/Sub resources.
+
+**REMAINING ASKS (human):**
+1. **IAM grant, named per the evidence standard:** role `roles/pubsub.subscriber`,
+   principal `service-382264320396@gcp-sa-pubsub.iam.gserviceaccount.com`
+   (Pub/Sub service agent), on subscription `timer-fired-demo`. Reason:
+   dead-letter forwarding to `timer.fired.dlq`; without it Pub/Sub cannot move
+   messages to the DLQ and the dlq-replay exit criterion is unreachable.
+   Already declared in timers.tf - applying is the whole fix.
+2. **GCS backend migration** (the permanent fix for this truncation class):
+   add the backend block, then `terraform init -migrate-state`. Bucket exists.
+3. The ADR-006 D16 Phase 5 infra (armor template, quarantine bucket, three
+   subscriptions) is NOT yet written - it is stage 5 of the build order and is
+   a separate ask once written.
+
+**Original entry follows.**
+
+## B-010 (original) - terraform.tfstate truncated to 0 bytes AGAIN on apply (2026-08-26; recurrence of B-008 class)
 
 **Symptom:** the timers.tf apply created every resource in GCP (each Creation complete logged; queue/sa-timers/subscription/bindings live-verified via gcloud) but exited 255 and left terraform.tfstate at 0 bytes. Same machine-local final-state-write failure as B-008. Backup (106,633 bytes, 13:06:34) is the valid PRE-apply state.
 
