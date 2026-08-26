@@ -60,4 +60,7 @@ uv run python scripts/deploy_agent.py --agent-dir agents/<a>/src/<a>_agent `
 - Estimates are ceilings; the billing page is the truth (spend rule).
 - One retrying layer per failure domain (ADR-005 §3): engine model calls 1
   attempt; consult tool 2; demo driver 2 (pre-first-event only); eval
-  driver 4; verifier entailment 4. Change ONLY by amending ADR-005.
+  driver 4; verifier entailment 4; armor screening client 2 (transient-only —
+  amended by ADR-006, ratification pending). Drill-runner engine queries ride
+  the eval-driver row; the demo_injection letters query rides the demo-driver
+  row (ADR-006 D9/D14). Change ONLY by amending ADR-005/ADR-006.
