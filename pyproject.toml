@@ -36,6 +36,8 @@ dev = [
     # byte-identical regeneration; pillow renders the image-embedded variant).
     "reportlab>=4.2",
     "pillow>=10.4",
+    # Real stubs beat ignore_missing_imports under strict mypy.
+    "types-reportlab>=4.2",
 ]
 
 [tool.uv]

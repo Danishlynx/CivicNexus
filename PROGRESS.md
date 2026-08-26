@@ -257,9 +257,28 @@ demo-timewarp: PASS, exit 0, FIRST attempt (one-go discipline). Chain: fixture c
   of sync with the previous session's `pyproject.toml` edit — `make test`
   would have failed at its first step (`uv lock --check`); fixed in 3780fc4.
   (3) reportlab resolved to **5.0.1**, a major above ADR-006 D11's `>=4.2`
-  floor; the `Canvas(invariant=1)` byte-identity claim was audit-verified
-  before that resolution, so the double-generation determinism test is the
-  arbiter when the PDF branch is built — pin and record a delta if 5.x differs.
+  floor. **RESOLVED same day, output observed directly:** `Canvas(invariant=1,
+  pageCompression=0)` is byte-identical on 5.0.1 across all four modes the
+  drills need (plain, metadata, white-text, embedded image), with the canary
+  surviving as searchable bytes. No pin needed; the property is now guarded by
+  a test rather than an assumption.
+- **Stage 3 generator (2026-08-26, output observed directly):**
+  `scripts/gencases.py` gains a drill branch. The golden byte-stream is
+  protected structurally, not by care: drills draw PII from a *separately
+  seeded Faker instance* (`seed_instance(8484)`) rather than the shared
+  class-level generator, so growing the drill corpus cannot move the measured
+  dataset. Proven by regenerating: `git status` on `cases/` and `docs/` is
+  empty, and two tests assert it (fingerprint before/after golden regeneration,
+  and after drill generation). PDF fixtures render with `invariant=1` +
+  `pageCompression=0`, canary drawn as real text so byte-search finds it.
+  Drill ids are assigned append-only in a fixed order — injections adv-001..015,
+  engine-path adv-016..022, cards adv-023..025. `types-reportlab` added so
+  strict mypy type-checks the PDF path instead of ignoring it. Gate: **215
+  passed, 8 skipped**; ruff, ruff-format, `mypy --strict` clean over 95 files.
+- **Still open in stage 3:** the drill `templates.json` content (25 artifacts)
+  is being authored; until it exists `generate_drills()` no-ops with a printed
+  skip and the drill determinism test skips honestly rather than passing
+  vacuously.
 - **Not started:** stage 3 remainder (gencases PDF branch, the 25 artifacts,
   golden byte-identity + determinism tests), stages 4-6 (drill harness,
   Terraform, billed runs). No billed run has been attempted this phase; the
