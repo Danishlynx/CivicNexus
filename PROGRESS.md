@@ -1,7 +1,7 @@
 # PROGRESS
 
-**Current phase: 1 — COMPLETE (verify-phase-1 PASS 2026-08-18); awaiting human gate review, then Phase 2.**
-Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
+**Current phase: 5 — Armor + drills (opened 2026-08-26). Phases 0–4 COMPLETE, all gates passed.**
+Last updated: 2026-08-26. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
@@ -10,8 +10,10 @@ Last updated: 2026-08-18. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 | 0 Skeleton | **COMPLETE** — `make verify-phase-0` PASS (test + smoke + trace URL); human reviewed traces at the gate |
 | 1 Vertical slice | **COMPLETE** — `make verify-phase-1` PASS; cited determination reached PENDING_HUMAN on the live stack (details below) |
 | 2 Evals first | **COMPLETE (gate passed 2026-08-20)** — human decision at gate: lock the honest 80% baseline, advance with B-006 open. Harness + 20 verified cases + 7 recorded runs; verifier built early; CI live (2nd-gen trigger, smoke on every push) |
-| 3 Fleet + governance | IN PROGRESS — ADR-003 ratified w/ conditions; registry contracts + service drafted; A2A spike run (see ADR-003 evidence record); CI green end-to-end |
-| 4–7 | not started |
+| 3 Fleet + governance | **COMPLETE (gate passed 2026-08-26)** — deny test PASS (audit-backed 403); hot-add demo PASS first attempt post-ADR-005 |
+| 4 Durability | **COMPLETE (gate passed 2026-08-26)** — demo-timewarp PASS first attempt; recorded evidence accepted at the gate, live watch deferred to video rehearsal |
+| 5 Armor + drills | IN PROGRESS — opened 2026-08-26 |
+| 6–7 | not started |
 
 ## IAM evidence log (per Working Agreement: role + principal + reason, always)
 
@@ -195,3 +197,5 @@ make demo-hotadd equivalent (runbook procedure): PASS, exit 0, first attempt aft
 ## Phase 4 exit proof (2026-08-26, output observed directly)
 
 demo-timewarp: PASS, exit 0, FIRST attempt (one-go discipline). Chain: fixture card reset -> $0 timer canary (real Cloud Tasks->Pub/Sub fire in 16s, IAM propagation proven) -> warmup (caseflow 4.3s) -> intake parsed rosa fixture INCOMPLETE (missing property_address) -> case INCOMPLETE_AWAITING_APPLICANT -> real warped timer (CLOCK_MULTIPLIER=20000; fired 53.6s vs 51.8s scheduled; timer_id + traceparent round-tripped; event dedup claimed) -> 3 memories written (Memory Bank v1beta1 REST, driver-side, scope app_name+user_id) -> control probe WITHOUT memory could not complete (honest ablation) -> 3 memories recalled by similarity search, no CANARY leak -> resume WITH memory: verifier-PASSED cited determination (17.44.100), outcome request_info (LEGALLY CORRECT: reply supplied the floor plan, address still missing) -> PENDING_HUMAN. Claim scoped per evidence-precision: the resumed determination depended on facts present only in Memory Bank recall (present-in-memory, absent-from-reply-and-message, present-in-output). Evidence: .deploy/timewarp_last_run.json. Video-prep note: have the reply include the address for a clean approve on camera. IAM this phase: sa-timers + pubsub.publisher(timer.fired) + actAs (Terraform, approved consolidated ask); telemetry grants adopted into TF state.**
+
+**Phase 4 GATE PASSED (2026-08-26, human: "start with phase 5 planning, architecting and building"). Gate item default recorded: the recorded evidence trail (.deploy/timewarp_last_run.json + traceparent) is accepted in lieu of the live watch; live timewarp viewing deferred to video rehearsal (Phase 7). Note: the prior session's assistant replies after 07:50Z were blocked by API-side safeguard errors, so the human's phase-5 instruction (given 3x there) is re-ratified in this session. Phase 5 (Armor + drills) OPEN — method: research-first one-go per the ratified working principles.**
