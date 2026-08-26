@@ -16,6 +16,7 @@ is byte-identical, with the canary drawn as real text so byte-search finds it.
 
 import io
 import json
+import textwrap
 from pathlib import Path
 from typing import Any
 
@@ -127,35 +128,66 @@ def generate_goldens() -> int:
     return len(templates)
 
 
-def _drill_pdf(family: str, who: dict[str, str], body: str, embedded: str) -> bytes:
+def _wrap(text: str, width: int) -> list[str]:
+    """Wrap to rendered lines, preserving explicit breaks and never truncating.
+
+    Fixture text must reach the artifact whole: a fixture that is screened as a
+    95-character fragment is not the fixture the canary verified (ADR-006 D10).
+    """
+    lines: list[str] = []
+    for paragraph in text.splitlines() or [""]:
+        lines.extend(textwrap.wrap(paragraph, width) or [""])
+    return lines
+
+
+def _drill_pdf(
+    family: str,
+    who: dict[str, str],
+    body: str,
+    embedded: str,
+    metadata_field: str = "subject",
+) -> bytes:
     """Render one PDF-borne drill fixture.
 
     ``invariant=1`` plus ``pageCompression=0`` make regeneration byte-identical
     (re-proved against the installed reportlab by the determinism test), and the
     canary is drawn as ordinary text so a byte-search over the file finds it.
+
+    ``metadata_field`` routes the pdf_metadata family's text to the document
+    information entry a given seed claims to ride in, so the three seeds differ
+    in mechanism rather than only in wording.
     """
     buf = io.BytesIO()
     canvas = Canvas(buf, pagesize=LETTER, invariant=1, pageCompression=0)
+    canvas.setTitle("permit application")
     if family == "pdf_metadata":
-        canvas.setTitle("permit application")
-        canvas.setSubject(embedded)
-        canvas.setAuthor(who["name"])
-        canvas.setKeywords("permit application drill fixture")
+        canvas.setAuthor(embedded if metadata_field == "author" else who["name"])
+        canvas.setSubject(embedded if metadata_field == "subject" else "permit application")
+        canvas.setKeywords(
+            embedded if metadata_field == "keywords" else "permit application drill fixture"
+        )
     canvas.setFont("Helvetica", 11)
     text_object = canvas.beginText(72, 720)
-    for line in body.splitlines() or [""]:
-        text_object.textLine(line[:95])
+    for line in _wrap(body, 95):
+        text_object.textLine(line)
     text_object.textLine("")
     text_object.textLine(f"Phone: {who['phone']}")
     canvas.drawText(text_object)
     if family == "white_text_pdf":
         canvas.setFillColorRGB(1, 1, 1)
-        canvas.drawString(72, 120, embedded[:95])
+        hidden = canvas.beginText(72, 260)
+        for line in _wrap(embedded, 95):
+            hidden.textLine(line)
+        canvas.drawText(hidden)
         canvas.setFillColorRGB(0, 0, 0)
     if family == "image_embedded_text":
-        image = Image.new("RGB", (960, 80), "white")
-        ImageDraw.Draw(image).text((8, 32), embedded[:110], fill="black")
-        canvas.drawImage(ImageReader(image), 72, 140, width=460, height=38)
+        rendered = _wrap(embedded, 110)
+        image = Image.new("RGB", (960, 26 * len(rendered) + 16), "white")
+        draw = ImageDraw.Draw(image)
+        for number, line in enumerate(rendered):
+            draw.text((8, 8 + 26 * number), line, fill="black")
+        height = 12 * len(rendered) + 8
+        canvas.drawImage(ImageReader(image), 72, 250 - height, width=460, height=height)
     canvas.showPage()
     canvas.save()
     return buf.getvalue()
@@ -188,7 +220,15 @@ def generate_drills() -> int:
 
             if carrier == "pdf":
                 doc_path = DRILL_DOCS_DIR / f"{drill_id}.pdf"
-                doc_path.write_bytes(_drill_pdf(family["family"], who, body, embedded))
+                doc_path.write_bytes(
+                    _drill_pdf(
+                        family["family"],
+                        who,
+                        body,
+                        embedded,
+                        fixture.get("metadata_field", "subject"),
+                    )
+                )
             else:
                 doc_path = DRILL_DOCS_DIR / f"{drill_id}.txt"
                 _write_text(doc_path, _email_document(who, f"{body}\n\n{embedded}"))

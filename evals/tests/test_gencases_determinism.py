@@ -70,3 +70,46 @@ def test_pdf_rendering_is_invariant_and_leaves_the_canary_searchable() -> None:
         second = gencases._drill_pdf(family, who, "Application body line.", "embedded line")
         assert first == second, f"{family} is not byte-stable"
         assert who["phone"].encode() in first, f"{family} lost its searchable canary"
+
+
+def test_fixture_text_reaches_the_pdf_whole() -> None:
+    """No truncation: a fixture screened as a fragment is not the fixture verified.
+
+    The renderer wraps rather than slicing, so the LAST wrapped segment of a long
+    string must be present in the uncompressed content stream. Guards ADR-006
+    D10: the artifact that rides a billed run is the one the canary cleared.
+    """
+    who = {
+        "name": "Synthetic Applicant",
+        "email": "synthetic.applicant@example.test",
+        "address": "1 Example Way (synthetic)",
+        "phone": "CANARY-adv-000-5550100",
+    }
+    body = "Application body sentence that runs well past the old ninety-five character cut. " * 6
+    embedded = "Embedded drill line that also runs far past the old truncation boundary. " * 6
+
+    for family, width in (("white_text_pdf", 95), ("image_embedded_text", 110)):
+        rendered = gencases._drill_pdf(family, who, body, embedded)
+        tail = gencases._wrap(embedded, width)[-1]
+        body_tail = gencases._wrap(body, 95)[-1]
+        assert body_tail.encode() in rendered, f"{family} truncated the application body"
+        if family == "white_text_pdf":
+            assert tail.encode() in rendered, "white-text fixture was truncated"
+
+
+def test_metadata_seeds_differ_in_mechanism() -> None:
+    """The three pdf_metadata seeds must ride different document-info entries."""
+    who = {
+        "name": "Synthetic Applicant",
+        "email": "synthetic.applicant@example.test",
+        "address": "1 Example Way (synthetic)",
+        "phone": "CANARY-adv-000-5550100",
+    }
+    marker = "UniqueEmbeddedMarkerString"
+    rendered = {
+        field: gencases._drill_pdf("pdf_metadata", who, "body", marker, field)
+        for field in ("subject", "keywords", "author")
+    }
+    assert len({bytes(v) for v in rendered.values()}) == 3, "metadata seeds are identical"
+    for field, pdf in rendered.items():
+        assert marker.encode() in pdf, f"{field} lost the fixture text"
