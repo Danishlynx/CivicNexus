@@ -40,8 +40,8 @@ IAM changes are ask-first per the Working Agreement in CLAUDE.md.
 ## Phase 2 evidence (2026-08-19, all output observed directly)
 
 - **PermitBench**: 20 golden cases across 15 corpus sections; 15 drafted by a
-  5-drafter/5-verifier adversarial pipeline (every expectation attacked
-  against the statute text before acceptance), 5 hand-authored on §17.44.100;
+  5-drafter/5-verifier adversarial pipeline (every expectation adversarially
+  checked against the statute text before acceptance), 5 hand-authored on §17.44.100;
   12-case smoke subset; canaries in every doc; loader enforces that expected
   citations exist in the corpus. Runner (backoff per §7.5, per-case error
   isolation), metrics with §9.4 gates, auto-generated `docs/eval-report.md`.

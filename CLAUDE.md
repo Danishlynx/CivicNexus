@@ -109,7 +109,7 @@ login` completed. Then:
 | `make eval-smoke` | 12-case subset meets gates (§9.4) |
 | `make eval-full` | ~80 cases run; `results.json` + `docs/eval-report.md` regenerated |
 | `make demo-hotadd` | New agent registered+approved mid-run; coordinator routes to it, no redeploy |
-| `make demo-injection` | Poisoned PDF blocked by Model Armor; quarantine + incident + trace asserted |
+| `make demo-injection` | Adversarial PDF drill fixture flagged by Model Armor, quarantined by the pipeline; incident + trace asserted |
 | `make demo-timewarp` | 12-day gap (CLOCK_MULTIPLIER) → resume with Memory Bank recall asserted |
 | `make dlq-replay` | Dead-lettered event replays without duplicate side effects |
 | `make verify-phase-N` | All exit criteria for phase N |
@@ -135,6 +135,10 @@ numbers. Plant canary strings (`CANARY-<id>`) in synthetic PII fields — appear
 downstream is a leak and a test failure. The simulated inbox never sends real email. The
 municipal code corpus uses one chapter of a real public code with attribution in
 `data/CORPUS_SOURCE.md`.
+
+Phase 5 adversarial drill fixtures are synthetic screening-test inputs that exist solely
+to validate CivicNexus's own Model Armor guardrails (defensive eval harness, ADR-006);
+they target nothing external and never leave the drill path.
 
 ## Coding standards (quick list)
 

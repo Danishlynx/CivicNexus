@@ -306,7 +306,7 @@ batching, and the ₹13,000 ceiling all stay exactly as they are. When it
 lands: alerts track gross spend, so thresholds behave the same; the Phase 5
 full-eval budget conversation gets easier.
 
-**Run 4 (2026-08-21 night): baseline-parity payloads deployed; gate RED 0.42; demo auto-skipped (no wasted spend). Payload-shape hypothesis FALSIFIED. Fidelity stable (groundedness 1.00 x3, citations 0.96/1.00). Tuesday order: (1) strip framework identity SI block via before_model_callback (audit-isolated suspect, ~5-line change); (2) Pro-at-decision ablation; (3) revert-hybrid fallback (proven 80%).**
+**Run 4 (2026-08-21 night): baseline-parity request bodies deployed; gate RED 0.42; demo auto-skipped (no wasted spend). Request-shape hypothesis FALSIFIED. Fidelity stable (groundedness 1.00 x3, citations 0.96/1.00). Tuesday order: (1) strip framework identity SI block via before_model_callback (audit-isolated suspect, ~5-line change); (2) Pro-at-decision ablation; (3) revert-hybrid fallback (proven 80%).**
 
 **Run 5 (identity-strip): RED 0.50. Citations now perfect (1.00/1.00), groundedness 1.00 x4 — fidelity fully solved. Both cheap suspects falsified. Tuesday: go STRAIGHT to the revert-hybrid (proven-80% transfer wiring for evals + deterministic demo-only composition) — highest-confidence path (~85-90%) — with the Pro-at-decision ablation as the accuracy play on top. Note: one 2518s case with ServerError retries; baseline smoke subset itself may carry variance (B-006 measured 65-80% swings).**
 
@@ -314,7 +314,7 @@ full-eval budget conversation gets easier.
 
 **MEASUREMENT VERDICT (2026-08-25): old wiring run1 10/12 (0.83), run2 9/12 (0.75) - both >=9/12 -> SHIP-OLD per pre-committed rule. Deterministic wiring: 0.42-0.50 x3. Old wiring costs ~7x tokens/run (633-655k vs ~87k) - goes in eval report cost table. Groundedness 1.00 on BOTH wirings post-fixes. Demo on old wiring = bounded-retry plan for exit proof; video-day reliability revisited at Phase 7 (hybrid preserved at tag).**
 
-**PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint poisoning by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
+**PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint misrouting caused by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
 
 ## B-011 — Phase 5 ARCHITECTURE deltas awaiting ratification (ADR-006; conflict flags per CLAUDE.md rule)
 

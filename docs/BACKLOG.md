@@ -39,10 +39,11 @@ Lyria), max +0.6. Scores run 1-6, so this is material.
 
 **Recommended spot (strong fit, no production-path change):** Phase 5
 injection drills — use **Gemma (serverless, Model Garden)** as the
-*red-team generator* that authors adversarial injection/poisoning variants
-for the Model Armor drill corpus. Rationale: attacker-model ≠
-defender-model is a defensible security-engineering choice, it lives in the
-eval/drill harness (not the governed runtime, so no new attack surface or
+*drill-fixture generator* that authors the adversarial screening-drill
+variants for the Model Armor drill corpus. Rationale: generating fixtures
+with a model distinct from the defended pipeline is a defensible
+security-engineering choice, it lives in the eval/drill harness (not the
+governed runtime, so no new exposure or
 IAM), and Phase 5 already includes building that drill corpus — Gemma is an
 implementation upgrade to planned work, not scope creep.
 

@@ -118,7 +118,7 @@ administration, prior authorizations, visa and licensing casework.
 - Time to first applicant response (target: same day vs. weeks).
 - End-to-end cycle time (target: days vs. months).
 - Groundedness: % of determinations whose citations exist and entail the decision (target ≥95% first pass).
-- Injection block rate on adversarial inputs (target: 100% of the attack corpus).
+- Injection block rate on adversarial inputs (target: 100% of the drill corpus).
 - Human minutes per case (judgment-only touches).
 - Escalation precision: when the system asks a human, it was right to ask.
 

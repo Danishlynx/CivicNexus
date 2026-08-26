@@ -13,6 +13,11 @@ screening points (§6.3); adversarial cases added; watchdog + verifier complete;
 DLQ replay exercised; `make demo-injection` passes; injection block 15/15;
 ablation numbers captured.
 
+Framing, binding for every doc, log line, and claim this phase: all adversarial
+artifacts are synthetic drill fixtures that exist solely to validate
+CivicNexus's own screening guardrails — defensive eval-harness content,
+confined to the drill path, targeting nothing external.
+
 Live-docs verification (2026-08-26, prime directive 10; source URLs in the
 Phase 5 research record) established facts that force decisions:
 
@@ -69,7 +74,7 @@ fail-closed), checks `invocationResult == SUCCESS`, handles the doubled
 `csamFilterFilterResult` key, and reports **per-filter attribution** (which
 filter matched, at what confidence). Fail-closed causes: MATCH on a blocking
 filter, any EXECUTION_SKIPPED, invocationResult != SUCCESS, HTTP error after
-retries, payload > 4 MB — each named in the structured log and the verdict.
+retries, request body > 4 MB — each named in the structured log and the verdict.
 New retry row (ADR-005 §3 table, amended by this ADR in the same commit as
 armor.py, RUNBOOK updated with an "amended by ADR-006" note): armor client =
 2 attempts, transient-only (429/5xx), jittered backoff; no other layer retries
@@ -90,7 +95,7 @@ advisory** (recorded in the screening verdict + logs, feeding the §6.6
 redactor story) **at points 1–3, and blocking at point 4** (memory facts are
 structured non-PII by design — SDP there is a real red flag). The §6.3
 "sensitive data → redact" delta stands (detect, not redact; DLP deferred).
-The negative canary arm (D10) validates this policy against real payload
+The negative canary arm (D10) validates this policy against real content
 shapes before ratification of the template config is final; if it shows
 surprises, the posture is re-decided with the human before any billed run.
 
@@ -191,7 +196,7 @@ from archived arms.
 
 - **Positive arm:** all 15 injection fixtures MATCH on pi_and_jailbreak or
   malicious_uri specifically. Fixture text may be iterated to strengthen
-  *injection* payloads only — never to make non-injection categories match.
+  the *injection* fixtures only — never to make non-injection categories match.
 - **Negative arm:** clean control doc, maria/rosa fixtures, 2–3 golden docs,
   a representative ReviewFinding JSON, a sample letter draft, and the exact
   timewarp facts/day0_summary strings — all must come back NO_MATCH on the
@@ -212,10 +217,10 @@ plus a determinism test (generate twice → byte equality). PDFs:
 `Canvas(invariant=1)` (audit-verified byte-identical) with
 `pageCompression=0` and the canary drawn as real text so `read_bytes()`
 canary search works; dataset tests split standard/adversarial assertions and
-use byte-search for PDFs. The BACKLOG-sanctioned Gemma red-team pass then
-regenerates injection payload texts after its own estimate + per-run OK; the
-bonus claim is scoped "Gemma-regenerated injection payloads (N of 15)" with N
-from the run log. `reportlab` joins dev dependencies.
+use byte-search for PDFs. The BACKLOG-sanctioned Gemma fixture-generation pass
+then regenerates injection fixture texts after its own estimate + per-run OK;
+the bonus claim is scoped "Gemma-regenerated injection fixtures (N of 15)"
+with N from the run log. `reportlab` joins dev dependencies.
 
 **D12 — Circuit breaker is a library; watchdog-complete is scoped (ASK #5).**
 `libs/tools/src/civicnexus/tools/breaker.py`: sha256 over (agent_id, tool,
@@ -253,7 +258,7 @@ plainly). Runbook: `docs/runbooks/dlq-replay.md`.
 
 **D14 — Letters leg, de-risked (fixes the audit's cold-engine blocker).**
 demo_injection's point-3 leg queries the letters engine with a **fixed
-determination-shaped JSON payload** (its instruction contract), stream-parses
+determination-shaped JSON request body** (its instruction contract), stream-parses
 to `LetterDraftOut`, screens subject+body via `sanitizeModelResponse`, stages
 `action.pending_approval`. Gates before the one-go demo: (a) warmup runs
 `--engines caseflow,letters`; (b) a **pre-drill letters rehearsal** — one
@@ -380,7 +385,7 @@ B-010 recovery)
    armor canary $0 (both arms); letters rehearsal ≤ $0.50; injection drill
    ≤ $8 (expected ~$1.5); armor-off arm ≤ $12 with the ~1.2M-token abort;
    verifier-off smoke arm ≤ $5; demo_timewarp re-proof ≤ $2; Gemma
-   red-team ≤ $1. Phase ceiling ≈ $28 (expected ≈ $6–8). Pro-at-decision
+   fixture pass ≤ $1. Phase ceiling ≈ $28 (expected ≈ $6–8). Pro-at-decision
    ablation stays a separate costed proposal.
 5. **Watchdog-complete scoping (D12)** — §11 satisfied by stream watchdog +
    library breaker + drill; coordinator embedding/reroute/aggregation
