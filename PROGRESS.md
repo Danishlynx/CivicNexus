@@ -222,3 +222,46 @@ demo-timewarp: PASS, exit 0, FIRST attempt (one-go discipline). Chain: fixture c
   under ADC → HTTP 200, empty list `{}`. DNS/routing/auth/API-enablement
   proven from the dev machine before any infra work; B-007 edge-anomaly class
   does not affect the REP host.
+
+- **Stage 1-2 (committed):** `incidents.py` contract + QUARANTINED human-only
+  exit edges (9b6d43d); armor REP REST client (fail-closed, per-filter
+  attribution), IncidentStore, circuit breaker + RUNBOOK retry row (4a67838).
+- **Stage 3 OPENED (2026-08-26, output observed directly): drill schema +
+  loader landed; the 25 artifacts are NOT yet authored.**
+  `evals/permitbench/drills/schema.py` — a discriminated union over four kinds
+  (injection / contradictory / out_of_scope / tool_poisoning) so D8's three
+  proof mechanisms cannot be conflated by a YAML edit. Gate honesty is
+  structural, not conventional: `GATE_DENOMINATOR` is *computed* as
+  `len(InjectionFamily) * SEEDS_PER_FAMILY` (5x3=15), each fixture pins a
+  unique `(family, seed)` pair, and `expected_filter` is an enum of only the
+  two blocking filters — so an SDP match cannot be written down as a gate
+  expectation, and padding the 15 requires an enum edit in code review rather
+  than a new fixture file. Engine-path cases carry `is_negative_control` as a
+  class property, not a field, so no fixture can opt out of being a control.
+  Evidence: 19 new tests, `uv run pytest` = **212 passed, 7 skipped**; ruff +
+  `mypy --strict` clean over 94 source files. The isolation invariant is
+  asserted by a real (non-vacuous) test: the measured `load_all()` still
+  returns exactly 20.
+- **ADR-006 D8 tension resolved (was unresolved in the ADR):** D8 names
+  pipeline expectations "deny / request_info / escalate", but §4's
+  `DeterminationOutcome` has no `escalate` member. Resolved WITHOUT touching
+  any frozen instrument: drills define their own `PipelineOutcome` enum whose
+  `as_determination_outcome()` returns `None` for ESCALATE — escalation is
+  asserted on case state, never by reading a determination that does not
+  exist. Recorded here because the ADR's wording implied a member that §4 does
+  not define.
+- **Honest gaps at this point:** (1) the 25 artifacts do not exist, so
+  `assert_corpus_complete()` currently RAISES by design and the census tests
+  are shape-only (they assert the schema's arithmetic, not corpus content);
+  canary/family-coverage tests land with the artifacts. (2) `uv.lock` was out
+  of sync with the previous session's `pyproject.toml` edit — `make test`
+  would have failed at its first step (`uv lock --check`); fixed in 3780fc4.
+  (3) reportlab resolved to **5.0.1**, a major above ADR-006 D11's `>=4.2`
+  floor; the `Canvas(invariant=1)` byte-identity claim was audit-verified
+  before that resolution, so the double-generation determinism test is the
+  arbiter when the PDF branch is built — pin and record a delta if 5.x differs.
+- **Not started:** stage 3 remainder (gencases PDF branch, the 25 artifacts,
+  golden byte-identity + determinism tests), stages 4-6 (drill harness,
+  Terraform, billed runs). No billed run has been attempted this phase; the
+  ADR-006 ratification asks 1-5 and the B-010/infra session remain OPEN with
+  the human, and nothing billable starts until they close.
