@@ -199,3 +199,26 @@ make demo-hotadd equivalent (runbook procedure): PASS, exit 0, first attempt aft
 demo-timewarp: PASS, exit 0, FIRST attempt (one-go discipline). Chain: fixture card reset -> $0 timer canary (real Cloud Tasks->Pub/Sub fire in 16s, IAM propagation proven) -> warmup (caseflow 4.3s) -> intake parsed rosa fixture INCOMPLETE (missing property_address) -> case INCOMPLETE_AWAITING_APPLICANT -> real warped timer (CLOCK_MULTIPLIER=20000; fired 53.6s vs 51.8s scheduled; timer_id + traceparent round-tripped; event dedup claimed) -> 3 memories written (Memory Bank v1beta1 REST, driver-side, scope app_name+user_id) -> control probe WITHOUT memory could not complete (honest ablation) -> 3 memories recalled by similarity search, no CANARY leak -> resume WITH memory: verifier-PASSED cited determination (17.44.100), outcome request_info (LEGALLY CORRECT: reply supplied the floor plan, address still missing) -> PENDING_HUMAN. Claim scoped per evidence-precision: the resumed determination depended on facts present only in Memory Bank recall (present-in-memory, absent-from-reply-and-message, present-in-output). Evidence: .deploy/timewarp_last_run.json. Video-prep note: have the reply include the address for a clean approve on camera. IAM this phase: sa-timers + pubsub.publisher(timer.fired) + actAs (Terraform, approved consolidated ask); telemetry grants adopted into TF state.**
 
 **Phase 4 GATE PASSED (2026-08-26, human: "start with phase 5 planning, architecting and building"). Gate item default recorded: the recorded evidence trail (.deploy/timewarp_last_run.json + traceparent) is accepted in lieu of the live watch; live timewarp viewing deferred to video rehearsal (Phase 7). Note: the prior session's assistant replies after 07:50Z were blocked by API-side safeguard errors, so the human's phase-5 instruction (given 3x there) is re-ratified in this session. Phase 5 (Armor + drills) OPEN — method: research-first one-go per the ratified working principles.**
+
+## Phase 5 progress (2026-08-26)
+
+- **Research (4-agent fan-out, live docs + repo recon):** Model Armor GA v1,
+  us-central1 full support, sanitize/template ops ONLY on the regional REP
+  endpoint (default host 404s — validates F14 raw-REST rule); verdict-not-block
+  semantics; SDP redact needs DLP (downgraded to detect, delta recorded); free
+  tier 2M tokens/month → phase armor spend ≈ $0; all four §6.3 screening
+  points wireable driver-side with ZERO engine redeploy (ADR-005 constraint
+  intact). Source URLs in ADR-006.
+- **ADR-006 drafted, then adversarially audited BEFORE ratification/spend**
+  (4 refuters at max effort: 9 blockers / 20 majors — headline findings: the
+  draft 15/15 gate was arithmetically dishonest; letters leg rode a cold
+  pre-hermetic engine; reportlab PDFs non-deterministic by default
+  (empirically proven by the auditor); SDP would flag our own PII-dense
+  fixtures). All findings incorporated; ADR-006 amended same day. Ratification
+  asks 1–5 + consolidated B-010/infra session pending with the human.
+  Conflict flags recorded as B-011.
+- **$0 REP reachability probe (2026-08-26, output observed directly):**
+  GET https://modelarmor.us-central1.rep.googleapis.com/v1/projects/civicnexus-hack26/locations/us-central1/templates
+  under ADC → HTTP 200, empty list `{}`. DNS/routing/auth/API-enablement
+  proven from the dev machine before any infra work; B-007 edge-anomaly class
+  does not affect the REP host.

@@ -316,6 +316,31 @@ full-eval budget conversation gets easier.
 
 **PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint poisoning by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
 
+## B-011 — Phase 5 ARCHITECTURE deltas awaiting ratification (ADR-006; conflict flags per CLAUDE.md rule)
+
+Three deliberate spec deviations proposed in ADR-006, surfaced here because
+ARCHITECTURE.md wins conflicts unless the human rules otherwise:
+
+1. **§9.1/§9.4 gate denominator (ADR-006 D8):** "injection block 15/15" is
+   measured over 15 dedicated injection fixtures (5 §9.1 variant families × 3
+   seeds), with per-filter attribution — NOT over the mixed 15-case adversarial
+   set (4 contradictory + 3 out-of-scope cases cannot honestly MATCH an
+   injection filter; 3 tool-poisoning cases are registry cards, not screenable
+   content). Contradictory/out-of-scope prove containment by pipeline outcome;
+   tool-poisoning by registry rejection. Pre-audit draft would have
+   manufactured the number; this is the honest form.
+2. **§11 "evals → ~80" (ADR-006 D7):** shipping ~45 artifacts (20 verified
+   standard + 25 adversarial by mechanism). §11's "never cut evals" clause was
+   quoted in the ask; manufacturing 45 unverified cases would violate
+   evidence-precision. CLAUDE.md's eval-full row amended upon ratification.
+3. **§7.2 watchdog scope (ADR-006 D12/ask 5):** "watchdog complete" = ADR-005
+   stream watchdog + library circuit breaker + drill; coordinator-embedded
+   hashing, reroute/escalate, and N-incidents aggregation deferred to Phase 6+
+   (embedding requires a caseflow redeploy — ADR-005 conflict).
+
+**Status: OPEN until the human ratifies ADR-006 asks 1–5. Nothing billable
+runs before ratification + the B-010 recovery session (ADR-006 D16).**
+
 ## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply (2026-08-26; recurrence of B-008 class)
 
 **Symptom:** the timers.tf apply created every resource in GCP (each Creation complete logged; queue/sa-timers/subscription/bindings live-verified via gcloud) but exited 255 and left terraform.tfstate at 0 bytes. Same machine-local final-state-write failure as B-008. Backup (106,633 bytes, 13:06:34) is the valid PRE-apply state.

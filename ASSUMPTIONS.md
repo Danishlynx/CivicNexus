@@ -29,3 +29,21 @@ Remove entries as they are confirmed or refuted (refutations become ADRs/BLOCKER
   pattern was offered and declined — email alerts plus the CLAUDE.md cost guard
   (stop and flag at >$10/day projected) are the agreed protection. Revisit only
   if an alert actually fires.
+- **A-8 — Model Armor free tier (2M tokens/month) applies to this billing
+  account.** Sourced from the SCC pricing page 2026-08-26 (ADR-006). Verify on
+  the billing page after the first sanitize calls; every drill estimate treats
+  armor spend as $0 on this basis.
+- **A-9 — Synthetic injection fixtures can reach HIGH-confidence
+  pi_and_jailbreak MATCH.** Load-bearing for the 15/15 gate. Validated at $0 by
+  scripts/armor_canary.py (ADR-006 D10) before any engine spend; fixtures are
+  iterated at the screening layer until 15/15, so no billed run starts on an
+  unproven corpus.
+- **A-10 — Driver-side ADC (project owner) covers Model Armor template CRUD and
+  sanitize; no new IAM grants needed (ADR-006 D17).** First 403 stops work and
+  becomes an ask naming role + principal + reason.
+- **A-11 — The pinned Terraform provider (floor 6.43, versions.tf) actually
+  contains google_model_armor_template.** The 6.43 floor came from a secondary
+  source; verified at `terraform validate`/`plan` time before the apply ask.
+- **A-12 — The image-embedded-text PDF injection variant may not MATCH (image
+  screening is Preview).** If the canary refutes it, the variant is substituted
+  with a text-carrier fifth injection and the delta recorded in ADR-006 (D10).
