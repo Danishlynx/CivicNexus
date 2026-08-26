@@ -5,10 +5,29 @@ there is any place worth adding; write up additional stuff we can do later."
 This file is that write-up. Items leave this file only by being done or by
 the human striking them.
 
+## Rules re-read catches (2026-08-26, full-text sweep)
+
+1. **Judge access (Phase 6 spec, MANDATORY):** private hosted projects must
+   ship login credentials in testing instructions. Console must be judge-
+   accessible by design: public read-only SAFE_MODE console (own service;
+   registry stays non-public) or app-level demo login with creds in the
+   submission. IAM-only access would fail the testing clause.
+2. **"Must function consistently... as depicted in the video"** is a
+   compliance clause — demo reliability (ADR-005) is required by rule, not
+   just quality.
+3. **Human action this week: create the Devpost DRAFT submission early**
+   (category: Fortified Enterprise Fleet). Drafts editable until deadline;
+   post-deadline nothing changes. Agent drafts all text on request.
+4. Video: only the FIRST 4 minutes are evaluated — critical moments front-
+   loaded. Must be PUBLIC on YouTube/Vimeo (not unlisted).
+5. Fallback comfort: the app need NOT be live at the judging moment —
+   video+repo proof suffices if hosting fights us (B-007).
+
 ## Timed reminders (surface these at the named moment, unprompted)
 
 | When | Remind |
 |---|---|
+| **~Oct 8 (winners announced)** | Watch the Devpost-account email DAILY in early October: winner verification has a 2-DAY response window; missing it forfeits the prize. |
 | **Video recording day** (Phase 7, ~Aug 29-30) | No third-party logos/trademarks/branding visible anywhere in the video — browser tabs, desktop icons, wallpaper, taskbar. Rules disqualify third-party branding. Record in a clean browser profile + empty desktop. |
 | **Submission day** (Aug 30) | The hosted project URL submitted on Devpost must stay live and testable through the whole Judging Period (ends **Oct 1, 11:45 PM PT**). `make teardown` stays forbidden until then (guard already enforces CONFIRM_TEARDOWN). Scale-to-zero keeps idle cost ≈ 0. |
 | **Submission day** (Aug 30) | Devpost deadline in the human's timezone: **Sep 1, 5:30 AM IST** (= Aug 31 5 PM PT). Internal plan submits Aug 30 — do not spend the buffer. |
