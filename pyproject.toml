@@ -32,6 +32,10 @@ dev = [
     "pandas>=2.0",
     # Synthetic PII for the eval dataset (fixed seeds per fixture rules).
     "faker>=26.0",
+    # Adversarial PDF fixtures (§9.1; ADR-006 D11 — invariant mode for
+    # byte-identical regeneration; pillow renders the image-embedded variant).
+    "reportlab>=4.2",
+    "pillow>=10.4",
 ]
 
 [tool.uv]
