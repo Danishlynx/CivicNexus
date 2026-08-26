@@ -35,9 +35,9 @@ class CaseState(StrEnum):
     CLOSED = "CLOSED"
 
 
-#: Legal transitions per the §4 diagram. QUARANTINED has no outgoing edges yet:
-#: §4 specifies only "human-only exit"; the concrete exit targets are defined
-#: with incident handling in Phase 5 and must be added here then.
+#: Legal transitions per the §4 diagram. QUARANTINED's exits (ADR-006 D6, with
+#: incident handling): a human either re-admits the case for review or discards
+#: it — both human-only via HUMAN_ONLY_SOURCES, enforced by the case store.
 ALLOWED_TRANSITIONS: dict[CaseState, frozenset[CaseState]] = {
     CaseState.RECEIVED: frozenset({CaseState.TRIAGED}),
     CaseState.TRIAGED: frozenset({CaseState.INCOMPLETE_AWAITING_APPLICANT, CaseState.IN_REVIEW}),
@@ -54,7 +54,7 @@ ALLOWED_TRANSITIONS: dict[CaseState, frozenset[CaseState]] = {
     CaseState.ISSUED: frozenset({CaseState.CLOSED}),
     CaseState.DENIED: frozenset({CaseState.CLOSED}),
     CaseState.INFO_REQUESTED: frozenset({CaseState.INCOMPLETE_AWAITING_APPLICANT}),
-    CaseState.QUARANTINED: frozenset(),
+    CaseState.QUARANTINED: frozenset({CaseState.IN_REVIEW, CaseState.CLOSED}),
     CaseState.CLOSED: frozenset(),
 }
 

@@ -54,9 +54,13 @@ def test_quarantine_cannot_requarantine() -> None:
     assert not can_transition(CaseState.QUARANTINED, CaseState.QUARANTINED)
 
 
-def test_quarantine_has_no_machine_exit_yet() -> None:
-    exits = [s for s in CaseState if can_transition(CaseState.QUARANTINED, s)]
-    assert exits == []
+def test_quarantine_exits_are_exactly_readmit_and_discard() -> None:
+    exits = {s for s in CaseState if can_transition(CaseState.QUARANTINED, s)}
+    assert exits == {CaseState.IN_REVIEW, CaseState.CLOSED}
+
+
+def test_quarantine_exits_require_a_human() -> None:
+    assert is_human_only(CaseState.QUARANTINED)
 
 
 def test_human_only_sources() -> None:
