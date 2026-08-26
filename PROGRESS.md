@@ -185,3 +185,7 @@ Exit criteria: `make smoke` green + a concrete Cloud Trace URL recorded below.
   Phase 1 work when the state machine lands.
 
 | 2026-08-26 | roles/cloudtrace.agent + roles/monitoring.metricWriter (8 grants) | sa-caseflow@, sa-safety@, sa-letters@, sa-treepres@civicnexus-hack26.iam.gserviceaccount.com | ADR-005 ratification ask: custom base role lacks telemetry write - every agent 403d on span/metric export (engine logs), blinding diagnosis + judges' observability story. Applied via gcloud (manual-unblock clause), TF backfill committed in agents_iam.tf |
+
+## Phase 3 exit proof 2 (2026-08-26, output observed directly)
+
+make demo-hotadd equivalent (runbook procedure): PASS, exit 0, first attempt after ADR-005 hardening. Chain: hermetic deploy (baked env validated: CORPUS_NAME, MODEL_ID, PROJECT_ID, RAG_LOCATION, REGISTRY_MODE; running as sa-caseflow) -> fixture reset -> warmup gate (caseflow 5.7s, treepres 10.4s, both attempt 1) -> BEFORE missing_capability=True -> agent.registered tree-preservation@1.0.0 PENDING (audit 05:47:54Z) -> agent.approved by danishlynx@gmail.com (audit 05:47:56Z) -> engine IAM matrix applied -> AFTER structured tree_preservation finding outcome=approve citations=1, no missing_capability -> PASS, nothing redeployed. Raw replies + timings archived in .deploy/demo_last_run.json. Phase 3 exit proofs 1 (deny test) and 2 (hot-add) both COMPLETE - awaiting human gate review.
