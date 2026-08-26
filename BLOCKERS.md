@@ -315,3 +315,14 @@ full-eval budget conversation gets easier.
 **MEASUREMENT VERDICT (2026-08-25): old wiring run1 10/12 (0.83), run2 9/12 (0.75) - both >=9/12 -> SHIP-OLD per pre-committed rule. Deterministic wiring: 0.42-0.50 x3. Old wiring costs ~7x tokens/run (633-655k vs ~87k) - goes in eval report cost table. Groundedness 1.00 on BOTH wirings post-fixes. Demo on old wiring = bounded-retry plan for exit proof; video-day reliability revisited at Phase 7 (hybrid preserved at tag).**
 
 **PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint poisoning by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
+
+## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply (2026-08-26; recurrence of B-008 class)
+
+**Symptom:** the timers.tf apply created every resource in GCP (each Creation complete logged; queue/sa-timers/subscription/bindings live-verified via gcloud) but exited 255 and left terraform.tfstate at 0 bytes. Same machine-local final-state-write failure as B-008. Backup (106,633 bytes, 13:06:34) is the valid PRE-apply state.
+
+**Recovery (human, one line):** from infra/terraform: Copy-Item terraform.tfstate.backup terraform.tfstate -Force
+Then the agent imports the ~5 newly created resources into state (import commands prepared), and IAM members reconcile on next apply (additive no-ops).
+
+**Permanent fix (recommended, ASK):** migrate state to a GCS backend (bucket already exists) - eliminates the local-file truncation class entirely. One terraform init -migrate-state after adding the backend block; agent prepares, human runs the migrate command.
+
+**Standing rule reaffirmed:** non-zero exit at end of apply = state-integrity event; run chain proceeds on live-verified resources, bookkeeping repaired in parallel.**
