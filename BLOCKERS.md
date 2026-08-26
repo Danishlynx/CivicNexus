@@ -316,6 +316,36 @@ full-eval budget conversation gets easier.
 
 **PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint misrouting caused by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
 
+## B-013 - tfstate bucket created out-of-band with gcloud (directive 6 record, 2026-08-26)
+
+**What:** `gs://civicnexus-hack26-tfstate` (us-central1, **versioning enabled**,
+public access prevention enforced, uniform bucket-level access) was created with
+`gcloud storage buckets create`, not Terraform. State then migrated with
+`terraform init -migrate-state -force-copy`; backend block committed in
+versions.tf (prefix `infra`).
+
+**Why not Terraform (deliberate, not an oversight):** a state bucket managed by
+the state it holds is a bootstrap cycle - `terraform destroy` would delete the
+bucket holding the state describing the destroy. The two pre-existing buckets
+were unsuitable: `-agent-staging` is Terraform-managed AND unversioned, and
+versioning is the entire point (it is what turns a truncated write into a
+recoverable generation rather than a restore-from-luck).
+
+**Verified:** state object present at `gs://.../infra/default.tfstate`
+(118,140 bytes, byte-size match with the local file), `terraform state list`
+returns 86 entries, and `terraform plan` against the remote backend reports
+**"No changes. Your infrastructure matches the configuration."**
+
+**Consequence for teardown:** `make teardown` will NOT remove this bucket, by
+design. Delete it manually after judging ends, and only after the rest of the
+project is destroyed. Note the bucket is versioned, so deletion needs
+`gcloud storage rm -r` on all generations.
+
+**Standing rule this closes:** B-008/B-010's local-file truncation class is now
+structurally fixed for Terraform state. It does NOT cover `.git` or the
+`.deploy/*_last_run.json` evidence files - B-012 remains open with root cause
+unresolved.
+
 ## B-012 - git ref zero-filled mid-session; third NUL/truncation event, root cause still OPEN (2026-08-26)
 
 **Symptom:** a `git commit` whose pre-commit hooks ALL passed failed with

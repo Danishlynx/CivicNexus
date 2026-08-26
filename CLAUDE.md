@@ -107,7 +107,7 @@ login` completed. Then:
 | `make smoke` | Hello-path e2e against staging returns 200 + emits a trace |
 | `make test` | Lint, types, unit, contract tests all green |
 | `make eval-smoke` | 12-case subset meets gates (§9.4) |
-| `make eval-full` | ~80 cases run; `results.json` + `docs/eval-report.md` regenerated |
+| `make eval-full` | ~45 artifacts run (ADR-006 D7, ratified 2026-08-26); `results.json` + `docs/eval-report.md` regenerated |
 | `make demo-hotadd` | New agent registered+approved mid-run; coordinator routes to it, no redeploy |
 | `make demo-injection` | Adversarial PDF drill fixture flagged by Model Armor, quarantined by the pipeline; incident + trace asserted |
 | `make demo-timewarp` | 12-day gap (CLOCK_MULTIPLIER) → resume with Memory Bank recall asserted |

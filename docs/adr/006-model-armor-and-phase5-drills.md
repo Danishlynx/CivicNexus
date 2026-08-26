@@ -1,6 +1,7 @@
 # ADR-006: Model Armor integration and Phase 5 drill architecture
 
-- **Status:** proposed (ratification ask to the human — see "Ratification asks")
+- **Status:** **ACCEPTED 2026-08-26** (human: "do it all", ratifying asks 1-5
+  after the B-010 sitting). Deltas recorded below under "Ratification record".
 - **Date:** 2026-08-26 (amended same day after a 4-refuter adversarial pre-spend
   audit: 9 blockers / 20 majors, all incorporated below; audit record in the
   session task log)
@@ -390,6 +391,44 @@ B-010 recovery)
 5. **Watchdog-complete scoping (D12)** — §11 satisfied by stream watchdog +
    library breaker + drill; coordinator embedding/reroute/aggregation
    deferred to Phase 6+ as a recorded §7.2 delta in BLOCKERS.md.
+
+## Ratification record (2026-08-26)
+
+Human ratified asks 1-5 ("do it all") after the B-010 recovery sitting. What
+that settled, and what changed against the proposal:
+
+- **Ask 1 (D7 eval composition):** ACCEPTED — ship ~45 artifacts (20 verified
+  standard + 25 adversarial by mechanism) rather than §11's ~80. CLAUDE.md's
+  `eval-full` row is amended accordingly; §9.1/§11 deltas stay flagged as B-011.
+- **Ask 2 (harness sign-offs):** ACCEPTED — `evals/runner.py --no-verifier` as
+  pinned in D9 (observe-only, gates nothing, never retries) is the ONLY measured
+  instrument change this phase. The drill corpus lives in `drills/` behind its
+  own loader and the injection gate lives in drill_runner, never in
+  metrics.py GATES.
+- **Ask 3 (infra + B-010):** DONE, with deltas. State recovered and migrated to
+  a **GCS backend** (`gs://civicnexus-hack26-tfstate`, prefix `infra`,
+  versioning on). The bucket was created out-of-band with gcloud rather than
+  Terraform — a state bucket managed by the state it holds is a bootstrap cycle,
+  and the only pre-existing buckets are Terraform-managed and unversioned;
+  recorded per directive 6. Two findings during recovery are written up in
+  B-010: a plan without `-var registry_image` plans the LIVE registry service
+  for destruction, and the timer-fired-demo DLQ subscriber grant had never been
+  created, which made `make dlq-replay` unreachable.
+- **Ask 4 (spend plan):** ACCEPTED as ceilings. The standing eval-spend rule is
+  unchanged and still governs: **every billed run gets its own OK**, in a
+  quota-quiet window, with the estimate treated as a ceiling to verify against
+  the billing page — never as an assumption.
+- **Ask 5 (watchdog scoping):** ACCEPTED — "watchdog complete" = ADR-005 stream
+  watchdog + the library breaker + its drill. Coordinator embedding, reroute and
+  N-incident aggregation are Phase 6+, recorded as a §7.2 delta in BLOCKERS.
+
+**A-11 RESOLVED empirically the same day:** `google_model_armor_template` exists
+in the installed provider (google **v7.44.0**, well above the 6.43 floor) and its
+schema was read directly rather than assumed. The schema confirms D5's recorded
+delta: `malicious_uri_filter_settings` exposes only `filter_enforcement` with no
+confidence knob, while `pi_and_jailbreak_filter_settings` takes both
+`filter_enforcement` and `confidence_level`. CSAM is not exposed as a setting —
+always-on by platform design, as D5 states.
 
 ## Build order (one go; free/local first; commits per stage, all [skip ci])
 
