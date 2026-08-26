@@ -64,7 +64,11 @@ class BlockingFilter(StrEnum):
     """
 
     PI_AND_JAILBREAK = "pi_and_jailbreak"
-    MALICIOUS_URI = "malicious_uri"
+    #: Plural, matching the API's filterResults key — note the Terraform field
+    #: is singular (malicious_uri_filter_settings). A test pins these values to
+    #: armor.BLOCKING_FILTERS so the two vocabularies cannot drift apart
+    #: silently and leave a fixture whose attribution can never match.
+    MALICIOUS_URIS = "malicious_uris"
 
 
 class Carrier(StrEnum):

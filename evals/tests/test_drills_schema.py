@@ -265,3 +265,15 @@ def test_text_carriers_exist_for_the_armor_off_arm() -> None:
     text_carriers = [f for f in fixtures if not f.screening_layer_only]
     assert text_carriers, "no fixture can ride the armor-off arm"
     assert all(f.carrier is drills.Carrier.PDF for f in fixtures if f.screening_layer_only)
+
+
+def test_gate_filters_match_the_armor_client_vocabulary() -> None:
+    """The drill's expectations and the client's blocking set are one vocabulary.
+
+    They are declared in different modules, so a rename on either side would
+    otherwise leave fixtures whose attribution can never match — the gate would
+    read 0/15 for a reason no fixture author could see.
+    """
+    from civicnexus.tools.armor import BLOCKING_FILTERS
+
+    assert {f.value for f in drills.BlockingFilter} <= BLOCKING_FILTERS
