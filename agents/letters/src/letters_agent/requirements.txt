@@ -1,0 +1,4 @@
+# Remote runtime requirements for the deployed letters agent (ADR-005 §1.1:
+# every deployed agent carries an explicit requirements file + compiled lock).
+google-cloud-aiplatform[agent_engines,adk]==1.164.0
+google-adk[otel-gcp]==2.7.1

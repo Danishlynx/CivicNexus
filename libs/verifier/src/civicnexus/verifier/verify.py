@@ -70,7 +70,15 @@ reading is"}}"""
 
 
 def _default_entailment(prompt: str) -> EntailmentVerdict:
-    """Entailment via Gemini Flash on the global endpoint (ADR-001 item 8)."""
+    """Entailment via Gemini Flash on the global endpoint (ADR-001 item 8).
+
+    ADR-005 §5: bounded transient retry lives HERE and only here (single
+    retry layer per failure domain) — a lone 429 must not redden both gated
+    metrics of an entire eval run. 4 attempts, jittered backoff.
+    """
+    import random
+    import time
+
     from google import genai
     from google.genai import types as genai_types
 
@@ -79,16 +87,27 @@ def _default_entailment(prompt: str) -> EntailmentVerdict:
         project=os.environ.get("PROJECT_ID", os.environ.get("GOOGLE_CLOUD_PROJECT", "")),
         location=os.environ.get("MODEL_LOCATION", "global"),
     )
-    response = client.models.generate_content(
-        model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
-        contents=prompt,
-        config=genai_types.GenerateContentConfig(
-            temperature=0.0,
-            response_mime_type="application/json",
-            response_schema=EntailmentVerdict,
-        ),
-    )
-    return EntailmentVerdict.model_validate(json.loads(response.text or "{}"))
+    last_exc: Exception | None = None
+    for attempt in range(4):
+        try:
+            response = client.models.generate_content(
+                model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.0,
+                    response_mime_type="application/json",
+                    response_schema=EntailmentVerdict,
+                ),
+            )
+            return EntailmentVerdict.model_validate(json.loads(response.text or "{}"))
+        except Exception as exc:
+            message = str(exc)
+            if not any(t in message for t in ("429", "503", "500", "UNAVAILABLE", "RESOURCE")):
+                raise
+            last_exc = exc
+            if attempt < 3:
+                time.sleep((2**attempt) * 5 + random.uniform(0, 3))
+    raise last_exc if last_exc else RuntimeError("entailment retries exhausted")
 
 
 def verify_finding(

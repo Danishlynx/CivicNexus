@@ -104,6 +104,20 @@ resource "google_project_iam_member" "caseflow_registry_read_interim" {
   member  = "serviceAccount:${google_service_account.agents["sa-caseflow"].email}"
 }
 
+# Human-authorized 2026-08-26 (ADR-005 ratification): trace + metric write
+# for all four agent SAs — reason: the custom base role lacks telemetry
+# write, so every deployed agent 403s on span/metric export (observed in
+# engine logs), blinding diagnosis and the judges' observability story.
+resource "google_project_iam_member" "agents_telemetry" {
+  for_each = {
+    for pair in setproduct(keys(local.agent_sas), ["roles/cloudtrace.agent", "roles/monitoring.metricWriter"]) :
+    "${pair[0]}-${replace(pair[1], "/", "_")}" => { sa = pair[0], role = pair[1] }
+  }
+  project = var.project_id
+  role    = each.value.role
+  member  = "serviceAccount:${google_service_account.agents[each.value.sa].email}"
+}
+
 # Human-authorized 2026-08-20 (item c): Data Access audit logs for Vertex —
 # reason: the deliberate-deny test must produce an auditable 403 entry.
 resource "google_project_iam_audit_config" "aiplatform_data_access" {

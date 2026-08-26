@@ -46,7 +46,11 @@ def main() -> int:
             state = json.loads(Path(state_file).read_text(encoding="utf-8-sig"))
             engine = state["resource_name"]
             base = f"https://{region}-aiplatform.googleapis.com/v1beta1/{engine}"
-            policy = session.post(f"{base}:getIamPolicy").json()
+            response = session.post(f"{base}:getIamPolicy", timeout=60)
+            # ADR-005: an unchecked error body here parsed as an empty policy
+            # and setIamPolicy would then WIPE existing bindings — never skip.
+            response.raise_for_status()
+            policy = response.json()
             bindings = policy.get("bindings", [])
             target = next((b for b in bindings if b.get("role") == role), None)
             if target is None:

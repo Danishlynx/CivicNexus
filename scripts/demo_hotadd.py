@@ -103,7 +103,13 @@ def _register_and_approve_firestore(endpoint: str, approver: str) -> None:
     print(f"demo_hotadd: APPROVED by {approver}")
 
 
-def _review(message_extra: dict[str, Any]) -> dict[str, Any]:
+def _review(message_extra: dict[str, Any], label: str) -> dict[str, Any]:
+    """ADR-005 §3.3/§6: bounded retry ONLY on pre-first-event failures
+    (connection/503 before any stream output — mid-stream failures are
+    ambiguous and never retried); every reply/failure persisted with
+    timings so no diagnosis ever needs engine logs again."""
+    import time
+
     import vertexai
     from civicnexus.tools import query_json
 
@@ -116,7 +122,69 @@ def _review(message_extra: dict[str, Any]) -> dict[str, Any]:
         "capabilities": ["zoning", "tree_preservation"],
     }
     payload.update(message_extra)
-    return query_json(remote, json.dumps(payload), user_prefix="hotadd")
+    record: dict[str, Any] = {"label": label, "attempts": []}
+    try:
+        for attempt in (1, 2):
+            started = time.monotonic()
+            try:
+                reply = query_json(remote, json.dumps(payload), user_prefix="hotadd")
+                record["attempts"].append(
+                    {"n": attempt, "seconds": round(time.monotonic() - started, 1), "ok": True}
+                )
+                record["reply"] = reply
+                return reply
+            except Exception as exc:
+                elapsed = time.monotonic() - started
+                message = f"{type(exc).__name__}: {exc}"
+                # "no text" / stream errors after events flowed = mid-stream;
+                # fast connection-level failures = pre-first-event.
+                pre_first_event = elapsed < 15 or "503" in message
+                record["attempts"].append(
+                    {
+                        "n": attempt,
+                        "seconds": round(elapsed, 1),
+                        "ok": False,
+                        "error": message[:500],
+                        "retried": pre_first_event and attempt == 1,
+                    }
+                )
+                if not (pre_first_event and attempt == 1):
+                    raise
+                time.sleep(30)
+        raise RuntimeError("unreachable")
+    finally:
+        log_path = Path(".deploy/demo_last_run.json")
+        log_path.parent.mkdir(exist_ok=True)
+        existing = []
+        if log_path.exists():
+            try:
+                existing = json.loads(log_path.read_text(encoding="utf-8-sig"))
+            except Exception:
+                existing = []
+        existing.append(record)
+        log_path.write_text(json.dumps(existing, indent=2, default=str), encoding="utf-8")
+
+
+def _tree_finding_present(reply: dict[str, Any]) -> tuple[bool, str]:
+    """ADR-005 amendment 5: structured assert — a contained error envelope
+    containing the word 'tree' must NOT pass. Requires a tree_preservation
+    finding with non-empty citations and no error, and no missing_capability."""
+    if "missing_capability" in json.dumps(reply):
+        return False, "reply still reports missing_capability"
+    findings = reply.get("findings")
+    if not isinstance(findings, list):
+        return False, "reply has no findings envelope"
+    for entry in findings:
+        if not isinstance(entry, dict) or entry.get("capability") != "tree_preservation":
+            continue
+        finding = entry.get("finding")
+        if not isinstance(finding, dict) or "error" in finding:
+            return False, f"tree_preservation entry is an error/invalid: {str(finding)[:120]}"
+        citations = finding.get("citations")
+        if not isinstance(citations, list) or not citations:
+            return False, "tree_preservation finding has no citations"
+        return True, f"outcome={finding.get('outcome')} citations={len(citations)}"
+    return False, "no tree_preservation entry in findings"
 
 
 def main() -> int:
@@ -137,7 +205,7 @@ def main() -> int:
         return 1
 
     # 1. BEFORE: capability has no approved specialist.
-    before = _review({})
+    before = _review({}, "BEFORE")
     before_text = json.dumps(before)
     print(
         f"demo_hotadd: BEFORE - coordinator reply mentions missing capability: "
@@ -214,10 +282,9 @@ def main() -> int:
         return 1
 
     # 5. AFTER: same case, rerun — the new specialist answers.
-    after = _review({})
-    after_text = json.dumps(after)
-    routed = "tree" in after_text.lower() and "missing_capability" not in after_text
-    print(f"demo_hotadd: AFTER - tree-preservation finding present: {routed}")
+    after = _review({}, "AFTER")
+    routed, detail = _tree_finding_present(after)
+    print(f"demo_hotadd: AFTER - tree-preservation finding present: {routed} ({detail})")
     print("demo_hotadd: " + ("PASS - hot-add complete, nothing redeployed" if routed else "FAIL"))
     return 0 if routed else 1
 

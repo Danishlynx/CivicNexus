@@ -183,3 +183,5 @@ Exit criteria: `make smoke` green + a concrete Cloud Trace URL recorded below.
 - `EventEnvelope.payload` is a plain dict (mutable inside a frozen model, and
   makes the model unhashable in practice) — typed per-event payload models are
   Phase 1 work when the state machine lands.
+
+| 2026-08-26 | roles/cloudtrace.agent + roles/monitoring.metricWriter (8 grants) | sa-caseflow@, sa-safety@, sa-letters@, sa-treepres@civicnexus-hack26.iam.gserviceaccount.com | ADR-005 ratification ask: custom base role lacks telemetry write - every agent 403d on span/metric export (engine logs), blinding diagnosis + judges' observability story. Applied via gcloud (manual-unblock clause), TF backfill committed in agents_iam.tf |

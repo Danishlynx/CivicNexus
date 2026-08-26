@@ -87,7 +87,7 @@ def fetch_approved_cards(capability: str | None = None) -> list[dict[str, Any]]:
     return _fetch_via_http(capability)
 
 
-def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
+def _consult_remote(endpoint: str, task_payload: str, timeout_s: int = 240) -> dict[str, Any]:
     """Call a remote agent engine over raw REST :streamQuery.
 
     Deliberately NOT the vertexai SDK: inside the engine runtime our
@@ -115,7 +115,7 @@ def _consult_remote(endpoint: str, task_payload: str) -> dict[str, Any]:
             "message": task_payload,
         },
     }
-    response = session.post(url, json=body, timeout=300)
+    response = session.post(url, json=body, timeout=timeout_s)
     response.raise_for_status()
     events: list[dict[str, Any]] = []
     for line in response.text.splitlines():
@@ -135,8 +135,35 @@ def _make_consult_tool(card: dict[str, Any]) -> FunctionTool:
     description = str(card.get("description", ""))
 
     def consult(request: str) -> dict[str, Any]:
+        """ADR-005 §3.1 containment: a consult NEVER raises — a raised tool
+        kills the whole billed invocation (no on_tool_error registered).
+        Budget: 2 attempts x 240s + 20s backoff = worst 500s, deliberately
+        under the client watchdog's 600s idle threshold. Retries only on
+        transient signals (429/5xx/timeout); other errors return once.
+        Dead code on eval runs (empty registry -> tool never exists)."""
+        import time as time_mod
+
         payload = json.dumps({"task": "review", "application": json.loads(request)})
-        return _consult_remote(endpoint, payload)
+        last_error = ""
+        for attempt in (1, 2):
+            try:
+                return _consult_remote(endpoint, payload, timeout_s=240)
+            except Exception as exc:
+                last_error = f"{type(exc).__name__}: {exc}"
+                transient = any(
+                    t in last_error for t in ("429", "503", "500", "Timeout", "timed out")
+                )
+                logging.getLogger("caseflow.registry_toolset").warning(
+                    "consult %s attempt %d failed (%s); transient=%s",
+                    card["agent_id"],
+                    attempt,
+                    last_error[:200],
+                    transient,
+                )
+                if not transient or attempt == 2:
+                    break
+                time_mod.sleep(20)
+        return {"error": last_error}
 
     consult.__name__ = f"consult_{agent_id}"
     consult.__doc__ = (

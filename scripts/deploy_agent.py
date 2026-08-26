@@ -24,6 +24,36 @@ from typing import Any
 
 CORPUS_DISPLAY_NAME = "civicnexus-municipal-code"
 
+# ADR-005 §1.3: the baked .env is validated against this manifest — a deploy
+# whose env is shaped by the deployer's shell mood is how F8/F13-class
+# failures masqueraded as wiring regressions. Keys map to required-ness;
+# values are hard defaults applied when the shell doesn't set them.
+ENV_MANIFEST: dict[str, dict[str, str | None]] = {
+    "caseflow_agent": {
+        "MODEL_ID": "gemini-3.5-flash",
+        "PROJECT_ID": None,  # always baked from --project resolution
+        "CORPUS_NAME": None,  # from --needs-corpus
+        "RAG_LOCATION": None,
+        "REGISTRY_MODE": "firestore",  # pinned in-repo, not shell-dependent
+    },
+    "treepres_agent": {
+        "MODEL_ID": "gemini-3.5-flash",
+        "PROJECT_ID": None,
+        "CORPUS_NAME": None,
+        "RAG_LOCATION": None,
+    },
+    "safety_agent": {
+        "MODEL_ID": "gemini-3.5-flash",
+        "PROJECT_ID": None,
+        "CORPUS_NAME": None,
+        "RAG_LOCATION": None,
+    },
+    "letters_agent": {
+        "MODEL_ID": "gemini-3.5-flash",
+        "PROJECT_ID": None,
+    },
+}
+
 
 def _resolve_corpus(project: str, region: str) -> str:
     import agentplatform
@@ -78,10 +108,40 @@ def main() -> int:
         env_lines.append(f"REGISTRY_URL={os.environ['REGISTRY_URL']}\n")
     if os.environ.get("REGISTRY_MODE"):  # B-007 interim: firestore read path
         env_lines.append(f"REGISTRY_MODE={os.environ['REGISTRY_MODE']}\n")
+
+    # ADR-005 §1.3: apply manifest defaults, then hard-fail on any gap.
+    manifest = ENV_MANIFEST.get(agent_dir.name, {})
+    baked = dict(line.rstrip("\n").split("=", 1) for line in env_lines)
+    for key, default in manifest.items():
+        if key not in baked:
+            if default is not None:
+                env_lines.append(f"{key}={default}\n")
+                baked[key] = default
+            else:
+                print(
+                    f"deploy_agent: FATAL - required env {key} missing for "
+                    f"{agent_dir.name} (check flags/shell)",
+                    file=sys.stderr,
+                )
+                return 1
     (agent_dir / ".env").write_text("".join(env_lines), encoding="utf-8")
+    print(f"deploy_agent: baked .env -> {sorted(baked)}")
     (agent_dir / ".agent_engine_config.json").write_text(
         json.dumps({"service_account": sa_email}, indent=2), encoding="utf-8"
     )
+
+    # ADR-005 §1.2: hermetic builds — deploy the COMPILED closure, not the
+    # human-maintained inputs. The engine build pip-installs requirements.txt
+    # fresh on linux/py3.11; F13 proved that resolution drifts from ours.
+    lock_file = agent_dir / "requirements.lock.txt"
+    req_file = agent_dir / "requirements.txt"
+    req_backup: str | None = None
+    if lock_file.exists():
+        req_backup = req_file.read_text(encoding="utf-8")
+        req_file.write_text(lock_file.read_text(encoding="utf-8"), encoding="utf-8")
+        print(f"deploy_agent: hermetic mode - deploying {lock_file.name} as requirements")
+    else:
+        print("deploy_agent: WARNING - no requirements.lock.txt; non-hermetic deploy")
 
     cmd = [
         "uv",
@@ -100,7 +160,13 @@ def main() -> int:
         print(f"deploy_agent: updating {engine}")
     cmd.append(str(agent_dir))
 
-    completed = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=900)
+    try:
+        completed = subprocess.run(
+            cmd, capture_output=True, text=True, encoding="utf-8", timeout=900
+        )
+    finally:
+        if req_backup is not None:
+            req_file.write_text(req_backup, encoding="utf-8")
     sys.stdout.write(completed.stdout[-2000:])
     sys.stderr.write(completed.stderr[-2000:])
     if completed.returncode != 0:

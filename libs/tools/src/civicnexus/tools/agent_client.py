@@ -5,14 +5,55 @@ Shared by the demo driver (scripts/run_case.py) and the eval runner
 """
 
 import json
+import queue
 import re
 import secrets
+import threading
 from pathlib import Path
 from typing import Any
 
 from civicnexus.contracts import Citation
 
 _FENCE = re.compile(r"^```(?:json)?|```$", flags=re.MULTILINE)
+
+# ADR-005 §3.2 stream watchdog: idle threshold (no NEW event), NOT a total
+# cap — measured LEGITIMATE runs took 1326s/2518s total, while the F11 hang
+# produced ZERO events for 81 minutes. 600s idle > the consult tool's worst
+# single bounded attempt (500s), so contained engine-side retries never trip
+# it. Evidence-precision: calibrated against the archived run durations.
+STREAM_IDLE_TIMEOUT_S = 600.0
+_SENTINEL = object()
+
+
+def _iter_with_idle_watchdog(stream: Any, idle_timeout_s: float) -> Any:
+    """Yield stream items; raise TimeoutError if the gap between items
+    exceeds idle_timeout_s (a hung stream, not a slow one)."""
+    q: queue.Queue[Any] = queue.Queue()
+    error: list[BaseException] = []
+
+    def _pump() -> None:
+        try:
+            for item in stream:
+                q.put(item)
+        except BaseException as exc:  # propagate the real stream error
+            error.append(exc)
+        finally:
+            q.put(_SENTINEL)
+
+    worker = threading.Thread(target=_pump, daemon=True)
+    worker.start()
+    while True:
+        try:
+            item = q.get(timeout=idle_timeout_s)
+        except queue.Empty:
+            raise TimeoutError(
+                f"stream idle for {idle_timeout_s:.0f}s (no events) - hung stream"
+            ) from None
+        if item is _SENTINEL:
+            if error:
+                raise error[0]
+            return
+        yield item
 
 
 def extract_text(event: Any) -> str:
@@ -43,9 +84,8 @@ def query_json_with_events(
     delegation run emits several text events (specialist output, coordinator
     echo); the final valid JSON is the authoritative reply.
     """
-    events = list(
-        remote.stream_query(user_id=f"{user_prefix}-{secrets.token_hex(4)}", message=message)
-    )
+    stream = remote.stream_query(user_id=f"{user_prefix}-{secrets.token_hex(4)}", message=message)
+    events = list(_iter_with_idle_watchdog(stream, STREAM_IDLE_TIMEOUT_S))
     texts = [t for t in (extract_text(e).strip() for e in events) if t]
     if not texts:
         raise RuntimeError(f"agent produced no text; raw events: {events!r}")
