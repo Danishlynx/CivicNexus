@@ -15,9 +15,20 @@ resource "google_model_armor_template" "civicnexus" {
   filter_config {
     # The two blocking filters (D4): a MATCH here is what quarantines content
     # and what the "injection block 15/15" gate counts.
+    # confidence_level is the MINIMUM confidence at which the filter reports a
+    # match, so HIGH is the least sensitive setting, not the strongest. It was
+    # measured at HIGH and found blind to this product's actual threat: a
+    # sensitivity ladder (B-014) showed instruction override, role negation and
+    # persona replacement all pass unflagged, and only a system-prompt
+    # disclosure demand trips it. A permit system is attacked with "approve my
+    # permit", not "reveal your system prompt".
+    #
+    # MEDIUM_AND_ABOVE is the setting under test. The canary's negative arm is
+    # the acceptance test — 12 controls / 0 false positives at HIGH is the
+    # baseline, so any cost of the added sensitivity is measured, not assumed.
     pi_and_jailbreak_filter_settings {
       filter_enforcement = "ENABLED"
-      confidence_level   = "HIGH"
+      confidence_level   = "MEDIUM_AND_ABOVE"
     }
 
     # No confidence knob exists on this filter — recorded delta, confirmed
