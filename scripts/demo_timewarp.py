@@ -85,14 +85,21 @@ def _memory_session() -> tuple[Any, str, str]:
 
 
 def _wait_operation(session: Any, host: str, operation: dict[str, Any]) -> None:
+    def _check_done(payload: dict[str, Any]) -> bool:
+        if not payload.get("done"):
+            return False
+        if payload.get("error"):
+            raise RuntimeError(f"memory operation failed: {payload['error']}")
+        return True
+
     name = operation.get("name", "")
-    if operation.get("done") or not name:
+    if not name or _check_done(operation):
         return
-    for _ in range(30):
+    for _ in range(60):  # LLM-backed LRO; generous budget, cheap insurance
         time.sleep(4)
         response = session.get(f"{host}/v1beta1/{name}", timeout=60)
         response.raise_for_status()
-        if response.json().get("done"):
+        if _check_done(response.json()):
             return
     raise TimeoutError(f"memory operation not done: {name}")
 
@@ -110,10 +117,13 @@ def write_memories(case_id: str, day0_summary: str) -> None:
         f"Case {case_id}: zoning must review this as a {SPINE['concern']} in a "
         "detached accessory structure.",
     ]
+    # Shape audit-verified vs the v1beta1 proto (live-probed): NO "config"
+    # wrapper; disableConsolidation is TOP-LEVEL; waitForCompletion is an
+    # SDK-side concept — our _wait_operation polls the LRO ourselves.
     body = {
         "directMemoriesSource": {"directMemories": [{"fact": f} for f in facts]},
         "scope": _scope(case_id),
-        "config": {"waitForCompletion": True, "disableConsolidation": True},
+        "disableConsolidation": True,
     }
     response = session.post(f"{engine_url}/memories:generate", json=body, timeout=120)
     response.raise_for_status()
@@ -123,6 +133,9 @@ def write_memories(case_id: str, day0_summary: str) -> None:
             "events": [{"content": {"role": "user", "parts": [{"text": day0_summary}]}}]
         },
         "scope": _scope(case_id),
+        # Managed extraction WITHOUT merging: consolidation could rewrite the
+        # verbatim direct facts the recall assert depends on.
+        "disableConsolidation": True,
     }
     response = session.post(f"{engine_url}/memories:generate", json=generated, timeout=120)
     response.raise_for_status()
@@ -178,9 +191,13 @@ def main() -> int:
     if not args.skip_warmup:
         import subprocess
 
-        warm = subprocess.run(
-            ["uv", "run", "python", "scripts/warmup.py", "--engines", "caseflow"], timeout=300
-        )
+        try:
+            warm = subprocess.run(
+                ["uv", "run", "python", "scripts/warmup.py", "--engines", "caseflow"],
+                timeout=600,  # warmup's own worst case is ~570s on a cold engine
+            )
+        except subprocess.TimeoutExpired:
+            return _fail("warmup gate timed out - engine unreachable")
         if warm.returncode != 0:
             return _fail("warmup gate failed - not spending on a cold engine")
 
@@ -279,8 +296,13 @@ def main() -> int:
     sub_path = subscriber.subscription_path(project, SUBSCRIPTION)
     deadline = time.monotonic() + warp_seconds + 300
     fired: dict[str, Any] | None = None
+    from google.api_core import exceptions as gexc
+
     while time.monotonic() < deadline and fired is None:
-        pulled = subscriber.pull(subscription=sub_path, max_messages=5, timeout=30)
+        try:
+            pulled = subscriber.pull(subscription=sub_path, max_messages=5, timeout=30)
+        except (gexc.DeadlineExceeded, gexc.RetryError):
+            continue  # empty subscription; the outer deadline bounds waiting
         for received in pulled.received_messages:
             envelope = json.loads(received.message.data.decode("utf-8"))
             subscriber.acknowledge(subscription=sub_path, ack_ids=[received.ack_id])
@@ -381,14 +403,50 @@ def main() -> int:
 
     permit_types = load_permit_types(Path("config/permit_types.yaml"))
     permit_cfg = permit_types.get(SPINE["permit_type"])
+    allowed = permit_cfg.allowed_outcomes if permit_cfg else []
     report = verify_finding(
         finding,
         application=resume_application,
-        permit_allowed_outcomes=permit_cfg.allowed_outcomes if permit_cfg else [],
+        permit_allowed_outcomes=allowed,
         corpus_dir=CORPUS_DIR,
     )
     if not report.passed:
-        return _fail(f"resumed finding failed the §7.3 verifier: {report.failures}")
+        # §7.3 ratified retry loop, ported from run_case.py: one round-trip
+        # with the critique before giving up (single-shot failure odds are
+        # material at the measured 0.75-0.83 chain pass rate).
+        _log_step("verifier_first_fail", failures=report.failures)
+        store.transition(
+            case_id,
+            CaseState.VERIFICATION_FAILED,
+            EventType.VERIFICATION_FAILED,
+            traceparent=traceparent,
+            payload={"failures": report.failures},
+        )
+        store.transition(
+            case_id,
+            CaseState.IN_REVIEW,
+            EventType.REVIEW_REQUESTED,
+            traceparent=traceparent,
+            payload={"retry": True},
+        )
+        retry_msg = json.dumps(
+            {
+                "task": "review",
+                "application": resume_application,
+                "verifier_critique": report.critique or "; ".join(report.failures),
+            }
+        )
+        finding = ReviewFinding.model_validate(
+            query_json(remote, retry_msg, user_prefix="timewarp")
+        )
+        report = verify_finding(
+            finding,
+            application=resume_application,
+            permit_allowed_outcomes=allowed,
+            corpus_dir=CORPUS_DIR,
+        )
+    if not report.passed:
+        return _fail(f"resumed finding failed the §7.3 verifier twice: {report.failures}")
     resumed_text = json.dumps(finding.model_dump(mode="json")).lower()
     references_recall = (
         SPINE["permit_type"].replace("_", " ") in resumed_text.replace("_", " ")

@@ -8,6 +8,11 @@ resource "google_cloud_tasks_queue" "case_timers" {
 
   retry_config {
     max_attempts = 5
+    # Default sub-second backoffs would burn all 5 attempts in ~3s — too
+    # fast to survive fresh-IAM propagation on the publish binding.
+    min_backoff   = "30s"
+    max_backoff   = "300s"
+    max_doublings = 3
   }
 
   depends_on = [google_project_service.enabled]

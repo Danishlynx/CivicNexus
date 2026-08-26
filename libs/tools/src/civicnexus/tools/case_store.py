@@ -191,11 +191,15 @@ class CaseStore:
 
     def record_event_once(self, event_id: str) -> bool:
         """Transactionally claim ``event_id``; False means already processed (§5 dedup)."""
+        from google.api_core import exceptions as gexc
+
         doc_ref = self._db.collection("event_dedup").document(event_id)
         try:
             doc_ref.create({"processed_at": datetime.now(UTC)})
-        except Exception:
-            return False
+        except (gexc.AlreadyExists, gexc.Conflict):
+            return False  # genuinely a duplicate — the §5 dedup answer
+        # Anything else (permissions, transport) must surface as itself, not
+        # masquerade as "already processed" (ADR-005 loud-guard rule).
         return True
 
     def _emit(
