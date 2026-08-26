@@ -393,7 +393,32 @@ ARCHITECTURE.md wins conflicts unless the human rules otherwise:
 **Status: OPEN until the human ratifies ADR-006 asks 1–5. Nothing billable
 runs before ratification + the B-010 recovery session (ADR-006 D16).**
 
-## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply - STATE RECOVERED 2026-08-26 (agent); GCS migration + one IAM grant still OPEN
+## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply - RESOLVED 2026-08-26 (state recovered, DLQ grant applied); GCS migration still OPEN
+
+**CLOSED 2026-08-26 (all output observed directly).** State recovered and the
+missing DLQ grant applied by the human (agent was blocked mid-sitting by a
+safety-classifier outage, so the apply itself was human-run; everything else
+below was agent work). Apply result: **1 added, 2 changed, 0 destroyed**, clean
+exit with outputs printed - no state-integrity event this time.
+
+Post-apply verification, per the B-008 standing rule:
+- `terraform.tfstate` = **118,140 bytes, valid JSON, serial 140** - NOT truncated.
+- Grant confirmed LIVE, not merely in state: `gcloud pubsub subscriptions
+  get-iam-policy timer-fired-demo` now returns a binding for
+  `roles/pubsub.subscriber` -> `service-382264320396@gcp-sa-pubsub.iam.gserviceaccount.com`
+  (it previously returned `{"etag": "ACAB"}` with no bindings at all).
+- The live `civicnexus-registry` Cloud Run service and both invoker bindings
+  survived - the registry-destroy trap below was avoided, not merely dodged.
+- Resource-entry count moved 39 -> 37 during refresh. Diffed rather than assumed:
+  the three pruned entries are `registry_east`, `registry_east_invokers` (the
+  east clone torn down during the B-007 investigation) and
+  `agents_aiplatform_user` (the broad grant deliberately REVOKED on 2026-08-20
+  in the least-privilege redesign). All three are stale entries for things that
+  no longer exist; nothing live was lost.
+
+**Still open:** the GCS backend migration - the permanent fix for this
+truncation class. Local state remains the single point of failure, and B-012
+records a third NUL-truncation event in `.git` with root cause unresolved.
 
 **Recovery completed 2026-08-26 (all output observed directly).** Insurance
 copies of both the truncated file and the backup were taken to the session
