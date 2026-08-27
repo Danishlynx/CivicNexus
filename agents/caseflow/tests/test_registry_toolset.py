@@ -19,6 +19,10 @@ CARD = {
 
 
 def test_fetch_requests_approved_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Pin the mode: REGISTRY_MODE=firestore is the B-007 interim and is
+    # routinely exported for demos, so inheriting it would silently route this
+    # HTTP-path test down the Firestore branch (an F14-class ambient-env trap).
+    monkeypatch.delenv("REGISTRY_MODE", raising=False)
     captured: dict[str, Any] = {}
 
     class _Resp:
@@ -48,6 +52,10 @@ def test_fetch_requests_approved_only(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_no_registry_url_means_no_tools(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Pin the mode: REGISTRY_MODE=firestore is the B-007 interim and is
+    # routinely exported for demos, so inheriting it would silently route this
+    # HTTP-path test down the Firestore branch (an F14-class ambient-env trap).
+    monkeypatch.delenv("REGISTRY_MODE", raising=False)
     monkeypatch.delenv("REGISTRY_URL", raising=False)
     assert registry_toolset.fetch_approved_cards() == []
 
@@ -106,6 +114,11 @@ def test_firestore_query_filters_approved(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_toolset_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Pin the mode: REGISTRY_MODE=firestore is the B-007 interim and is
+    # routinely exported for demos, so inheriting it would silently route this
+    # HTTP-path test down the Firestore branch (an F14-class ambient-env trap).
+    monkeypatch.delenv("REGISTRY_MODE", raising=False)
+
     def boom(capability: str | None = None) -> list[dict[str, Any]]:
         raise RuntimeError("registry unreachable")
 
@@ -115,6 +128,10 @@ def test_toolset_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_toolset_builds_named_tools(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Pin the mode: REGISTRY_MODE=firestore is the B-007 interim and is
+    # routinely exported for demos, so inheriting it would silently route this
+    # HTTP-path test down the Firestore branch (an F14-class ambient-env trap).
+    monkeypatch.delenv("REGISTRY_MODE", raising=False)
     monkeypatch.setattr(registry_toolset, "fetch_approved_cards", lambda capability=None: [CARD])
     tools = asyncio.run(RegistryToolset().get_tools())
     assert len(tools) == 1
