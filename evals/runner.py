@@ -267,7 +267,8 @@ def main() -> int:
         f"groundedness={metrics.groundedness_first_pass:.2f} leak={metrics.leak_rate:.2f} "
         f"p95={metrics.latency_p95_s:.0f}s tokens={metrics.tokens_total}"
     )
-    print(f"runner: results written to {RESULTS_PATH}")
+    if not args.no_verifier:
+        print(f"runner: results written to {RESULTS_PATH}")
     if not metrics.gates_passed:
         for failure in metrics.gate_failures:
             print(f"runner: GATE FAILURE: {failure}", file=sys.stderr)

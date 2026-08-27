@@ -155,6 +155,57 @@ a reason unrelated to the code. They now pin the mode; the suite passes with the
 variable set and unset (228 either way). Same F14-class ambient-env trap as the
 one that cost demo attempts 2-4.
 
+## Ablation 1 of 2 - verifier off vs on (2026-08-27, §9.5, output observed directly)
+
+Both arms archived and labelled; table in `docs/ablations.md`.
+
+| Metric | Verifier ON | Verifier OFF | Delta |
+|---|---|---|---|
+| Decision accuracy | 75.0% | 75.0% | 0.0 pp |
+| Groundedness first-pass | 100.0% | 91.7% | +8.3 pp |
+| Citation precision | 91.7% | 87.5% | +4.2 pp |
+| Citation recall | 91.7% | 91.7% | 0.0 pp |
+| Caught (first-pass failures) | 7 | 7 | 0 |
+| **Retried** | **7** | **0** (disabled) | - |
+| **Corrected by retry** | **0 of 7** | n/a | - |
+| Canary leak rate | 0.0% | 0.0% | 0.0 pp |
+| Tokens | 655,564 | 258,703 | **+396,861 (2.5x)** |
+
+**The uncomfortable headline, stated plainly: the retry loop cost 2.5x the
+tokens and corrected zero of the seven findings it retried.** Every case that
+failed the verifier's first pass also failed after its retry. This is not a
+regression introduced by the ablation - it is what the verifier-ON baseline has
+been doing all along, and the ablation is simply the first run that measured it.
+
+**What the verifier IS buying, measured:** groundedness first-pass 100% vs
+91.7% and citation precision 91.7% vs 87.5%. Its value in this system is
+citation fidelity, not decision correction.
+
+**Why zero corrections is credible rather than a bug:** five of the seven
+verifier-failed cases produced the CORRECT decision anyway (003 deny/deny, 007
+approve/approve, 009 deny/deny, 015 approve/approve, 016 deny/deny). The
+verifier is failing findings whose decisions are right, which matches B-009's
+root cause - the groundedness check requires byte-exact verbatim quotes and LLM
+re-typing corrupts them. The retry re-asks the same model and gets the same
+non-verbatim quote.
+
+**Honest scoping, so the delta is not over-read:** single run per arm, two days
+apart, and B-006 measured 65-80% accuracy swings on this subset. The accuracy
+delta of 0.0 pp is therefore NOT evidence that the verifier does not help
+accuracy - it is a sample too small to distinguish. The retried/corrected counts
+are structural rather than statistical and do not carry that caveat. The OFF arm
+also had one errored case (golden-001, engine returned no text) which is
+unscoreable rather than wrong.
+
+**Instrument-integrity note:** the OFF arm's artifact carries
+`config.no_verifier: true` and `retried: []`, which is the D9 pinned semantics
+verified in the artifact itself - verified once for the data, gated nothing,
+never retried. The baseline `evals/results.json` was NOT overwritten by the
+ablation. The ON arm's label was applied retrospectively (it predates D9's
+labelling rule) and says so in a `label_provenance` field; the classification is
+evidence-backed, since 7 of its cases record `verifier_retried=true`, which only
+the verifier-ON path can produce.
+
 ## IAM evidence log (per Working Agreement: role + principal + reason, always)
 
 | Date | Role | Principal | Reason |

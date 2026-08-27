@@ -29,9 +29,14 @@ evals/permitbench/drills/templates.json or the generated fixture files.
 
 Model routing: work that edits or quotes raw fixture text
 (`evals/permitbench/drills/templates.json`, generated fixture artifacts,
-`.deploy/armor_canary_last_run.json` payloads) runs in an Opus 5 session;
-make targets, demo/billed-run drivers, eval report, docs, and console work
-run fine on any model with the opener above.
+`.deploy/armor_canary_last_run.json` payloads) runs in an Opus 5 session,
+and so do the §9.5 ablation arms (armor-off / `--no-verifier`) — "run with
+the guardrail disabled" is the hottest-shaped phrase in the project even
+though it is the measurement that proves the guardrails' value (second
+pause, 2026-08-27, confirmed this). Make targets, demo drivers, eval
+report, docs, and console work run fine on any model with the opener above.
+Never resume a session that has already been paused — the flagged context
+travels with it; start fresh with the opener instead.
 
 ## Deploy an agent (hermetic)
 
