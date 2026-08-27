@@ -23,7 +23,7 @@ smoke:
 	@uv run python scripts/smoke.py && echo PASS: make smoke || (echo FAIL: make smoke && exit 1)
 
 test:
-	@uv lock --check && uv run ruff check . && uv run ruff format --check . && uv run mypy libs agents scripts evals && uv run pytest && echo PASS: make test || (echo FAIL: make test && exit 1)
+	@uv lock --check && uv run ruff check . && uv run ruff format --check . && uv run mypy libs agents scripts evals services && uv run pytest && echo PASS: make test || (echo FAIL: make test && exit 1)
 
 eval-smoke:
 	@uv run python -m evals.runner --tag smoke && echo PASS: make eval-smoke || (echo FAIL: make eval-smoke && exit 1)

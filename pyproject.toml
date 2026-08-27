@@ -15,6 +15,7 @@ dependencies = [
     "civicnexus-agent-letters",
     "civicnexus-agent-treepres",
     "civicnexus-registry",
+    "civicnexus-console",
     "google-cloud-tasks>=2.24.0",
 ]
 
@@ -56,6 +57,7 @@ members = [
     "agents/letters",
     "agents/treepres",
     "services/registry",
+    "services/console",
 ]
 
 [tool.uv.sources]
@@ -70,6 +72,7 @@ civicnexus-agent-safety = { workspace = true }
 civicnexus-agent-letters = { workspace = true }
 civicnexus-agent-treepres = { workspace = true }
 civicnexus-registry = { workspace = true }
+civicnexus-console = { workspace = true }
 
 [tool.ruff]
 line-length = 100
@@ -99,6 +102,7 @@ mypy_path = [
     "agents/letters/src",
     "agents/treepres/src",
     "services/registry/src",
+    "services/console/src",
 ]
 
 [[tool.mypy.overrides]]
@@ -111,7 +115,7 @@ ignore_missing_imports = true
 follow_untyped_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["libs", "agents", "evals"]
+testpaths = ["libs", "agents", "evals", "services"]
 # Coverage gate â‰¥80% on libs (ARCHITECTURE.md Â§10); the civicnexus namespace is
 # exactly the libs/ code, so scoping coverage to it scopes the gate to libs.
 addopts = "-q --cov=civicnexus --cov-report=term-missing --cov-fail-under=80"

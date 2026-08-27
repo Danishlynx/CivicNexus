@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CivicNexus Console{% endblock %}</title>
+  <style>
+    :root { --ink: #1c2733; --muted: #5b6b7b; --line: #d8e0e8; --accent: #0b57d0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, 'Times New Roman', serif; color: var(--ink); background: #fafbfc; }
+    header { display: flex; align-items: baseline; gap: 1rem; padding: 0.9rem 1.4rem; border-bottom: 2px solid var(--ink); background: #fff; }
+    .brand { font-size: 1.25rem; font-weight: bold; letter-spacing: 0.02em; }
+    .mode { font-family: ui-monospace, Consolas, monospace; font-size: 0.72rem; padding: 0.15rem 0.5rem; border: 1px solid var(--ink); }
+    .mode.reader { background: #eef4ee; }
+    .mode.clerk { background: #fdf3e3; }
+    nav { margin-left: auto; }
+    nav a { color: var(--accent); text-decoration: none; margin-left: 1rem; }
+    main { max-width: 72rem; margin: 1.5rem auto; padding: 0 1.4rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { text-align: left; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+    th { font-family: ui-monospace, Consolas, monospace; font-size: 0.72rem; text-transform: uppercase; color: var(--muted); }
+    .badge { font-family: ui-monospace, Consolas, monospace; font-size: 0.72rem; padding: 0.1rem 0.45rem; border: 1px solid var(--line); background: #f2f5f8; white-space: nowrap; }
+    .badge.PENDING_HUMAN { background: #fdf3e3; border-color: #e2b93b; }
+    .badge.QUARANTINED { background: #fbeaea; border-color: #c96262; }
+    .badge.ISSUED, .badge.APPROVED, .badge.CLOSED { background: #eef4ee; border-color: #7aa87a; }
+    .note { color: var(--muted); font-size: 0.85rem; }
+    footer { max-width: 72rem; margin: 2.5rem auto 1.5rem; padding: 0.8rem 1.4rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.8rem; }
+    code { font-family: ui-monospace, Consolas, monospace; }
+    h1 { font-size: 1.3rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">CivicNexus</span>
+    <span class="mode {{ mode }}">{% if mode == 'reader' %}PUBLIC · READ-ONLY{% else %}CLERK{% endif %}</span>
+    <nav>
+      <a href="/">Queue</a>
+      <a href="/incidents">Incidents</a>
+      <a href="/evals">Evals</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    All data synthetic (fixed faker seeds). <code>CANARY-*</code> strings are planted leak
+    detectors (&sect;9.2) — their appearing anywhere downstream would be a test failure, so
+    seeing them here, contained, is the system working.
+  </footer>
+</body>
+</html>

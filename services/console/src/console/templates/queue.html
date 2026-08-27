@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Case queue · CivicNexus{% endblock %}
+{% block content %}
+<h1>Case queue</h1>
+{% if invalid_count %}
+<p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
+validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
+{% endif %}
+<table>
+  <thead>
+    <tr>
+      <th>Case</th>
+      <th>Permit type</th>
+      <th>Applicant</th>
+      <th>State</th>
+      <th>Determinations</th>
+      <th>Updated</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for case in cases %}
+    <tr>
+      <td><a href="/cases/{{ case.case_id }}"><code>{{ case.case_id }}</code></a></td>
+      <td>{{ case.permit_type }}</td>
+      <td>{{ case.applicant.name }}</td>
+      <td><span class="badge {{ case.state.value }}">{{ case.state.value }}</span></td>
+      <td>{{ case.determinations | length }}</td>
+      <td>{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="note">No cases.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
