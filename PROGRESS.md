@@ -1,7 +1,7 @@
 # PROGRESS
 
 **Current phase: 5 — Armor + drills (opened 2026-08-26). Phases 0–4 COMPLETE, all gates passed.**
-Last updated: 2026-08-27. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
+Last updated: 2026-08-27 (Phase 5 work complete, gate review pending). Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
@@ -12,7 +12,7 @@ Last updated: 2026-08-27. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 | 2 Evals first | **COMPLETE (gate passed 2026-08-20)** — human decision at gate: lock the honest 80% baseline, advance with B-006 open. Harness + 20 verified cases + 7 recorded runs; verifier built early; CI live (2nd-gen trigger, smoke on every push) |
 | 3 Fleet + governance | **COMPLETE (gate passed 2026-08-26)** — deny test PASS (audit-backed 403); hot-add demo PASS first attempt post-ADR-005 |
 | 4 Durability | **COMPLETE (gate passed 2026-08-26)** — demo-timewarp PASS first attempt; recorded evidence accepted at the gate, live watch deferred to video rehearsal |
-| 5 Armor + drills | IN PROGRESS — opened 2026-08-26 |
+| 5 Armor + drills | **ALL WORK COMPLETE (2026-08-27) — awaiting human gate review.** `make verify-phase-5` PASS; demo-injection PASS; timewarp re-proof PASS; both §9.5 ablations measured. One honest delta: injection block **14/15**, not 15/15 (B-014) |
 | 6–7 | not started |
 
 ## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
