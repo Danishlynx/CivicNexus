@@ -1,7 +1,7 @@
 # PROGRESS
 
 **Current phase: 5 — Armor + drills (opened 2026-08-26). Phases 0–4 COMPLETE, all gates passed.**
-Last updated: 2026-08-27 (Phase 5 work complete, gate review pending). Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
+Last updated: 2026-08-27. **Phase 5 GATE PASSED; Phase 6 (Console + freeze) OPEN.** Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
@@ -12,8 +12,9 @@ Last updated: 2026-08-27 (Phase 5 work complete, gate review pending). Companion
 | 2 Evals first | **COMPLETE (gate passed 2026-08-20)** — human decision at gate: lock the honest 80% baseline, advance with B-006 open. Harness + 20 verified cases + 7 recorded runs; verifier built early; CI live (2nd-gen trigger, smoke on every push) |
 | 3 Fleet + governance | **COMPLETE (gate passed 2026-08-26)** — deny test PASS (audit-backed 403); hot-add demo PASS first attempt post-ADR-005 |
 | 4 Durability | **COMPLETE (gate passed 2026-08-26)** — demo-timewarp PASS first attempt; recorded evidence accepted at the gate, live watch deferred to video rehearsal |
-| 5 Armor + drills | **ALL WORK COMPLETE (2026-08-27) — awaiting human gate review.** `make verify-phase-5` PASS; demo-injection PASS; timewarp re-proof PASS; both §9.5 ablations measured. One honest delta: injection block **14/15**, not 15/15 (B-014) |
-| 6–7 | not started |
+| 5 Armor + drills | **COMPLETE (gate passed 2026-08-27, human: "i accept 14/15").** `make verify-phase-5` PASS; demo-injection PASS; timewarp re-proof PASS; both §9.5 ablations measured. Gate item defaults recorded: (1) injection block ratified at **14/15** with the characterised holdout NOT tuned away (B-014); (2) demo-injection scoped to points 1/2/4 with point 3 deferred to the Phase 6 console caller per D14's pre-agreed fallback. Phase 6 (Console + freeze) OPEN |
+| 6 Console + freeze | IN PROGRESS — opened 2026-08-27 |
+| 7 Ship | not started |
 
 ## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
 
