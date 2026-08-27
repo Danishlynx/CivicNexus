@@ -56,6 +56,17 @@ Remove entries as they are confirmed or refuted (refutations become ADRs/BLOCKER
 - **A-11 — The pinned Terraform provider (floor 6.43, versions.tf) actually
   contains google_model_armor_template.** The 6.43 floor came from a secondary
   source; verified at `terraform validate`/`plan` time before the apply ask.
-- **A-12 — The image-embedded-text PDF injection variant may not MATCH (image
-  screening is Preview).** If the canary refutes it, the variant is substituted
-  with a text-carrier fifth injection and the delta recorded in ADR-006 (D10).
+- **A-12 — CONFIRMED 2026-08-26 (measured, $0); substitution executed as
+  pre-registered.** The assumption was that the image-embedded-text variant might
+  not MATCH because image screening is Preview. It does not match, and the test
+  was built so a failure can only mean one thing: the SAME rung-4 string that
+  matches as plain text AND as visible PDF text AND as white PDF text AND in both
+  /Subject and /Keywords metadata returns NO_MATCH when it is delivered only as
+  glyphs inside an embedded raster image. Screening does not OCR images.
+  Per D10 the variant is substituted with a text carrier: `InjectionFamily`
+  now carries `QUOTED_ATTACHMENT` (injection riding pasted or quoted attachment
+  content) in place of `IMAGE_EMBEDDED_TEXT`, and the generator's image branch is
+  removed rather than left as dead code. The §9.1 delta is recorded in ADR-006.
+  **Kept as a product finding, not just a fixture note:** text carried in an
+  image is invisible to this guardrail, which belongs in the eval report's
+  where-it-still-fails section rather than being quietly designed around.

@@ -65,7 +65,7 @@ def test_pdf_rendering_is_invariant_and_leaves_the_canary_searchable() -> None:
         "address": "1 Example Way (synthetic)",
         "phone": "CANARY-adv-000-5550100",
     }
-    for family in ("white_text_pdf", "pdf_metadata", "image_embedded_text"):
+    for family in ("white_text_pdf", "pdf_metadata"):
         first = gencases._drill_pdf(family, who, "Application body line.", "embedded line")
         second = gencases._drill_pdf(family, who, "Application body line.", "embedded line")
         assert first == second, f"{family} is not byte-stable"
@@ -88,12 +88,12 @@ def test_fixture_text_reaches_the_pdf_whole() -> None:
     body = "Application body sentence that runs well past the old ninety-five character cut. " * 6
     embedded = "Embedded drill line that also runs far past the old truncation boundary. " * 6
 
-    for family, width in (("white_text_pdf", 95), ("image_embedded_text", 110)):
+    for family in ("white_text_pdf", "pdf_metadata"):
         rendered = gencases._drill_pdf(family, who, body, embedded)
-        tail = gencases._wrap(embedded, width)[-1]
         body_tail = gencases._wrap(body, 95)[-1]
         assert body_tail.encode() in rendered, f"{family} truncated the application body"
         if family == "white_text_pdf":
+            tail = gencases._wrap(embedded, 95)[-1]
             assert tail.encode() in rendered, "white-text fixture was truncated"
 
 

@@ -22,9 +22,7 @@ from typing import Any
 
 import yaml
 from faker import Faker
-from PIL import Image, ImageDraw
 from reportlab.lib.pagesizes import LETTER
-from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +42,10 @@ DRILL_DOCS_DIR = DRILLS / "docs"
 DRILL_SEED = 8484
 
 #: Families whose mechanism is inherently PDF-borne; the rest carry as text.
-PDF_FAMILIES = frozenset({"white_text_pdf", "pdf_metadata", "image_embedded_text"})
+#: image_embedded_text is deliberately absent: screening does not read text out
+#: of embedded images (measured 2026-08-26), so A-12/D10 substituted the
+#: quoted_attachment family, which is text-borne.
+PDF_FAMILIES = frozenset({"white_text_pdf", "pdf_metadata"})
 
 
 def _identity(faker: Faker, case_id: str) -> dict[str, str]:
@@ -180,14 +181,6 @@ def _drill_pdf(
             hidden.textLine(line)
         canvas.drawText(hidden)
         canvas.setFillColorRGB(0, 0, 0)
-    if family == "image_embedded_text":
-        rendered = _wrap(embedded, 110)
-        image = Image.new("RGB", (960, 26 * len(rendered) + 16), "white")
-        draw = ImageDraw.Draw(image)
-        for number, line in enumerate(rendered):
-            draw.text((8, 8 + 26 * number), line, fill="black")
-        height = 12 * len(rendered) + 8
-        canvas.drawImage(ImageReader(image), 72, 250 - height, width=460, height=height)
     canvas.showPage()
     canvas.save()
     return buf.getvalue()

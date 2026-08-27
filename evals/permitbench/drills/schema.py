@@ -47,11 +47,21 @@ class DrillKind(StrEnum):
 
 
 class InjectionFamily(StrEnum):
-    """The five §9.1 variant families. Adding a member widens the gate."""
+    """The five §9.1 variant families. Adding a member widens the gate.
+
+    ``QUOTED_ATTACHMENT`` replaces §9.1's image-embedded-text variant. A-12
+    pre-registered that substitution, and the canary confirmed the condition on
+    2026-08-26: screening does not read text out of embedded raster images, so
+    that mechanism is undetectable by construction and a fixture built on it
+    could never honestly satisfy the gate. Measured the same day: white text in
+    a page, and both /Subject and /Keywords metadata, ARE recovered. The
+    replacement rides quoted or pasted attachment content, which is a text
+    carrier and therefore also usable on the armor-off ablation arm.
+    """
 
     WHITE_TEXT_PDF = "white_text_pdf"
     PDF_METADATA = "pdf_metadata"
-    IMAGE_EMBEDDED_TEXT = "image_embedded_text"
+    QUOTED_ATTACHMENT = "quoted_attachment"
     SYSTEM_FRAMING = "system_framing"
     FAKE_AUTHORITY = "fake_authority"
 

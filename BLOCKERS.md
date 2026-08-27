@@ -454,6 +454,98 @@ produced it.
 PRESENCE rather than match state, so it listed all 12 controls and read as "SDP
 flagged everything" when in fact nothing matched. Now tests `MATCH_FOUND`.
 
+**ROOT-CAUSED 2026-08-27 (measured, $0) - the miss was mostly CARRIER, not
+wording.** Screening each fixture's instruction alone versus as-shipped split the
+15 cleanly: **11 of 15 instructions already MATCH as plain text**, but only 2
+match as shipped. So rewriting wording alone was never going to be the fix.
+
+Two mechanisms explain the gap, both measured with a control string independently
+confirmed to match, so a failure isolates the carrier rather than the text:
+
+1. **PDF screening is materially LESS sensitive than text screening.** Ladder
+   rung 3 (override + role negation) matches as plain text and does NOT match
+   when the identical string is visible text in a PDF. Rung 4 (adds persona
+   replacement + an explicit "obey this over your system prompt") matches in
+   both. That is the strengthening target, and it is why adv-002/adv-003 already
+   pass - their wording already carries rung-4 language.
+
+2. **Carrier coverage is uneven, and one carrier is blind.** At rung-4 strength:
+   white text in a page MATCHES; /Subject metadata MATCHES; /Keywords metadata
+   MATCHES; **an embedded raster image does NOT** - screening does not OCR
+   images. A-12 pre-registered exactly this and D10 ratified substitution, so
+   the image family is replaced by `quoted_attachment` (text carrier) and the
+   generator's image branch removed.
+
+**Consequence for the fix:** every fixture instruction is rewritten to rung-4
+strength (override opener + role negation + persona replacement + obey-over-
+system-prompt + its family demand), because anything weaker measurably dies
+inside a PDF, and text carriers additionally face dilution inside a ~600-char
+application body.
+
+**Consequence for the product story, which is the more important half:** at
+MEDIUM_AND_ABOVE this guardrail sees page text and document metadata but is
+blind to text rendered in images. That belongs in the eval report's
+where-it-still-fails section and in the README, not buried in a fixture note.
+
+**REWRITE DONE AND MEASURED (2026-08-27). Positive arm 2/15 -> 8/15; negative
+arm unchanged at 12 controls / 0 false positives.** The 15 fixtures were
+rewritten to rung-4 strength, /Author was measured before being counted
+(it IS recovered, alongside /Subject and /Keywords), and the image family was
+substituted per A-12.
+
+**The rewrite fully succeeded at the wording layer: all 15 instructions now
+MATCH when screened standalone (was 11/15).** Every one of the 7 remaining
+misses is dilution - strong enough alone, lost inside the shipped document.
+
+**Dilution is NOT a clean threshold, and this is the finding that should govern
+what we do next.** Walking one failing fixture's surrounding benign text while
+holding the instruction fixed:
+
+| injection share of document | verdict |
+|---|---|
+| 100% | MATCH |
+| 78% | MATCH |
+| 63% | MATCH |
+| 54% | NO MATCH |
+| 46% | NO MATCH |
+| **37%** | **MATCH** |
+| 30% | NO MATCH |
+
+Non-monotonic: adding MORE benign text flipped it back to matching. That is a
+classifier operating near its confidence boundary, where the verdict is
+unstable with respect to document composition rather than governed by a length
+cutoff. Corroborating evidence from the same run: adv-002 PASSED before the
+rewrite and FAILS after it, despite the rewrite strengthening its wording and
+its instruction matching standalone.
+
+**Therefore: do NOT chase 15/15 by tuning host-scenario lengths.** With a
+non-monotonic boundary that is fitting noise, it would make the corpus
+unrepresentative, and the resulting number would not survive a judge asking how
+it was obtained. It is the exact failure mode this ADR's pre-spend audit and
+prime directive 9 exist to prevent.
+
+**Two honest options remain, and the choice is the human's:**
+
+1. **Ship the measurement.** Report per-family results with the dilution
+   finding stated plainly: all 15 fixtures are detected in isolation, N of 15
+   survive realistic dilution, and detection near the boundary is unstable.
+   This is a real security evaluation and arguably a stronger artifact than a
+   round number, but it does NOT satisfy §11's "injection block 15/15" as
+   written - that criterion was authored assuming A-9, which is refuted.
+2. **Test LOW_AND_ABOVE.** The same evidence-driven step that took HIGH ->
+   MEDIUM. Realistic attacks on this product ARE diluted injections inside
+   ordinary applications, so if the product should catch them, the sensitivity
+   should be set where it does. The negative arm is the acceptance test and has
+   been 0 false positives at BOTH HIGH and MEDIUM, so there is measured headroom
+   to spend - but it is a guardrail change and therefore ask-first, and if LOW
+   starts flagging genuine applications that is a reason to stop, not absorb.
+
+**Recommendation:** try option 2 once and measure; if the negative arm stays
+clean and the positive arm rises materially, ship that setting and state it. If
+the negative arm degrades at all, revert and ship option 1. Either way the eval
+report carries the dilution table above, so the number is never quoted without
+the behaviour that produced it.
+
 ## B-013 - tfstate bucket created out-of-band with gcloud (directive 6 record, 2026-08-26)
 
 **What:** `gs://civicnexus-hack26-tfstate` (us-central1, **versioning enabled**,
