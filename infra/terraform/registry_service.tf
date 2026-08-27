@@ -13,7 +13,10 @@ resource "google_artifact_registry_repository" "images" {
 variable "registry_image" {
   description = "Full image URI for the registry service (built before apply)."
   type        = string
-  default     = ""
+  # A8 (ratified 2026-08-27): non-empty default = the live deployed tag, so an
+  # apply with a forgotten -var can never plan the LIVE registry service as
+  # destroyed (the B-010 "3 to destroy" trap). Override only intentionally.
+  default = "us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/registry:v0.1.0"
 }
 
 # Service identity: the registry runs as its own SA with exactly Firestore

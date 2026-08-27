@@ -74,8 +74,11 @@ verify-phase-4:
 verify-phase-5:
 	@$(MAKE) test && uv run python -m scripts.armor_canary && uv run python -m evals.drill_runner --expect $(or $(EXPECT),14) && uv run python -m scripts.drill_tool_poisoning && $(MAKE) dlq-replay && echo PASS: make verify-phase-5 || (echo FAIL: make verify-phase-5 && exit 1)
 
+# Phase 6 exit (ADR-007 §4): $0 - HTTP + Firestore only, no engine calls.
+# Needs PROJECT_ID, CONSOLE_URL (public reader), CONSOLE_CLERK_URL (private);
+# clerk auth is the caller's own gcloud identity token.
 verify-phase-6:
-	@echo FAIL: verify-phase-6 not implemented until Phase 6 && exit 1
+	@$(MAKE) test && uv run python scripts/verify_phase6.py && echo PASS: make verify-phase-6 || (echo FAIL: make verify-phase-6 && exit 1)
 
 verify-phase-7:
 	@echo FAIL: verify-phase-7 not implemented until Phase 7 && exit 1
