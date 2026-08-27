@@ -1,7 +1,7 @@
 # PROGRESS
 
 **Current phase: 5 — Armor + drills (opened 2026-08-26). Phases 0–4 COMPLETE, all gates passed.**
-Last updated: 2026-08-26. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
+Last updated: 2026-08-27. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
@@ -15,7 +15,7 @@ Last updated: 2026-08-26. Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTI
 | 5 Armor + drills | IN PROGRESS — opened 2026-08-26 |
 | 6–7 | not started |
 
-## Session pause 2026-08-26 (evening) - cold-start handoff
+## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
 
 **Phase 5 stage status:** stages 0-3 COMPLETE. Stage 4 (harness) is 1 of 6
 scripts done. Stage 5 (terraform) APPLIED. Nothing is running; no background
@@ -34,7 +34,7 @@ truncation class is structurally closed.
 sensitivity cost nothing on real content. Full reasoning, the sensitivity
 ladder, and the reporting rule are in B-014.
 
-**FIRST THING TOMORROW - B-014 step B (the only thing blocking the gate):**
+**[DONE 2026-08-27 - see the measured section below] B-014 step B:**
 strengthen the 15 injection fixtures. The threshold lever is spent; wording is
 the remaining gap. Concretely: edit `embedded_instruction` in
 `evals/permitbench/drills/templates.json` so each fixture layers an unambiguous
@@ -62,6 +62,47 @@ Everything else (init, plan, validate, gcloud reads, imports, sanitize calls)
 works. Applies have to be human-run; the command is
 `terraform -chdir=infra/terraform apply -var "registry_image=us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/registry:v0.1.0"`
 and the `-var` is mandatory or the live registry service plans as destroyed.
+
+## Phase 5 injection gate - MEASURED 14/15 (2026-08-27, output observed directly)
+
+**Shipped setting:** `pi_and_jailbreak {ENABLED, LOW_AND_ABOVE}` on the live
+`civicnexus-armor` template, applied by the human.
+
+| setting | fixtures | positive arm | negative arm |
+|---|---|---|---|
+| HIGH | original | 0/15 | 12 controls, 0 false positives |
+| MEDIUM_AND_ABOVE | original | 2/15 | 12 controls, 0 false positives |
+| MEDIUM_AND_ABOVE | strengthened | 8/15 | 12 controls, 0 false positives |
+| **LOW_AND_ABOVE** | **strengthened** | **14/15** | **12 controls, 0 false positives** |
+
+**14/15 is stable across three consecutive runs** with the same single miss, so
+the number is reproducible and safe for the video. Evidence:
+`.deploy/armor_canary_last_run.json`.
+
+**Two levers, reported separately so the number never hides its provenance:**
+(1) sensitivity, loosened in two measured steps and kept at each only because
+the negative arm stayed clean - across all four configurations the guardrail
+never flagged a real application, letter, determination or memory string;
+(2) fixture strength, rewritten to the requirement a sensitivity ladder measured
+rather than to whatever made the gate go green.
+
+**The single holdout ships as a miss, deliberately.**
+adv-001 sits at 46% injection share; its two same-family siblings sit at 45%
+and 47% and both pass, and its instruction matches standalone. A fixture failing
+between two passing fixtures at the same dilution ratio is boundary behaviour,
+not a defect, and the dilution boundary was measured to be non-monotonic
+(MATCH at 63%, NO MATCH at 54% and 46%, MATCH again at 37%). Tuning it would fit
+noise. B-014 carries the reasoning.
+
+**Honest §11 delta:** the exit criterion reads "injection block 15/15"; measured
+is 14/15. It was authored assuming A-9, now refuted. Reported as 14/15 with the
+progression table, not restated to fit and not closed by tuning.
+
+**Coverage gap worth naming in the README and eval report:** screening reads
+page text and all three document-info entries (/Subject, /Keywords, /Author -
+each measured individually) but does NOT read text rendered inside embedded
+raster images. A-12 pre-registered this; D10's substitution was executed
+(`quoted_attachment` replaces the image family).
 
 ## IAM evidence log (per Working Agreement: role + principal + reason, always)
 

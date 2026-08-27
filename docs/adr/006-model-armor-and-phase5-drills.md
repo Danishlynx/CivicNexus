@@ -102,7 +102,13 @@ surprises, the posture is re-decided with the human before any billed run.
 
 **D5 — One Terraform-managed template.** `google_model_armor_template`
 `civicnexus-armor` in us-central1: `pi_and_jailbreak_filter_settings`
-{ENABLED, HIGH}; `malicious_uri_filter_settings` {ENABLED} (no confidence
+**{ENABLED, LOW_AND_ABOVE}** — *amended 2026-08-27; drafted as HIGH, which
+measured 0/15. `confidence_level` is the MINIMUM confidence at which the filter
+reports, so HIGH is the LEAST sensitive setting despite reading like the
+strongest. Each loosening was ratified only against a clean negative arm
+(12 controls, 0 false positives at every setting); progression table and the
+single characterised holdout are in B-014*; `malicious_uri_filter_settings`
+{ENABLED} (no confidence
 knob exists — recorded delta); `sdp_settings.basic_config` enabled (advisory
 per D4); `template_metadata`: both logging flags true, `enforcement_type
 INSPECT_AND_BLOCK` (statement of intent; enforcement is ours per D3). CSAM is

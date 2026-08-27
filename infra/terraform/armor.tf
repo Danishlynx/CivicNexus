@@ -23,12 +23,23 @@ resource "google_model_armor_template" "civicnexus" {
     # disclosure demand trips it. A permit system is attacked with "approve my
     # permit", not "reveal your system prompt".
     #
-    # MEDIUM_AND_ABOVE is the setting under test. The canary's negative arm is
-    # the acceptance test — 12 controls / 0 false positives at HIGH is the
-    # baseline, so any cost of the added sensitivity is measured, not assumed.
+    # Measured progression, each step kept only because the negative arm stayed
+    # clean: HIGH scored 0/15, MEDIUM_AND_ABOVE 2/15, and 8/15 after the
+    # fixtures were strengthened to the ladder's measured requirement. The
+    # remaining misses are dilution — every fixture matches in isolation — and
+    # the dilution boundary is non-monotonic, so tuning fixture lengths to close
+    # the gap would fit noise rather than measure anything (B-014).
+    #
+    # LOW_AND_ABOVE is the setting under test. It is defensible on threat
+    # grounds, not convenience: attacks on a permit system ARE diluted
+    # injections inside ordinary applications, which is exactly the band being
+    # missed. The canary's negative arm is the acceptance test and has held at
+    # 12 controls / 0 false positives at BOTH prior settings, so there is
+    # measured headroom to spend. If it degrades at all, revert — a guardrail
+    # that quarantines real applications is worse than one that misses.
     pi_and_jailbreak_filter_settings {
       filter_enforcement = "ENABLED"
-      confidence_level   = "MEDIUM_AND_ABOVE"
+      confidence_level   = "LOW_AND_ABOVE"
     }
 
     # No confidence knob exists on this filter — recorded delta, confirmed

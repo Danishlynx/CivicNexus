@@ -50,6 +50,14 @@ Remove entries as they are confirmed or refuted (refutations become ADRs/BLOCKER
   language. That is a finding about the product's security posture, not only
   about the fixtures. Resolution is a human decision — see B-014.
 
+  **CLOSED 2026-08-27 at 14/15.** Resolved by two levers, each measured and each
+  reported separately so the number never hides how it was obtained: sensitivity
+  moved HIGH -> MEDIUM_AND_ABOVE -> LOW_AND_ABOVE (kept only because the negative
+  arm stayed at 0 false positives throughout), and the fixtures were strengthened
+  to the ladder's measured requirement. All 15 match in isolation; 14 survive
+  realistic dilution, stably across three runs. The single holdout is left as a
+  miss on purpose - see B-014 for why tuning it would fit noise.
+
 - **A-10 — Driver-side ADC (project owner) covers Model Armor template CRUD and
   sanitize; no new IAM grants needed (ADR-006 D17).** First 403 stops work and
   becomes an ask naming role + principal + reason.
