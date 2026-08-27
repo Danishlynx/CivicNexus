@@ -32,6 +32,85 @@ excluded). B-012 push mitigation also ratified: push after every step.
 Build proceeds per ADR-007 §5: steps 1–3 local ($0, no IAM), step 4 is the
 human-run `terraform apply` that fixes the public URL.
 
+## Phase 6 build (2026-08-27, one session): steps 1–8 BUILT; awaiting the ONE human apply
+
+**Sequencing delta, flagged:** console pages (steps 5–7) were built BEFORE the
+step 4 apply, because the apply is the scarce human step — one apply now
+deploys the complete console. Everything else follows §5's order.
+
+- **Steps 1–2 (libs):** `Approval` contract + `ApprovalStore` (write-once,
+  token never logged) + the A6 guard: `CaseStore.transition` into
+  ISSUED/DENIED verifies the row exists and names THIS case and THIS target;
+  default path byte-identical. `list_cases()`/`list_incidents()` with per-doc
+  validation tolerance, sorted in Python.
+- **Step 3+5–7 (console):** one FastAPI+Jinja2 package, `CONSOLE_MODE`
+  fail-closed to reader; write routes not mounted in reader (404, not 403);
+  clerk module imported ONLY in clerk mode and is the sole holder of identity
+  decoding; buttons derived from `ALLOWED_TRANSITIONS`+
+  `APPROVAL_REQUIRED_TARGETS` (A10 ownership split cited); incidents render
+  METADATA ONLY; `/evals` renders the report unedited, red gate visible;
+  synthetic-data+CANARY footer on every page; D7/D13 enforced by source-grep
+  tests (no Firestore mutations, no model/engine/storage tokens, identity
+  decoding confined to clerk.py).
+- **§5 topics note (honest):** no per-decision topics exist beyond
+  `action.approved`, so clerk decisions ride it with `payload.action` naming
+  approve/deny/request_info/issue; re-admit publishes `review.requested`;
+  closure `case.closed`.
+- **Step 4 (built, NOT applied):** `console_service.tf` — 2 SAs, the 3
+  ratified grants, 2 services from one image, `allUsers` on the READER only;
+  services `depends_on` their grants (fresh-IAM race). A8 executed:
+  both image vars carry non-empty live-tag defaults; **`terraform plan` with
+  NO -var → `9 to add, 0 to change, 0 to destroy`** (measured twice, after
+  every tf edit). Image `console:v0.1.0` built via Cloud Build (builds
+  9d27d4f2 46s, rebuilt post-audit-fixes 2026-08-27).
+- **Step 8:** `scripts/verify_phase6.py` + real `make verify-phase-6` ($0).
+- **Local reader smoke against REAL Firestore data (output observed
+  directly):** all 7 routes 200 (queue 5,022B; case-5ea037e64ef8 detail
+  5,866B with determination card, disabled controls + IAM reason, verifier
+  panel, canary footer; live incident with pi_and_jailbreak verdict and no
+  object link; evals with the failing gate visible); write attempt → 404.
+- **Gate:** `make test` = **283 passed, 14 skipped**; ruff + `mypy --strict`
+  clean over **117 files now including `services/`** (added to pytest
+  testpaths, Makefile AND cloudbuild.yaml mypy args).
+
+**Pre-apply adversarial audit (ratified method, output observed directly):**
+22-agent workflow, 5 review dimensions, every finding independently
+adversarially verified. **17 raw → 15 confirmed (4 major) / 2 refuted.** All
+15 closed same-session (commit e33ea0b), the majors being: (1) `create_case`
+could birth a case directly in ISSUED/DENIED past the §4 guard — now refused
+unconditionally; (2–4) verifier could pass against a broken deployment —
+write-404 was mode-ambiguous, no anonymous-clerk refusal probe, runtime SA
+never checked; all now asserted (generic-body 404 + reader badge, IAM refusal
+on the clerk URL, Run Admin API `template.serviceAccount` for BOTH services);
+(5) CI mypy scope had silently diverged from `make test`. Also closed:
+production form-field identity fallback (now emulator-gated), stale
+`from_state` in audit events (now returned from the transaction), Pub/Sub
+fixture residue (verifier fixtures use a non-publishing store), emulator-env
+guard, `getIamPolicy` v3 pinning, IAM-propagation retries, evidence-precision
+label narrowing, ADR-007 §4 auth-pattern delta recorded. The 2 refuted
+findings (approval-row replay; clerk-invoker forgery) are recorded in the
+audit output with their refutations.
+
+**Honest gaps, tracked:**
+1. **The emulator-enabled test path has never executed anywhere:** no Docker
+   on this machine, and every Phase 6 commit is `[skip ci]`. The first real
+   CI push will, for the first time, collect `services/registry`'s emulator
+   tests and the new approvals-guard emulator test. Recommend ONE intentional
+   CI push before freeze (rides the billed 12-case eval-smoke → needs a spend
+   OK).
+2. **Clean-project spin-up (Phase 7 DoD):** the A8 image-var defaults
+   hardcode this project's Artifact Registry; overrides documented in
+   `terraform.tfvars.example` and must be part of the Phase 7 README.
+3. **D13 role check scope:** the verifier asserts project-level DIRECT
+   bindings for the reader SA (stated in its label); resource-scoped or
+   group-mediated grants are outside its reach.
+
+**NEXT (human, one action):** from the repo root run
+`terraform -chdir=infra/terraform apply`
+(no -var needed — defaults are the live tags; plan shows 9 add / 0 destroy).
+Then paste both service URLs; the agent records them, runs
+`make verify-phase-6`, and the freeze decision follows its result.
+
 ## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
 
 **Phase 5 stage status:** stages 0-3 COMPLETE. Stage 4 (harness) is 1 of 6
