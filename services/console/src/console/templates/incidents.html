@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Incidents · CivicNexus{% endblock %}
+{% block content %}
+<h1>Incidents</h1>
+{% if invalid_count %}
+<p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
+validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
+{% endif %}
+<table>
+  <thead>
+    <tr><th>Incident</th><th>Case</th><th>Kind</th><th>Screening point</th><th>Status</th><th>Raised</th></tr>
+  </thead>
+  <tbody>
+    {% for incident in incidents %}
+    <tr>
+      <td><a href="/incidents/{{ incident.incident_id }}"><code>{{ incident.incident_id }}</code></a></td>
+      <td><a href="/cases/{{ incident.case_id }}"><code>{{ incident.case_id }}</code></a></td>
+      <td>{{ incident.kind.value }}</td>
+      <td>{{ incident.screening_point.value if incident.screening_point else '—' }}</td>
+      <td><span class="badge">{{ incident.status.value }}</span></td>
+      <td>{{ incident.ts.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="note">No incidents.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

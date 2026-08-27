@@ -11,6 +11,8 @@ COPY pyproject.toml uv.lock conftest.py ./
 COPY libs ./libs
 COPY agents ./agents
 COPY services ./services
+# The /evals page renders this file unedited (ADR-007 D5) - report only, not docs/.
+COPY docs/eval-report.md ./docs/eval-report.md
 
 # Install only the console package's dependency closure, no dev group.
 RUN uv sync --frozen --no-dev --package civicnexus-console

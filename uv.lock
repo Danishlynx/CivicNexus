@@ -671,6 +671,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "google-cloud-firestore" },
     { name = "jinja2" },
+    { name = "python-multipart" },
     { name = "uvicorn" },
 ]
 
@@ -682,6 +683,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "google-cloud-firestore", specifier = ">=2.16" },
     { name = "jinja2", specifier = ">=3.1" },
+    { name = "python-multipart", specifier = ">=0.0.9" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]
 

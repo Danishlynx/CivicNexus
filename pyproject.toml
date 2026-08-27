@@ -81,6 +81,7 @@ target-version = "py312"
 [tool.ruff.lint.per-file-ignores]
 # FastAPI's dependency-injection idiom is a function call in a default (B008).
 "services/*/src/*/app.py" = ["B008"]
+"services/*/src/*/clerk.py" = ["B008"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]

@@ -18,15 +18,19 @@ a request body. The incident view renders metadata only.
 """
 
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from civicnexus.contracts import Actor, EventEnvelope
+from civicnexus.contracts import Actor, Case, EventEnvelope, Incident
 from civicnexus.otel import get_logger
 from civicnexus.tools import ApprovalStore, CaseStore, IncidentStore
-from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
+
+from console.actions import clerk_actions, fleet_owns
 
 _log = get_logger("console")
 
@@ -97,11 +101,6 @@ def get_approval_store() -> ApprovalStore:
 
 read_router = APIRouter()
 
-#: Clerk-only routes (mounted ONLY when CONSOLE_MODE=clerk — in reader mode
-#: they do not exist, so a write attempt on the public service is a 404, not a
-#: 403 with a tempting handler behind it). Populated in the action step.
-clerk_router = APIRouter()
-
 
 @read_router.get("/healthz")
 def healthz() -> dict[str, str]:
@@ -133,6 +132,124 @@ def api_cases(cases: CaseStore = Depends(get_case_store)) -> JSONResponse:
     )
 
 
+def _trace_url(trace_id: str) -> str | None:
+    """Cloud Trace explorer deep link (§8) — URL shape live-verified at the
+    Phase 0 gate (clicked through by the human, recorded in PROGRESS)."""
+    project = os.environ.get("PROJECT_ID", "")
+    if not trace_id or not project:
+        return None
+    return (
+        "https://console.cloud.google.com/traces/explorer"
+        f";traceId={trace_id};duration=PT1H?project={project}"
+    )
+
+
+def _derived_feed(case: Case, case_incidents: list[Incident]) -> list[tuple[datetime, str]]:
+    """Per-case timeline DERIVED from the case record and its incidents —
+    not a replay of the §5 event stream, which has no persistent subscriber
+    (ADR-007 D5 rule 2). The template labels it as derived."""
+    entries: list[tuple[datetime, str]] = [(case.created_at, "Case received")]
+    for timer in case.timers:
+        entries.append((timer.fires_at, f"Timer {timer.timer_id} fires: {timer.reason}"))
+    for incident in case_incidents:
+        entries.append(
+            (incident.ts, f"Incident {incident.incident_id} ({incident.kind.value}) raised")
+        )
+    entries.append((case.updated_at, f"Last transition, now {case.state.value}"))
+    entries.sort(key=lambda e: e[0])
+    return entries
+
+
+@read_router.get("/cases/{case_id}", response_class=HTMLResponse)
+def case_detail(
+    case_id: str,
+    request: Request,
+    cases: CaseStore = Depends(get_case_store),
+    incidents: IncidentStore = Depends(get_incident_store),
+) -> HTMLResponse:
+    try:
+        case = cases.get_case(case_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValidationError as exc:
+        # Honest failure, scoped to this page: the queue stays up (D5).
+        raise HTTPException(
+            status_code=500, detail=f"case document {case_id} failed contract validation"
+        ) from exc
+    listed_incidents, _ = incidents.list_incidents()
+    case_incidents = [i for i in listed_incidents if i.case_id == case_id]
+    return _templates.TemplateResponse(
+        request,
+        "case.html",
+        {
+            "mode": request.app.state.mode,
+            "case": case,
+            "actions": clerk_actions(case.state),
+            "fleet_owns": fleet_owns(case.state),
+            "feed": _derived_feed(case, case_incidents),
+            "case_incidents": case_incidents,
+            "trace_url": _trace_url(case.trace_id),
+        },
+    )
+
+
+@read_router.get("/incidents", response_class=HTMLResponse)
+def incident_list(
+    request: Request, incidents: IncidentStore = Depends(get_incident_store)
+) -> HTMLResponse:
+    listed, invalid = incidents.list_incidents()
+    return _templates.TemplateResponse(
+        request,
+        "incidents.html",
+        {"mode": request.app.state.mode, "incidents": listed, "invalid_count": len(invalid)},
+    )
+
+
+@read_router.get("/incidents/{incident_id}", response_class=HTMLResponse)
+def incident_detail(
+    incident_id: str,
+    request: Request,
+    incidents: IncidentStore = Depends(get_incident_store),
+) -> HTMLResponse:
+    try:
+        incident = incidents.get(incident_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return _templates.TemplateResponse(
+        request,
+        "incident.html",
+        {"mode": request.app.state.mode, "incident": incident},
+    )
+
+
+@read_router.get("/api/incidents")
+def api_incidents(incidents: IncidentStore = Depends(get_incident_store)) -> JSONResponse:
+    listed, invalid = incidents.list_incidents()
+    return JSONResponse(
+        {
+            "incidents": [i.model_dump(mode="json") for i in listed],
+            "excluded_invalid_ids": invalid,
+        }
+    )
+
+
+@read_router.get("/evals", response_class=HTMLResponse)
+def evals(request: Request) -> HTMLResponse:
+    """Renders docs/eval-report.md UNEDITED, failing gate visible (B-006
+    honesty on the record). No Looker Studio dashboard was ever built."""
+    report_path = Path(os.environ.get("EVAL_REPORT_PATH", "docs/eval-report.md"))
+    report = (
+        report_path.read_text(encoding="utf-8")
+        if report_path.exists()
+        else "eval report not present in this image"
+    )
+    return _templates.TemplateResponse(
+        request,
+        "evals.html",
+        {"mode": request.app.state.mode, "report": report},
+    )
+
+
 def create_app(mode: str | None = None) -> FastAPI:
     """Build the app for one exposure. ``mode=None`` reads CONSOLE_MODE."""
     resolved = resolve_mode(mode if mode is not None else os.environ.get("CONSOLE_MODE"))
@@ -140,6 +257,10 @@ def create_app(mode: str | None = None) -> FastAPI:
     application.state.mode = resolved
     application.include_router(read_router)
     if resolved == _CLERK:
+        # Imported ONLY here: in reader mode the clerk module (the sole
+        # holder of identity decoding) is never even imported (D2).
+        from console.clerk import clerk_router
+
         application.include_router(clerk_router)
     return application
 

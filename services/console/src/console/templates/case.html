@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ case.case_id }} · CivicNexus{% endblock %}
+{% block content %}
+<h1><code>{{ case.case_id }}</code>
+  <span class="badge {{ case.state.value }}">{{ case.state.value }}</span></h1>
+<p>
+  <strong>{{ case.permit_type }}</strong> — {{ case.applicant.name }}
+  &lt;{{ case.applicant.email }}&gt;
+  {% if trace_url %} · <a href="{{ trace_url }}">trace</a>{% endif %}
+</p>
+
+<h2>Clerk actions</h2>
+{% if fleet_owns %}
+  <p class="note">No clerk action in this state; the fleet owns this case.</p>
+{% elif case.state.value == 'CLOSED' %}
+  <p class="note">Case closed — no further actions.</p>
+{% elif actions %}
+  {% if mode == 'clerk' %}
+    {% for action in actions %}
+    <form method="post" action="/cases/{{ case.case_id }}/action" style="display:inline">
+      <input type="hidden" name="target" value="{{ action.target.value }}">
+      <button type="submit">{{ action.label }}</button>
+      {% if action.needs_approval_row %}<span class="note">mints an approvals/ row</span>{% endif %}
+    </form>
+    {% endfor %}
+  {% else %}
+    <p class="note">Read-only public view: these controls are disabled. Write routes are not
+    mounted on this service, and its service account holds read-only Firestore access only —
+    it cannot write because IAM refuses.</p>
+    {% for action in actions %}
+    <button disabled>{{ action.label }}</button>
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+<h2>Determinations ({{ case.determinations | length }})</h2>
+{% for det in case.determinations %}
+<div style="border:1px solid var(--line); background:#fff; padding:0.8rem 1rem; margin:0.8rem 0">
+  <p><code>{{ det.agent_id }}@{{ det.agent_version }}</code>
+     — <strong>{{ det.outcome.value }}</strong> @ confidence {{ '%.2f' | format(det.confidence) }}</p>
+  <p>{{ det.rationale }}</p>
+  {% for citation in det.citations %}
+  <blockquote style="border-left:3px solid var(--accent); margin:0.5rem 0; padding:0.2rem 0.8rem">
+    <code>§{{ citation.chunk_id }}</code>: “{{ citation.quote }}”
+  </blockquote>
+  {% endfor %}
+  {% if det.verifier_report is not none %}
+  <details>
+    <summary>Verifier report</summary>
+    <pre style="overflow-x:auto">{{ det.verifier_report | tojson(indent=2) }}</pre>
+  </details>
+  {% endif %}
+</div>
+{% else %}
+<p class="note">No determinations yet.</p>
+{% endfor %}
+
+{% if case_incidents %}
+<h2>Incidents</h2>
+<ul>
+  {% for incident in case_incidents %}
+  <li><a href="/incidents/{{ incident.incident_id }}"><code>{{ incident.incident_id }}</code></a>
+      — {{ incident.kind.value }} · {{ incident.status.value }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<h2>Activity</h2>
+<p class="note">Derived from the case record — not an event-stream replay (the §5 topics
+have no persistent subscriber).</p>
+<table>
+  <tbody>
+    {% for ts, label in feed %}
+    <tr><td class="note">{{ ts.strftime('%Y-%m-%d %H:%M:%S') }} UTC</td><td>{{ label }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Budget &amp; timers</h2>
+<p class="note">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
+· ${{ '%.4f' | format(case.budget.cost_usd) }}</p>
+{% if case.timers %}
+<ul>
+  {% for timer in case.timers %}
+  <li class="note"><code>{{ timer.timer_id }}</code> fires
+      {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% if case.docs %}
+<h2>Documents</h2>
+<ul>{% for doc in case.docs %}<li><code>{{ doc }}</code></li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}
