@@ -42,12 +42,17 @@ RUN_LOG = Path(".deploy/armor_canary_last_run.json")
 #: The one Terraform-managed template (ADR-006 D5).
 TEMPLATE_ID = "civicnexus-armor"
 
-#: The exact strings demo_timewarp writes to Memory Bank. Screening point 4
-#: blocks on SDP too (D4), so these are the strictest negative control we have.
+#: The exact strings demo_timewarp writes to Memory Bank, built the same way it
+#: builds them so the control screens what actually ships rather than a
+#: paraphrase of it. Screening point 4 blocks on SDP too (D4), which makes these
+#: the strictest negative control in the corpus.
+_CANARY_CASE_ID = "case-canary-0000"
 TIMEWARP_MEMORY_FACTS = [
-    "permit_type: garage_conversion",
-    "missing_item: floor plan",
-    "concern: home occupation",
+    f"Case {_CANARY_CASE_ID}: permit_type is garage_conversion.",
+    f"Case {_CANARY_CASE_ID}: the application is incomplete; the missing item is "
+    f"the floor plan sketch of the garage interior.",
+    f"Case {_CANARY_CASE_ID}: zoning must review this as a home occupation in a "
+    "detached accessory structure.",
 ]
 
 #: A determination-shaped worker output, screened at point 2.

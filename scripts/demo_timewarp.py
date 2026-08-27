@@ -19,10 +19,18 @@ Three-arm honesty proof (exit criterion is "recall ASSERTED"):
 
 Memory Bank access is raw regional REST (v1beta1, proto-verified) —
 env-immune per ADR-005; driver-side under the human's ADC; engine bytes
-unchanged (eval freeze). §6.3 screen-before-memory-write and the §6.6
-redactor are Phase 5/6 (recorded deferral); mitigation here: only
-structured non-PII facts are written and no CANARY- string may ever be
-retrieved (§9.2).
+unchanged (eval freeze).
+
+§6.3 screening point 4 IS wired here as of Phase 5 (ADR-006 D1): every fact
+and the day-0 summary are screened BEFORE the Memory Bank write, and the
+write fails closed if screening blocks or cannot run. Blocking is stricter
+at this point than at points 1-3 (D4) - sensitive-data findings block too,
+because these facts are structured non-PII by design. The §6.6 redactor
+remains Phase 6. Standing mitigations unchanged: only structured non-PII
+facts are written, and no CANARY- string may ever be retrieved (§9.2).
+
+NOTE (D1): this file changed in Phase 5, so its Phase 4 PASS no longer
+covers it. One green demo_timewarp re-run joins the Phase 5 exit evidence.
 """
 
 import argparse
@@ -41,6 +49,8 @@ FIXTURE = Path("data/fixtures/rosa_incomplete_application.txt")
 REPLY = Path("data/fixtures/rosa_reply_after_gap.txt")
 CORPUS_DIR = Path("data/corpus")
 SUBSCRIPTION = "timer-fired-demo"
+#: The one Terraform-managed screening template (ADR-006 D5).
+ARMOR_TEMPLATE = "civicnexus-armor"
 GAP_DAYS = 12.0
 AGENT_VERSION = "0.1.0"
 
@@ -108,6 +118,33 @@ def _scope(case_id: str) -> dict[str, str]:
     return {"app_name": "civicnexus-caseflow", "user_id": case_id}
 
 
+def _require_project() -> str:
+    """PROJECT_ID in id form, never the number (F8) and never ambient (F14)."""
+    project = os.environ.get("PROJECT_ID", "").strip()
+    if not project:
+        raise RuntimeError("PROJECT_ID env var is required")
+    return project
+
+
+def _screen_memory_writes(project: str, texts: list[str]) -> None:
+    """§6.3 screening point 4: nothing enters Memory Bank unscreened (ADR-006 D1).
+
+    Blocking is stricter here than at points 1-3: sensitive-data findings block
+    too (D4), because memory facts are structured non-PII by design, so an SDP
+    match is a real red flag rather than the applicant's own contact details.
+    Fails CLOSED - a memory write that cannot be screened does not happen.
+    """
+    from civicnexus.contracts import ScreeningPoint
+    from civicnexus.tools.armor import ArmorClient
+
+    client = ArmorClient(project=project, location="us-central1", template_id=ARMOR_TEMPLATE)
+    for text in texts:
+        verdict = client.screen_text(text, point=ScreeningPoint.MEMORY_WRITE)
+        if verdict.blocked:
+            raise RuntimeError(f"memory write blocked at screening point 4: {verdict.cause}")
+    _log_step("screen_memory_writes", screened=len(texts), point="memory_write")
+
+
 def write_memories(case_id: str, day0_summary: str) -> None:
     session, host, engine_url = _memory_session()
     facts = [
@@ -117,6 +154,9 @@ def write_memories(case_id: str, day0_summary: str) -> None:
         f"Case {case_id}: zoning must review this as a {SPINE['concern']} in a "
         "detached accessory structure.",
     ]
+    # Screen BEFORE the write, not after: the point of point 4 is that nothing
+    # unscreened reaches Memory Bank, and a post-hoc check would already be late.
+    _screen_memory_writes(_require_project(), [*facts, day0_summary])
     # Shape audit-verified vs the v1beta1 proto (live-probed): NO "config"
     # wrapper; disableConsolidation is TOP-LEVEL; waitForCompletion is an
     # SDK-side concept — our _wait_operation polls the LRO ourselves.
