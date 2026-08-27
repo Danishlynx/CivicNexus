@@ -77,6 +77,52 @@ uv run python scripts/deploy_agent.py --agent-dir agents/<a>/src/<a>_agent `
   overwrites it. Never compare across configs without noting the config.
 - Full runs and smoke runs each need the human's per-run OK (spend rule).
 
+### Ablation arms (§9.5) - BILLED, each needs its own spend OK
+
+```
+# verifier off vs on. Writes to evals/archive/, NEVER to results.json.
+python -m evals.runner --tag smoke --no-verifier
+
+# armor off vs on. Refuses to issue any engine call without the flag.
+python -m evals.drill_runner --armor off --i-have-a-spend-ok --label drill-armor-off
+
+# build the comparison table (offline, reads archived JSON only)
+python -m evals.compare [--charts]
+```
+
+The armor-OFF arm covers **text carriers only** - no PDF ingestion path exists
+(D9/A-12) - and both the arm and the table state how many fixtures were excluded
+and why. Do not quote that arm as full gate coverage.
+
+`compare.py` refuses to pair arms that are not genuinely comparable and says
+"NOT a comparison" rather than showing a delta it cannot justify.
+
+
+## Phase 5 drills (ADR-006)
+
+All four are $0 unless noted. Each writes evidence to `.deploy/*_last_run.json`
+BEFORE parsing, so a crashed run still leaves a usable record.
+
+| Drill | Command | Cost | Detail |
+|---|---|---|---|
+| Screening canary, both arms | `python -m scripts.armor_canary` | $0 | D10 precondition for every billed step |
+| Injection containment | `make demo-injection` | $0 (letters leg opt-in) | [runbooks/injection-drill.md](runbooks/injection-drill.md) |
+| DLQ replay | `make dlq-replay` | $0, takes 2-3 min | [runbooks/dlq-replay.md](runbooks/dlq-replay.md) |
+| Registry governance | `python -m scripts.drill_tool_poisoning` | $0 | D18 try/finally deletes exactly its own `drill-poison-*` ids |
+| Full gate | `make verify-phase-5` | $0 | Runs test + all of the above |
+
+**Any fixture regeneration invalidates canary-green (D10).** Re-run the canary
+before the next billed step - `make demo-injection` does this for you.
+
+**`--expect` is not decoration.** The injection gate measures **14/15** at
+`LOW_AND_ABOVE` with one characterised holdout (B-014), so both the canary and
+the drill runner default to 14. A run that demands 15 fails for a known reason.
+Never raise it to make a number look rounder; the holdout is boundary behaviour
+at a dilution ratio, and B-014 explains why tuning it would be fitting the test
+to the system.
+
+**Ablation arms are BILLED and gated behind explicit flags** - see "Run evals".
+
 ## Video day (Phase 7) — additions
 
 - Clean browser profile + empty desktop (no third-party logos — rules).
