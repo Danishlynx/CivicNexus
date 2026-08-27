@@ -1,7 +1,11 @@
 # ADR-007: Phase 6 console — one FastAPI service, two exposures, real approvals
 
-- **Status:** proposed 2026-08-27 — needs human ratification of the asks in §6
-  before any code lands (IAM ×4, public exposure, guardrail change, one spend OK).
+- **Status:** **RATIFIED 2026-08-27** — the human approved asks A1–A10 as scoped
+  (structured ratification ask, this date): A1–A5 IAM/exposure/infra as named,
+  A6 guardrail strengthening, A7 spend OK (one run, quota-quiet window per the
+  runbook), A8 image-var defaults, A9 redactor-not-built deviation, A10 gate
+  scope ruling. The D13 public-exposure condition was ratified earlier the same
+  day. Build order §5 is now unblocked from step 1.
 - **Date:** 2026-08-27
 - **Deciders:** human + build agent
 - **Supersedes nothing. Amends:** ARCHITECTURE §3.1 (component inventory),

@@ -16,6 +16,22 @@ Last updated: 2026-08-27. **Phase 5 GATE PASSED; Phase 6 (Console + freeze) OPEN
 | 6 Console + freeze | IN PROGRESS — opened 2026-08-27 |
 | 7 Ship | not started |
 
+## Phase 6 (2026-08-27): ADR-007 RATIFIED, build open
+
+**The human ratified ADR-007 asks A1–A10 as scoped** (structured ask, recorded
+in the ADR status line): the four IAM grants (roles named per the evidence
+standard in ADR-007 §6), the project's first `allUsers` binding on the reader
+service only, two scale-to-zero Cloud Run services through Oct 1, the A6
+guardrail strengthening (ApprovalStore verification injected into
+`CaseStore.transition`), one A7 billed demo-injection `--with-letters` run
+(quota-quiet window, closes screening point 3), A8 image-var defaults, the A9
+redactor deviation, and the A10 gate scope ruling (clerk drives
+PENDING_HUMAN → APPROVED → ISSUED → CLOSED + QUARANTINED re-admit; intake
+excluded). B-012 push mitigation also ratified: push after every step.
+
+Build proceeds per ADR-007 §5: steps 1–3 local ($0, no IAM), step 4 is the
+human-run `terraform apply` that fixes the public URL.
+
 ## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
 
 **Phase 5 stage status:** stages 0-3 COMPLETE. Stage 4 (harness) is 1 of 6

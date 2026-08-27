@@ -353,7 +353,12 @@ full-eval budget conversation gets easier.
 
 **PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint misrouting caused by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
 
-## B-015 - Phase 6 ARCHITECTURE deltas awaiting ratification (ADR-007; conflict flags per CLAUDE.md rule)
+## B-015 - Phase 6 ARCHITECTURE deltas (ADR-007; conflict flags per CLAUDE.md rule) — RATIFIED 2026-08-27
+
+**RESOLVED as rulings 2026-08-27: the human ratified ADR-007 asks A1–A10 as
+scoped (including A9 redactor-not-built and A10 gate scope), which ratifies the
+deltas below as deliberate deviations. They remain listed so the README and
+ARCHITECTURE delta log can cite one place.**
 
 ARCHITECTURE.md wins conflicts unless the human rules otherwise, so ADR-007's
 deviations are surfaced here rather than buried in the ADR.
