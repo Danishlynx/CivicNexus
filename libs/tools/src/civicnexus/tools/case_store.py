@@ -134,7 +134,17 @@ class CaseStore:
 
         Uses Firestore ``create`` (not ``set``): re-delivery of the same
         case id must fail loudly, never silently overwrite.
+
+        A case may not be BORN in an approval-gated state: §4's "no transition
+        into ISSUED or DENIED without a row in approvals/" would otherwise be
+        skippable by creating the case already there (2026-08-27 audit
+        finding). Unconditional — this is the enforcement site, not the caller.
         """
+        if case.state in _APPROVAL_REQUIRED_TARGETS:
+            raise ApprovalRequiredError(
+                f"a case cannot be created directly in {case.state.value} "
+                f"(case {case.case_id}); §4 requires an approved transition"
+            )
         doc = self._db.collection(self._collection).document(case.case_id)
         doc.create(case.model_dump(mode="json"))
         self._emit(
@@ -202,7 +212,7 @@ class CaseStore:
         transaction = self._db.transaction()
 
         @firestore.transactional
-        def _move(txn: Any) -> Case:
+        def _move(txn: Any) -> tuple[CaseState, Case]:
             snapshot = doc_ref.get(transaction=txn)
             if not snapshot.exists:
                 raise KeyError(f"case {case_id} does not exist")
@@ -210,10 +220,13 @@ class CaseStore:
             validate_transition(case, target, human_actor=human_actor, approval_id=approval_id)
             updated = case.model_copy(update={"state": target, "updated_at": datetime.now(UTC)})
             txn.update(doc_ref, {"state": target.value, "updated_at": updated.updated_at})
-            return updated
+            # The pre-transition state is returned FROM the transaction so the
+            # audit line can never report a stale from_state under contention
+            # (2026-08-27 audit finding; the txn retries with a fresh read).
+            return case.state, updated
 
-        before = self.get_case(case_id).state
-        updated: Case = _move(transaction)
+        moved: tuple[CaseState, Case] = _move(transaction)
+        before, updated = moved
         event_payload = dict(payload or {})
         if approval_id:
             event_payload["approval_id"] = approval_id

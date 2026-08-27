@@ -9,3 +9,12 @@ billing_account_id = "XXXXXX-XXXXXX-XXXXXX"
 # budget_currency = "INR"
 # budget_amount   = 13000
 # alert_spend     = [4333, 8667, 12133]
+
+# CLEAN-PROJECT SPIN-UP (Phase 7 DoD): the image variables default to the
+# ORIGINAL project's Artifact Registry tags (a deliberate A8 safety default so
+# an apply without -var can never plan the live services as destroyed). On a
+# fresh project you MUST build both images first (services/*/cloudbuild.image.yaml)
+# and override these to your own project's URIs, or the Cloud Run applies fail
+# on image pull:
+# registry_image = "us-central1-docker.pkg.dev/YOUR_PROJECT/civicnexus/registry:v0.1.0"
+# console_image  = "us-central1-docker.pkg.dev/YOUR_PROJECT/civicnexus/console:v0.1.0"

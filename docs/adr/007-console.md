@@ -530,7 +530,13 @@ Two halves: a green machine check and one human observation.
 `make test` (now covering `services`) **and** `uv run python scripts/verify_phase6.py`.
 The script is **$0** — HTTP and Firestore only, no engine calls — and
 authenticates to the private clerk service with an identity token using the
-existing `fetch_id_token` pattern from `registry_toolset.py`. Every assertion:
+existing `fetch_id_token` pattern from `registry_toolset.py`. *(Correction,
+2026-08-27 pre-apply audit: `fetch_id_token` mints SERVICE-ACCOUNT tokens,
+and A4 binds the clerk invoker to the named HUMAN, so that pattern would 403
+against a correct deployment. The verifier uses `gcloud auth
+print-identity-token` — the caller's own user identity, same platform
+verification. Recorded as a delta rather than silently deviating.)* Every
+assertion:
 
 1. `GET {PUBLIC_URL}/healthz` → **200 unauthenticated** (B-007's resolution and
    the mandatory Devpost hosted URL, proven live).

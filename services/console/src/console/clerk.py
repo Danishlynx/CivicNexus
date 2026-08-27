@@ -15,6 +15,7 @@ Every write goes through ``CaseStore`` / ``ApprovalStore`` / ``IncidentStore``
 import base64
 import binascii
 import json
+import os
 import uuid
 from typing import Any
 
@@ -51,6 +52,20 @@ def _fresh_traceparent() -> str:
     return f"00-{uuid.uuid4().hex}-{uuid.uuid4().hex[:16]}-01"
 
 
+def _named_human(request: Request, form_fallback: str) -> str:
+    """The audited identity: the platform-verified token's email claim.
+
+    The form-field fallback is honoured ONLY when running against the local
+    emulator (there is no platform in front of you locally) — gated on the
+    emulator env var so it can never attribute an action in production
+    (2026-08-27 audit finding: an unenforced comment is not a guard).
+    """
+    named = caller_identity(request)
+    if not named and os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        named = form_fallback.strip()
+    return named
+
+
 @clerk_router.post("/cases/{case_id}/action")
 def act(
     case_id: str,
@@ -79,10 +94,7 @@ def act(
             detail=f"{target_state.value} is not a clerk action from {case.state.value}",
         )
 
-    # Platform-verified identity wins; the form value is a fallback for local
-    # dev against the emulator only (there is no platform in front of you
-    # locally). An unnamed human is refused, not defaulted.
-    named = caller_identity(request) or approver.strip()
+    named = _named_human(request, approver)
     if not named:
         raise HTTPException(status_code=400, detail="a named human approver is required")
 
@@ -125,7 +137,7 @@ def resolve_incident(
     approver: str = Form(""),
     incidents: IncidentStore = Depends(get_incident_store),
 ) -> RedirectResponse:
-    named = caller_identity(request) or approver.strip()
+    named = _named_human(request, approver)
     if not named:
         raise HTTPException(status_code=400, detail="a named human is required to resolve")
     try:

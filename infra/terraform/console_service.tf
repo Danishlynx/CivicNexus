@@ -84,7 +84,12 @@ resource "google_cloud_run_v2_service" "console_reader" {
     }
   }
 
-  depends_on = [google_project_service.enabled]
+  # The role grant is sequenced before the service so first traffic does not
+  # race fresh-IAM propagation (the timers.tf lesson, 2026-08-27 audit).
+  depends_on = [
+    google_project_service.enabled,
+    google_project_iam_member.console_reader_datastore_viewer,
+  ]
 }
 
 resource "google_cloud_run_v2_service" "console_clerk" {
@@ -112,7 +117,11 @@ resource "google_cloud_run_v2_service" "console_clerk" {
     }
   }
 
-  depends_on = [google_project_service.enabled]
+  depends_on = [
+    google_project_service.enabled,
+    google_project_iam_member.console_clerk_datastore_user,
+    google_project_iam_member.console_clerk_pubsub_publisher,
+  ]
 }
 
 # A4: the mandatory judge-accessible hosted URL (Devpost testing clause). The

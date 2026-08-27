@@ -3,8 +3,14 @@
 The clerk flow asserted here is the A10 exit walk in miniature: approve needs
 no approvals row, issue and deny mint one and pass its REAL id into the
 transition, and the store guard (not the route) is what refuses fabrication.
+
+Clerk identity in these tests rides a crafted Bearer payload — the exact
+claim-decode path the deployed service uses after Cloud Run has verified the
+token. The form-field fallback is separately pinned to emulator-only.
 """
 
+import base64
+import json
 from collections.abc import Generator
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -29,6 +35,13 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 TRACEPARENT = "00-" + "ab" * 16 + "-" + "cd" * 8 + "-01"
+
+
+def _bearer(email: str) -> dict[str, str]:
+    """A JWT-shaped token whose payload names ``email`` — the platform
+    verifies signatures in production; the app only decodes the claim."""
+    payload = base64.urlsafe_b64encode(json.dumps({"email": email}).encode()).decode()
+    return {"Authorization": f"Bearer h.{payload}.s"}
 
 
 def _case(case_id: str, *, state: CaseState = CaseState.PENDING_HUMAN) -> Case:
@@ -229,7 +242,9 @@ class TestClerkActions:
     ) -> None:
         client, cases, approvals = clerk_setup
         response = client.post(
-            "/cases/case-p/action", data={"target": "APPROVED", "approver": "clerk@city.test"}
+            "/cases/case-p/action",
+            data={"target": "APPROVED"},
+            headers=_bearer("clerk@city.test"),
         )
         assert response.status_code == 303
         [t] = cases.transitions
@@ -243,15 +258,15 @@ class TestClerkActions:
         self, clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore]
     ) -> None:
         client, cases, approvals = clerk_setup
-        client.post("/cases/case-p/action", data={"target": "APPROVED", "approver": "c@x.test"})
-        response = client.post(
-            "/cases/case-p/action", data={"target": "ISSUED", "approver": "c@x.test"}
-        )
+        auth = _bearer("c@x.test")
+        client.post("/cases/case-p/action", data={"target": "APPROVED"}, headers=auth)
+        response = client.post("/cases/case-p/action", data={"target": "ISSUED"}, headers=auth)
         assert response.status_code == 303
         [minted] = approvals.minted
         assert minted.case_id == "case-p"
         assert minted.target_state is CaseState.ISSUED
         assert minted.action == "issue"
+        assert minted.approver == "c@x.test"
         assert cases.transitions[-1]["approval_id"] == minted.approval_id
 
     def test_illegal_target_is_409(
@@ -259,18 +274,46 @@ class TestClerkActions:
     ) -> None:
         client, cases, _ = clerk_setup
         response = client.post(
-            "/cases/case-p/action", data={"target": "ISSUED", "approver": "c@x.test"}
+            "/cases/case-p/action", data={"target": "ISSUED"}, headers=_bearer("c@x.test")
         )
         assert response.status_code == 409  # PENDING_HUMAN -> ISSUED is not an edge
         assert cases.transitions == []
 
     def test_unnamed_approver_is_400(
-        self, clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore]
+        self,
+        clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore],
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        monkeypatch.delenv("FIRESTORE_EMULATOR_HOST", raising=False)
         client, cases, _ = clerk_setup
         response = client.post("/cases/case-p/action", data={"target": "APPROVED"})
         assert response.status_code == 400
         assert cases.transitions == []
+
+    def test_form_approver_honoured_only_under_emulator(
+        self,
+        clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # 2026-08-27 audit finding: the local-dev fallback must be a guard,
+        # not a comment. Without the emulator marker a form-supplied name is
+        # refused; with it (real local dev) it is honoured.
+        client, cases, _ = clerk_setup
+        monkeypatch.delenv("FIRESTORE_EMULATOR_HOST", raising=False)
+        refused = client.post(
+            "/cases/case-p/action", data={"target": "APPROVED", "approver": "mallory@x.test"}
+        )
+        assert refused.status_code == 400
+        assert cases.transitions == []
+        monkeypatch.setenv("FIRESTORE_EMULATOR_HOST", "127.0.0.1:8087")
+        allowed = client.post(
+            "/cases/case-p/action", data={"target": "APPROVED", "approver": "dev@local.test"}
+        )
+        assert allowed.status_code == 303
+        assert cases.transitions[-1]["payload"] == {
+            "action": "approve",
+            "approver": "dev@local.test",
+        }
 
     def test_quarantine_readmit_and_discard(self) -> None:
         app = create_app("clerk")
@@ -278,7 +321,9 @@ class TestClerkActions:
         client = _wire(app, cases)
         try:
             response = client.post(
-                "/cases/case-q/action", data={"target": "IN_REVIEW", "approver": "c@x.test"}
+                "/cases/case-q/action",
+                data={"target": "IN_REVIEW"},
+                headers=_bearer("c@x.test"),
             )
             assert response.status_code == 303
             assert cases.transitions[-1]["event_type"] is EventType.REVIEW_REQUESTED
@@ -319,7 +364,7 @@ class TestIncidents:
         incidents = FakeIncidentStore({"inc-1": _incident()})
         client = _wire(app, FakeCaseStore({}), incidents=incidents)
         try:
-            response = client.post("/incidents/inc-1/resolve", data={"approver": "c@x.test"})
+            response = client.post("/incidents/inc-1/resolve", headers=_bearer("c@x.test"))
             assert response.status_code == 303
             assert incidents.resolved_by == ["c@x.test"]
         finally:

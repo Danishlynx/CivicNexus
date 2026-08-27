@@ -10,7 +10,7 @@ deployed clerk service.
 from typing import Any
 
 import pytest
-from civicnexus.contracts import Actor, Approval, CaseState
+from civicnexus.contracts import Actor, Applicant, Approval, Case, CaseState
 from civicnexus.tools import (
     ApprovalRequiredError,
     ApprovalStore,
@@ -67,6 +67,15 @@ class _RefusingPublisher:
 
     def publish(self, envelope: Any) -> str:
         raise AssertionError("no event may be published by these tests")
+
+
+class _CountingPublisher:
+    def __init__(self) -> None:
+        self.count = 0
+
+    def publish(self, envelope: Any) -> str:
+        self.count += 1
+        return f"fake-{self.count}"
 
 
 def _mint(store: ApprovalStore, case_id: str = "case-77") -> Approval:
@@ -223,3 +232,46 @@ class TestCaseStoreApprovalInjection:
                 traceparent=TRACEPARENT,
                 approval_id=minted.approval_id,
             )
+
+
+class TestCreateCaseBirthGuard:
+    """2026-08-27 audit finding: §4's approvals guard must also refuse a case
+    BORN in ISSUED/DENIED — otherwise create_case is a guard bypass. The
+    refusal is unconditional (no ApprovalStore injection required)."""
+
+    def test_case_cannot_be_born_in_approval_gated_state(self) -> None:
+        db = _FakeDb()
+        cs = CaseStore(
+            db,
+            _RefusingPublisher(),  # type: ignore[arg-type]
+            Actor(agent_id="test", agent_version="0.0.0"),
+        )
+        for state in (CaseState.ISSUED, CaseState.DENIED):
+            with pytest.raises(ApprovalRequiredError, match="cannot be created directly"):
+                cs.create_case(
+                    Case(
+                        case_id="case-born",
+                        permit_type="garage_conversion",
+                        applicant=Applicant(name="Synthetic Nia", email="nia@example.test"),
+                        state=state,
+                    ),
+                    traceparent=TRACEPARENT,
+                )
+        assert db.docs == {}  # nothing written, nothing published
+
+    def test_default_birth_state_unaffected(self) -> None:
+        db = _FakeDb()
+        cs = CaseStore(
+            db,
+            _CountingPublisher(),  # type: ignore[arg-type]
+            Actor(agent_id="test", agent_version="0.0.0"),
+        )
+        cs.create_case(
+            Case(
+                case_id="case-ok",
+                permit_type="garage_conversion",
+                applicant=Applicant(name="Synthetic Nia", email="nia@example.test"),
+            ),
+            traceparent=TRACEPARENT,
+        )
+        assert "case-ok" in db.docs
