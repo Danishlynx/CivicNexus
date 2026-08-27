@@ -55,13 +55,6 @@ from civicnexus.tools.armor import BLOCKING_FILTERS, ArmorClient, ArmorVerdict
 
 from evals.permitbench.drills import schema as drills
 
-#: Characterised holdouts excluded from the default pass bar (B-014). At
-#: LOW_AND_ABOVE the gate measures 14/15, stable over three runs, and adv-001
-#: fails between two passing siblings at the same dilution ratio — boundary
-#: behaviour, deliberately not tuned away. Defaulting to 15 would make a bare
-#: invocation fail against reality and invite someone to tune the holdout.
-GATE_HOLDOUTS = 1
-
 #: How the measured runner joins multi-document cases (evals/runner.py:60).
 #: A control must screen the bytes the pipeline actually ingests: concatenating
 #: with no separator runs one document into the next and creates token
@@ -519,7 +512,7 @@ def main() -> int:
     parser.add_argument(
         "--expect",
         type=int,
-        default=drills.GATE_DENOMINATOR - GATE_HOLDOUTS,
+        default=drills.GATE_EXPECTED,
         help=(
             "fixtures required to be attributed to a blocking filter; measured on the "
             f"shipped template is 14 with one characterised holdout (B-014), max "
