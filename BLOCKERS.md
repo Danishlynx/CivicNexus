@@ -353,6 +353,48 @@ full-eval budget conversation gets easier.
 
 **PAUSED (2026-08-25 evening, human ruling): demo attempt 6 cancelled before running; architecture study workflow stopped at launch (resumable: scriptPath resilience-architecture-wf_0a471648-228.js, resumeFromRunId wf_0a471648-228). Day's net: SHIP-OLD wiring measured+deployed (10/12, 9/12); consult leg root-caused (F13 dep drift + F14 SDK endpoint misrouting caused by GOOGLE_CLOUD_LOCATION=global) and REST fix deployed but unproven live (attempt 5 died on 429 quota, not the fix); demo exit proof STILL OPEN. Tomorrow: run/resume the architecture study FIRST (human ruling: no more attempts until architecture is proper), then implement ADR-005 hardening, then ONE demo attempt in a quota-quiet window.**
 
+## B-015 - Phase 6 ARCHITECTURE deltas awaiting ratification (ADR-007; conflict flags per CLAUDE.md rule)
+
+ARCHITECTURE.md wins conflicts unless the human rules otherwise, so ADR-007's
+deviations are surfaced here rather than buried in the ADR.
+
+1. **§3.1 two services collapse into one image.** The spec names `console`
+   (Next.js) and `api` (FastAPI) as separate components. ADR-007 D1/D2 ships ONE
+   FastAPI+Jinja2 package deployed as TWO Cloud Run services from the SAME image
+   (public reader / IAM-gated clerk), serving both the clerk HTML and the `api`
+   JSON surface. **No separate `api` service exists.** Reason: Next.js was costed
+   at 14-18h against 6-8h with a cliff-edge failure mode, against ~1 day of build
+   time before freeze.
+2. **§6.2/§6.4 "approval token minted by `api`"** -> minted by a new
+   `ApprovalStore` in libs/tools and **verified inside `CaseStore`**, the single
+   writer. Token *consumption* plumbing is NOT built, because there is no send
+   path in the codebase to consume one.
+3. **§11 "redactor in the write path" CUT.** Compensating controls named in
+   ADR-007 D10 rather than the capability being quietly dropped.
+4. **§11 "managed-gateway adapter" CUT** - it is the top entry of §11's own
+   scope-cut order.
+5. **§11 "activity feed"** delivered as a **derived per-case timeline**, not an
+   event replay. The §5 event topics have zero subscribers, so messages are
+   discarded at publish; a real global feed would mean adding a persistent append
+   inside `CaseStore._emit`, the audited single-writer hot path, on freeze day.
+6. **§11/Appendix A `SAFE_MODE` is NOT implemented** - verified, zero code hits
+   repo-wide. It is specified as a kill switch over side-effect tools that do not
+   exist. The console's read-only exposure is `CONSOLE_MODE=reader`, deliberately
+   named differently so no reader mistakes it for the spec's flag.
+7. **§8 Looker Studio dashboard was never built.** `/evals` renders
+   `docs/eval-report.md` unedited, failing gate visible. The README must not
+   imply a dashboard exists.
+8. **§3.2 `determinations/`** never became its own collection - determinations
+   live inside `cases/{id}` via ArrayUnion. Recording an existing fact.
+9. **ADR-005 correction:** its claimed eval preflight asserting an empty registry
+   does not exist in `evals/runner.py`. ADR-007 D12 adds it.
+
+**Scope ruling needing ratification (A10):** "clerk can run a full case from the
+UI alone" is read as PENDING_HUMAN -> APPROVED -> ISSUED -> CLOSED plus the
+QUARANTINED re-admit, with intake EXCLUDED. §3.1 does not list intake among the
+console's responsibilities; it sits in `api` as a webhook, which is by definition
+not a UI action. This reading defines the gate.
+
 ## B-014 - injection gate: 0/15 -> 14/15, RESOLVED 2026-08-27 (one holdout, characterised, not tuned)
 
 **FINAL, measured and reproducible.** Shipped setting
