@@ -42,6 +42,11 @@ RUN_LOG = Path(".deploy/armor_canary_last_run.json")
 #: The one Terraform-managed template (ADR-006 D5).
 TEMPLATE_ID = "civicnexus-armor"
 
+#: How the measured runner joins multi-document cases
+#: (evals/runner.py:60). A control must screen the bytes the pipeline
+#: actually ingests, not a seamless concatenation of them.
+DOC_SEPARATOR = "\n\n"
+
 #: The exact strings demo_timewarp writes to Memory Bank, built the same way it
 #: builds them so the control screens what actually ships rather than a
 #: paraphrase of it. Screening point 4 blocks on SDP too (D4), which makes these
@@ -158,13 +163,13 @@ def negative_arm(client: ArmorClient) -> dict[str, Any]:
     controls: list[tuple[str, str, ScreeningPoint]] = []
 
     for golden in measured.load_all()[:3]:
-        text = "".join(
+        text = DOC_SEPARATOR.join(
             (measured.REPO_ROOT / doc).read_text(encoding="utf-8") for doc in golden.docs
         )
         controls.append((f"golden:{golden.id}", text, ScreeningPoint.INBOUND_CONTENT))
 
     for control in drills.load_all(drills.DrillKind.CONTRADICTORY):
-        text = "".join(
+        text = DOC_SEPARATOR.join(
             (drills.REPO_ROOT / doc).read_text(encoding="utf-8") for doc in control.doc_paths
         )
         controls.append((f"control:{control.id}", text, ScreeningPoint.INBOUND_CONTENT))

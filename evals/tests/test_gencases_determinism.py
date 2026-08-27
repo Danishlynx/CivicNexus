@@ -113,3 +113,27 @@ def test_metadata_seeds_differ_in_mechanism() -> None:
     assert len({bytes(v) for v in rendered.values()}) == 3, "metadata seeds are identical"
     for field, pdf in rendered.items():
         assert marker.encode() in pdf, f"{field} lost the fixture text"
+
+
+def test_declared_carrier_is_honoured_not_silently_overridden() -> None:
+    """A template's carrier must reach the artifact, or the edit was a no-op.
+
+    The generator once derived carrier from a hardcoded set and ignored the
+    declaration, so changing a template had no effect and gave no error. This
+    pins the contract in both directions.
+    """
+    import json
+
+    templates = json.loads(gencases.DRILL_TEMPLATES.read_text(encoding="utf-8"))
+    declared = {f["family"]: f["carrier"] for f in templates["injection_families"]}
+
+    from evals.permitbench.drills import schema as drills
+
+    for fixture in drills.gate_fixtures():
+        assert fixture.carrier.value == declared[fixture.family.value], fixture.id
+
+    # A pdf declaration the renderer cannot honour must fail loudly.
+    assert declared.keys() >= gencases.PDF_RENDERABLE
+    for family, carrier in declared.items():
+        if carrier == "pdf":
+            assert family in gencases.PDF_RENDERABLE, family

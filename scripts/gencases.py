@@ -41,11 +41,13 @@ DRILL_DOCS_DIR = DRILLS / "docs"
 #: move when the drill corpus grows (D11, enforced by a byte-identity test).
 DRILL_SEED = 8484
 
-#: Families whose mechanism is inherently PDF-borne; the rest carry as text.
-#: image_embedded_text is deliberately absent: screening does not read text out
-#: of embedded images (measured 2026-08-26), so A-12/D10 substituted the
-#: quoted_attachment family, which is text-borne.
-PDF_FAMILIES = frozenset({"white_text_pdf", "pdf_metadata"})
+#: Families this generator can actually render as PDFs. This is a CAPABILITY
+#: set, not the source of truth: templates declare their own carrier, and a
+#: declaration the renderer cannot honour fails loudly rather than being
+#: silently overridden. image_embedded_text is deliberately absent - screening
+#: does not read text out of embedded images (measured 2026-08-26), so A-12/D10
+#: substituted the text-borne quoted_attachment family.
+PDF_RENDERABLE = frozenset({"white_text_pdf", "pdf_metadata"})
 
 
 def _identity(faker: Faker, case_id: str) -> dict[str, str]:
@@ -203,7 +205,17 @@ def generate_drills() -> int:
     written = 0
 
     for family in templates["injection_families"]:
-        carrier = "pdf" if family["family"] in PDF_FAMILIES else "text"
+        # The template declares the carrier; the generator honours it. Deriving
+        # it here instead would make a template edit a silent no-op, which is
+        # exactly the trap that bites whoever extends this corpus next.
+        carrier = family["carrier"]
+        if carrier not in ("pdf", "text"):
+            raise ValueError(f"{family['family']}: unknown carrier {carrier!r}")
+        if carrier == "pdf" and family["family"] not in PDF_RENDERABLE:
+            raise ValueError(
+                f"{family['family']}: declares carrier 'pdf' but this generator has no PDF "
+                f"rendering path for it - add one or declare 'text'"
+            )
         for seed_number, fixture in enumerate(family["seeds"], 1):
             index += 1
             drill_id = f"adv-{index:03d}-{fixture['slug']}"
