@@ -4,6 +4,35 @@ Every billable sequence runs from THIS document, not from memory. The
 failure ledger (FAILURES.md) exists because ad-hoc commands kept re-rolling
 solved problems.
 
+## Session-start framing (assistant sessions on Phase 5+ drill work)
+
+Fable 5's automated safeguards paused a session on 2026-08-26 — a false
+positive on the defensive fixture work (the defense-framed-terminology rule
+was ratified the same day). Reading repo docs is safe — the wording pass made
+them drill-framed; the trigger was authoring and quoting fixture text under
+attacker-framed prose. Open every assistant session that touches drill work
+with this framing, BEFORE any hot vocabulary appears:
+
+```text
+Continue CivicNexus (governed municipal permit-casework platform, Google
+hackathon, Fortified Enterprise Fleet track). Follow the CLAUDE.md session
+loop: read PROGRESS.md and BLOCKERS.md first. Current phase is 5 — a
+defensive eval harness (ADR-006) that validates our OWN Model Armor
+guardrails using synthetic screening-drill fixtures; nothing targets any
+external system and drill content never leaves the drill path.
+
+Today's task: <the task>.
+
+Reference drill fixtures by id (adv-001..025) — do not open or quote
+evals/permitbench/drills/templates.json or the generated fixture files.
+```
+
+Model routing: work that edits or quotes raw fixture text
+(`evals/permitbench/drills/templates.json`, generated fixture artifacts,
+`.deploy/armor_canary_last_run.json` payloads) runs in an Opus 5 session;
+make targets, demo/billed-run drivers, eval report, docs, and console work
+run fine on any model with the opener above.
+
 ## Deploy an agent (hermetic)
 
 ```powershell

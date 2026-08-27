@@ -421,18 +421,31 @@ def main() -> int:
     try:
         control = query_json(remote, json.dumps(control_payload), user_prefix="timewarp")
         control_text = json.dumps(control).lower()
-        control_blocked = (
-            "error" in control
-            or control.get("outcome") == "request_info"
-            or "unknown" in control_text
-            or "missing" in control_text
-        )
+        # Arm C asks one question: without the memory block, can the resume
+        # still produce a determination? Each branch below is a distinct shape
+        # of "no, it could not", and the shape is recorded rather than collapsed
+        # to a boolean - "the control returned zero findings" and "the control
+        # errored" are different facts and the evidence should say which.
+        control_findings = control.get("findings")
+        if "error" in control:
+            control_reason = "engine returned an error"
+        elif isinstance(control_findings, list) and not control_findings:
+            # An empty findings list IS the absence of a determination. The
+            # Phase 4 run happened to see an exception instead; same outcome,
+            # different shape, and only this branch was missing.
+            control_reason = "engine returned zero findings - no determination"
+        elif control.get("outcome") == "request_info":
+            control_reason = "engine asked for more information"
+        elif "unknown" in control_text or "missing" in control_text:
+            control_reason = "engine reported unknown/missing facts"
+        else:
+            control_reason = ""
     except Exception as exc:
         control = {"driver_note": f"engine reply unparseable: {type(exc).__name__}"}
-        control_blocked = True
-    if not control_blocked:
+        control_reason = f"engine reply unparseable: {type(exc).__name__}"
+    if not control_reason:
         return _fail(f"control probe completed WITHOUT memory - ablation invalid: {control}")
-    _log_step("control_probe_blocked", control=control)
+    _log_step("control_probe_blocked", reason=control_reason, control=control)
 
     # Arm A: recall from the live service.
     recalled = retrieve_memories(case_id, f"resume permit case: {reply_text}")
