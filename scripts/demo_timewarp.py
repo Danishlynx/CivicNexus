@@ -21,13 +21,23 @@ Memory Bank access is raw regional REST (v1beta1, proto-verified) —
 env-immune per ADR-005; driver-side under the human's ADC; engine bytes
 unchanged (eval freeze).
 
-§6.3 screening point 4 IS wired here as of Phase 5 (ADR-006 D1): every fact
-and the day-0 summary are screened BEFORE the Memory Bank write, and the
-write fails closed if screening blocks or cannot run. Blocking is stricter
-at this point than at points 1-3 (D4) - sensitive-data findings block too,
-because these facts are structured non-PII by design. The §6.6 redactor
-remains Phase 6. Standing mitigations unchanged: only structured non-PII
-facts are written, and no CANARY- string may ever be retrieved (§9.2).
+§6.3 screening is wired here as of Phase 5 (ADR-006 D1), at three of the four
+points — the fourth, letter drafts, lives in demo_injection's letters leg:
+
+  point 1 (inbound content): the day-0 application is screened BEFORE any
+    engine call, so nothing unscreened reaches the fleet;
+  point 2 (worker output): the resume ReviewFinding is screened between
+    validation and the verifier, because a finding carrying an injection must
+    not reach the grounding check — the step an attacker most wants to steer;
+  point 4 (memory writes): every fact and the day-0 summary are screened
+    before the Memory Bank write. Blocking is stricter here than at points
+    1-3 (D4) — sensitive-data findings block too, because these facts are
+    structured non-PII by design, so an SDP match is a real red flag.
+
+All three fail CLOSED: content that could not be screened is not content that
+was found clean. The §6.6 redactor remains Phase 6. Standing mitigations
+unchanged: only structured non-PII facts are written, and no CANARY- string
+may ever be retrieved (§9.2).
 
 NOTE (D1): this file changed in Phase 5, so its Phase 4 PASS no longer
 covers it. One green demo_timewarp re-run joins the Phase 5 exit evidence.
@@ -124,6 +134,23 @@ def _require_project() -> str:
     if not project:
         raise RuntimeError("PROJECT_ID env var is required")
     return project
+
+
+def _screen(project: str, text: str, point: Any, what: str) -> None:
+    """Screen one payload at a §6.3 point, failing CLOSED (ADR-006 D1/D2).
+
+    Shared by points 1, 2 and 4 so all three enforce identically. ``blocked``
+    covers fail-closed infra causes too (EXECUTION_SKIPPED, a non-SUCCESS
+    invocation, HTTP failure after retries), which is deliberate: content that
+    could not be screened is not content that was found clean.
+    """
+    from civicnexus.tools.armor import ArmorClient
+
+    client = ArmorClient(project=project, location="us-central1", template_id=ARMOR_TEMPLATE)
+    verdict = client.screen_text(text, point=point)
+    if verdict.blocked:
+        raise RuntimeError(f"{what} blocked at screening point {point.value}: {verdict.cause}")
+    _log_step("screened", what=what, point=point.value, chars=len(text))
 
 
 def _screen_memory_writes(project: str, texts: list[str]) -> None:
@@ -251,6 +278,7 @@ def main() -> int:
         EventEnvelope,
         EventType,
         ReviewFinding,
+        ScreeningPoint,
     )
     from civicnexus.contracts.permit_types import load_permit_types
     from civicnexus.tools import CaseStore, EventPublisher, query_json
@@ -272,6 +300,9 @@ def main() -> int:
 
     # ---- Day 0: intake of the incomplete application -----------------------
     raw_application = FIXTURE.read_text(encoding="utf-8")
+    # §6.3 point 1: inbound content is screened BEFORE any engine call, so
+    # nothing unscreened can reach the fleet (D1).
+    _screen(project, raw_application, ScreeningPoint.INBOUND_CONTENT, "day-0 application")
     intake_msg = json.dumps(
         {
             "task": "intake",
@@ -440,6 +471,15 @@ def main() -> int:
     )
     resume_msg = json.dumps({"task": "review", "application": resume_application})
     finding = ReviewFinding.model_validate(query_json(remote, resume_msg, user_prefix="timewarp"))
+    # §6.3 point 2: worker output is screened between ReviewFinding validation
+    # and the verifier (D1) — a finding that carries an injection must not reach
+    # the grounding check, which is the step an attacker most wants to steer.
+    _screen(
+        project,
+        finding.model_dump_json(),
+        ScreeningPoint.WORKER_OUTPUT,
+        "resume review finding",
+    )
 
     permit_types = load_permit_types(Path("config/permit_types.yaml"))
     permit_cfg = permit_types.get(SPINE["permit_type"])
