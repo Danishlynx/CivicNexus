@@ -13,6 +13,7 @@ from civicnexus.tools.agent_client import (
     query_json_with_events,
     sum_usage,
 )
+from civicnexus.tools.approvals import ApprovalStore
 from civicnexus.tools.armor import (
     ArmorClient,
     ArmorVerdict,
@@ -26,12 +27,14 @@ from civicnexus.tools.case_store import (
     IllegalTransitionError,
     TransitionError,
     validate_transition,
+    verify_approval_row,
 )
 from civicnexus.tools.events import EventPublisher
 from civicnexus.tools.incidents import IncidentStore
 
 __all__ = [
     "ApprovalRequiredError",
+    "ApprovalStore",
     "ArmorClient",
     "ArmorVerdict",
     "CaseStore",
@@ -49,4 +52,5 @@ __all__ = [
     "query_json_with_events",
     "sum_usage",
     "validate_transition",
+    "verify_approval_row",
 ]

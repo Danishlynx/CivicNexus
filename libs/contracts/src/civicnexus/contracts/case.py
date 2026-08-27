@@ -64,6 +64,11 @@ HUMAN_ONLY_SOURCES: frozenset[CaseState] = frozenset(
     {CaseState.PENDING_HUMAN, CaseState.QUARANTINED}
 )
 
+#: Targets that require a row in ``approvals/`` (§4: "no transition into
+#: ISSUED, DENIED, or any letter send without a row in approvals/").
+#: Enforcement lives in the case store, the only writer.
+APPROVAL_REQUIRED_TARGETS: frozenset[CaseState] = frozenset({CaseState.ISSUED, CaseState.DENIED})
+
 
 def can_transition(current: CaseState, target: CaseState) -> bool:
     """Return whether §4 permits moving from ``current`` to ``target``.

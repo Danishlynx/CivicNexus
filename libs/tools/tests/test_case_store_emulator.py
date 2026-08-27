@@ -166,3 +166,71 @@ def test_event_dedup(store: tuple[CaseStore, _CapturingPublisher]) -> None:
     event_id = f"evt-{uuid.uuid4().hex}"
     assert cs.record_event_once(event_id) is True
     assert cs.record_event_once(event_id) is False
+
+
+def _drive_to_pending_human(cs: CaseStore, case: Case) -> None:
+    cs.create_case(case, traceparent=TRACEPARENT)
+    cs.transition(case.case_id, CaseState.TRIAGED, EventType.CASE_TRIAGED, traceparent=TRACEPARENT)
+    cs.transition(
+        case.case_id, CaseState.IN_REVIEW, EventType.REVIEW_REQUESTED, traceparent=TRACEPARENT
+    )
+    cs.transition(
+        case.case_id, CaseState.PENDING_HUMAN, EventType.REVIEW_COMPLETED, traceparent=TRACEPARENT
+    )
+
+
+def test_approval_row_guard_full_clerk_walk() -> None:
+    """ADR-007 D3 integrated: the A10 clerk walk with a REAL approvals row."""
+    from civicnexus.tools import ApprovalRequiredError, ApprovalStore
+    from google.cloud import firestore
+
+    db = firestore.Client(project="civicnexus-emulator")
+    approvals = ApprovalStore(db)
+    guarded = CaseStore(
+        db,
+        _CapturingPublisher(),  # type: ignore[arg-type]
+        Actor(agent_id="test", agent_version="0.0.0"),
+        approvals=approvals,
+    )
+    case = _new_case()
+    _drive_to_pending_human(guarded, case)
+    guarded.transition(
+        case.case_id,
+        CaseState.APPROVED,
+        EventType.ACTION_APPROVED,
+        traceparent=TRACEPARENT,
+        human_actor=True,
+    )
+
+    # A fabricated string is refused with the store injected...
+    with pytest.raises(ApprovalRequiredError):
+        guarded.transition(
+            case.case_id,
+            CaseState.ISSUED,
+            EventType.ACTION_APPROVED,
+            traceparent=TRACEPARENT,
+            approval_id="apr-fabricated",
+        )
+    # ...and a minted row for THIS case and THIS target passes.
+    row = approvals.mint(
+        case_id=case.case_id,
+        action="issue",
+        target_state=CaseState.ISSUED,
+        approver="danishlynx@gmail.com",
+        traceparent=TRACEPARENT,
+    )
+    issued = guarded.transition(
+        case.case_id,
+        CaseState.ISSUED,
+        EventType.ACTION_APPROVED,
+        traceparent=TRACEPARENT,
+        approval_id=row.approval_id,
+    )
+    assert issued.state is CaseState.ISSUED
+    closed = guarded.transition(
+        case.case_id,
+        CaseState.CLOSED,
+        EventType.CASE_CLOSED,
+        traceparent=TRACEPARENT,
+    )
+    assert closed.state is CaseState.CLOSED

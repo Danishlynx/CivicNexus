@@ -4,8 +4,10 @@ ARCHITECTURE.md §5 (event envelope) and §4 (domain model + case state machine)
 define these shapes; code never invents fields that are not specified there.
 """
 
+from civicnexus.contracts.approvals import Approval
 from civicnexus.contracts.case import (
     ALLOWED_TRANSITIONS,
+    APPROVAL_REQUIRED_TARGETS,
     Applicant,
     Budget,
     Case,
@@ -30,11 +32,13 @@ from civicnexus.contracts.review import ReviewFinding
 
 __all__ = [
     "ALLOWED_TRANSITIONS",
+    "APPROVAL_REQUIRED_TARGETS",
     "Actor",
     "AgentCard",
     "AgentStatus",
     "Applicant",
     "Application",
+    "Approval",
     "Budget",
     "Case",
     "CaseState",

@@ -4,7 +4,9 @@ Guards enforced here, in order:
 1. transition legality per the §4 state machine,
 2. human-only sources (PENDING_HUMAN, QUARANTINED) require a human actor,
 3. ISSUED and DENIED require an approvals-row id (§4: "no transition into
-   ISSUED, DENIED, or any letter send without a row in approvals/").
+   ISSUED, DENIED, or any letter send without a row in approvals/") — and,
+   when an ApprovalStore is injected (ADR-007 D3), the id must name a REAL
+   row for this case and this target, so a fabricated string no longer passes.
 
 Every successful mutation publishes exactly one event and emits one audit log
 line (``audit: true`` routes it to BigQuery via the Terraform log sink).
@@ -14,6 +16,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from civicnexus.contracts import (
+    APPROVAL_REQUIRED_TARGETS,
     Actor,
     Case,
     CaseState,
@@ -25,9 +28,12 @@ from civicnexus.contracts import (
     is_human_only,
 )
 from civicnexus.otel import get_logger
+from civicnexus.tools.approvals import ApprovalStore
 from civicnexus.tools.events import EventPublisher
 
-_APPROVAL_REQUIRED_TARGETS = frozenset({CaseState.ISSUED, CaseState.DENIED})
+#: Single source of truth moved to contracts (ADR-007 D3); alias kept so this
+#: module still reads as the enforcement site.
+_APPROVAL_REQUIRED_TARGETS = APPROVAL_REQUIRED_TARGETS
 
 _log = get_logger("case_store")
 
@@ -68,6 +74,40 @@ def validate_transition(
         )
 
 
+def verify_approval_row(
+    approvals: ApprovalStore,
+    approval_id: str | None,
+    *,
+    case_id: str,
+    target: CaseState,
+) -> None:
+    """Raise :class:`ApprovalRequiredError` unless ``approval_id`` names a real
+    ``approvals/`` row for THIS case and THIS target (ADR-007 D3 / ask A6).
+
+    This is the strengthened form of the §4 guard: with an
+    :class:`ApprovalStore` injected, a fabricated string no longer passes.
+    """
+    if not approval_id:
+        raise ApprovalRequiredError(
+            f"transition into {target.value} requires an approvals/ row id (case {case_id})"
+        )
+    try:
+        approval = approvals.get(approval_id)
+    except KeyError as exc:
+        raise ApprovalRequiredError(
+            f"approval {approval_id} does not exist in approvals/ (case {case_id})"
+        ) from exc
+    if approval.case_id != case_id:
+        raise ApprovalRequiredError(
+            f"approval {approval_id} names case {approval.case_id}, not {case_id}"
+        )
+    if approval.target_state is not target:
+        raise ApprovalRequiredError(
+            f"approval {approval_id} authorizes {approval.target_state.value}, "
+            f"not {target.value} (case {case_id})"
+        )
+
+
 class CaseStore:
     """The only sanctioned reader/writer of ``cases/`` documents."""
 
@@ -78,11 +118,16 @@ class CaseStore:
         actor: Actor,
         *,
         collection: str = "cases",
+        approvals: ApprovalStore | None = None,
     ) -> None:
         self._db = db
         self._publisher = publisher
         self._actor = actor
         self._collection = collection
+        # ADR-007 D3 (ask A6, ratified 2026-08-27): when an ApprovalStore is
+        # injected, transitions into ISSUED/DENIED verify the row is real.
+        # When absent, behaviour is byte-identical to the pre-ADR-007 store.
+        self._approvals = approvals
 
     def create_case(self, case: Case, *, traceparent: str) -> None:
         """Create a new case document and publish ``case.received``.
@@ -120,6 +165,9 @@ class CaseStore:
     ) -> Case:
         """Atomically move a case to ``target`` if every §4 guard passes."""
         from google.cloud import firestore
+
+        if self._approvals is not None and target in _APPROVAL_REQUIRED_TARGETS:
+            verify_approval_row(self._approvals, approval_id, case_id=case_id, target=target)
 
         doc_ref = self._db.collection(self._collection).document(case_id)
         transaction = self._db.transaction()
