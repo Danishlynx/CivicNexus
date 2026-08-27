@@ -130,7 +130,44 @@ grant for sa-caseflow was applied via gcloud instead of Terraform (directive
 6 manual-unblock clause) — the TF resource is committed, so reconciliation
 is automatic once state is restored.
 
-## B-007 — Cloud Run URLs unroutable at Google's edge (OPEN; platform anomaly)
+## B-007 — Cloud Run URLs unroutable at Google's edge — RESOLVED 2026-08-27 (anomaly healed)
+
+**Re-tested from scratch at the top of Phase 6, because the whole console
+architecture depends on the answer. The edge routes correctly now.**
+
+| request to `civicnexus-registry` | result | reading |
+|---|---|---|
+| no auth, `/` | **403**, and it APPEARS IN REQUEST LOGS | traffic reaches Cloud Run; IAM correctly refuses an uninvited caller |
+| identity token, `/` | 404 | FastAPI has no `/` route - an app answer, not an edge answer |
+| identity token, `/agents` | **200** | the service serves |
+| identity token, `/openapi.json` | **200** | the service serves |
+
+The original symptom was a 404 at the edge with traffic never arriving. What is
+observed now is IAM behaving correctly on an intentionally private service, plus
+FastAPI's own 404 for undefined routes. Both prior readings were consistent with
+a dead edge; neither is what is happening today.
+
+**Consequences, and they are large:**
+
+1. **Cloud Run hosting is viable for the Phase 6 console.** The mandatory
+   Devpost hosted URL can be a Cloud Run service deployed
+   `--allow-unauthenticated`. This removes the biggest single risk to Phase 6.
+2. **The `REGISTRY_MODE=firestore` interim can be retired.** It exists only
+   because the registry URL would not route (ADR-003 addendum). Reverting to
+   `REGISTRY_MODE=http` restores the ratified §6.2 path where the coordinator
+   consults the registry service rather than reading Firestore directly, and
+   lets the `roles/datastore.viewer` interim grant be REMOVED per its own
+   removal condition.
+3. **The deployed revision is stale.** `/healthz` 404s although source defines
+   it at `services/registry/src/registry/app.py:77`, so revision
+   `civicnexus-registry-00001-z6m` predates current source. Any reliance on the
+   live registry should follow a redeploy.
+
+**Not done in this session:** the mode revert and the grant removal are behaviour
+and IAM changes, so they are asks rather than agent defaults. Recorded here so
+they are not forgotten at freeze.
+
+## B-007 (original entry) — Cloud Run URLs unroutable at Google's edge
 
 **Symptom (2026-08-20):** `civicnexus-registry` deploys Ready
 (CONDITION_SUCCEEDED, healthy container, uvicorn serving, both default URLs
