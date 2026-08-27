@@ -2,49 +2,54 @@
 {% block title %}{{ incident.incident_id }} · CivicNexus{% endblock %}
 {% block content %}
 <h1><code>{{ incident.incident_id }}</code>
-  <span class="badge">{{ incident.status.value }}</span></h1>
+  <span class="badge {{ incident.status.value }}">{{ incident.status.value }}</span></h1>
 <p class="note">Metadata only, by design: the screened bytes stay in quarantine and are never
-served, previewed, or linked from this page (ADR-007 D8). The point is that the system caught
-and contained the content.</p>
-<table>
-  <tbody>
-    <tr><th>Case</th>
-        <td><a href="/cases/{{ incident.case_id }}"><code>{{ incident.case_id }}</code></a></td></tr>
-    <tr><th>Kind</th><td>{{ incident.kind.value }}</td></tr>
-    <tr><th>Cause</th><td>{{ incident.cause }}</td></tr>
-    <tr><th>Screening point</th>
-        <td>{{ incident.screening_point.value if incident.screening_point else '—' }}</td></tr>
-    <tr><th>Actor</th><td><code>{{ incident.actor }}</code></td></tr>
-    <tr><th>Raised</th><td>{{ incident.ts.strftime('%Y-%m-%d %H:%M:%S') }} UTC</td></tr>
-    <tr><th>Traceparent</th><td><code>{{ incident.traceparent }}</code></td></tr>
+served, previewed, or linked from this page (ADR-007 D8) — no download. The point is that the
+system caught and contained the content.</p>
+
+<div class="card">
+  <dl class="meta">
+    <dt>Case</dt>
+    <dd><a href="/cases/{{ incident.case_id }}"><code>{{ incident.case_id }}</code></a></dd>
+    <dt>Kind</dt><dd>{{ incident.kind.value }}</dd>
+    <dt>Cause</dt><dd>{{ incident.cause }}</dd>
+    <dt>Screening point</dt>
+    <dd>{{ incident.screening_point.value if incident.screening_point else '—' }}</dd>
+    <dt>Actor</dt><dd><code>{{ incident.actor }}</code></dd>
+    <dt>Raised</dt><dd>{{ incident.ts.strftime('%Y-%m-%d %H:%M:%S') }} UTC</dd>
+    <dt>Traceparent</dt><dd><code>{{ incident.traceparent }}</code></dd>
     {% if incident.quarantine_uri %}
-    <tr><th>Quarantine URI</th><td><code>{{ incident.quarantine_uri }}</code> <span class="note">(inert
-        reference — no download)</span></td></tr>
+    <dt>Quarantine URI</dt>
+    <dd><code>{{ incident.quarantine_uri }}</code> <span class="note">(inert reference — no download)</span></dd>
     {% endif %}
-  </tbody>
-</table>
+  </dl>
+</div>
 
 {% if incident.filter_matches %}
-<h2>Filter verdicts</h2>
+<h2 class="section">Filter verdicts</h2>
+<div class="card flush">
 <table>
   <thead><tr><th>Filter</th><th>Match state</th><th>Confidence</th></tr></thead>
   <tbody>
     {% for match in incident.filter_matches %}
     <tr>
       <td><code>{{ match.filter }}</code></td>
-      <td>{{ match.match_state }}</td>
+      <td><span class="badge {{ 'MATCH' if match.match_state == 'MATCH_FOUND' else 'NOMATCH' }}">{{ match.match_state }}</span></td>
       <td>{{ match.confidence or '—' }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+</div>
 {% endif %}
 
 {% if mode == 'clerk' and incident.status.value == 'OPEN' %}
-<h2>Resolve</h2>
-<form method="post" action="/incidents/{{ incident.incident_id }}/resolve">
-  <button type="submit">Mark resolved</button>
-  <span class="note">a human-only action, recorded with your identity</span>
-</form>
+<h2 class="section">Resolve</h2>
+<div class="card">
+  <form method="post" action="/incidents/{{ incident.incident_id }}/resolve" class="actions">
+    <button type="submit" class="btn btn-approve">Mark resolved</button>
+    <span class="note">a human-only action, recorded with your identity</span>
+  </form>
+</div>
 {% endif %}
 {% endblock %}

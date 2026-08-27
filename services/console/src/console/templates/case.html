@@ -3,92 +3,118 @@
 {% block content %}
 <h1><code>{{ case.case_id }}</code>
   <span class="badge {{ case.state.value }}">{{ case.state.value }}</span></h1>
-<p>
-  <strong>{{ case.permit_type }}</strong> — {{ case.applicant.name }}
-  &lt;{{ case.applicant.email }}&gt;
-  {% if trace_url %} · <a href="{{ trace_url }}">trace</a>{% endif %}
-</p>
 
-<h2>Clerk actions</h2>
+<div class="card">
+  <dl class="meta">
+    <dt>Permit type</dt><dd><strong>{{ case.permit_type }}</strong></dd>
+    <dt>Applicant</dt><dd>{{ case.applicant.name }} &lt;{{ case.applicant.email }}&gt;</dd>
+    {% if trace_url %}<dt>Telemetry</dt><dd><a href="{{ trace_url }}">Open trace in Cloud Trace</a></dd>{% endif %}
+  </dl>
+</div>
+
+<h2 class="section">Clerk actions</h2>
+<div class="card">
 {% if fleet_owns %}
-  <p class="note">No clerk action in this state; the fleet owns this case.</p>
+  <p class="note" style="margin:0">No clerk action in this state; the fleet owns this case.</p>
 {% elif case.state.value == 'CLOSED' %}
-  <p class="note">Case closed — no further actions.</p>
+  <p class="note" style="margin:0">Case closed — no further actions.</p>
 {% elif actions %}
   {% if mode == 'clerk' %}
+    <div class="actions">
     {% for action in actions %}
-    <form method="post" action="/cases/{{ case.case_id }}/action" style="display:inline">
-      <input type="hidden" name="target" value="{{ action.target.value }}">
-      <button type="submit">{{ action.label }}</button>
-      {% if action.needs_approval_row %}<span class="note">mints an approvals/ row</span>{% endif %}
-    </form>
+      <form method="post" action="/cases/{{ case.case_id }}/action" style="display:inline"
+            {% if action.slug in ('deny', 'discard') %}onsubmit="return confirm('Record {{ action.label }} for {{ case.case_id }}? This is written to the audit log.')"{% endif %}>
+        <input type="hidden" name="target" value="{{ action.target.value }}">
+        <button type="submit" class="btn btn-{{ action.slug }}">{{ action.label }}</button>
+      </form>
     {% endfor %}
+    </div>
+    {% if actions | selectattr('needs_approval_row') | list %}
+    <p class="note" style="margin:0.6rem 0 0">Actions marked for issue/deny mint an approvals/ row
+    naming you, the action, and the target state before the transition runs.</p>
+    {% endif %}
   {% else %}
-    <p class="note">Read-only public view: these controls are disabled. Write routes are not
+    <p class="note" style="margin-top:0">Read-only public view: these controls are disabled. Write routes are not
     mounted on this service, and its service account holds read-only Firestore access only —
     it cannot write because IAM refuses.</p>
+    <div class="actions">
     {% for action in actions %}
-    <button disabled>{{ action.label }}</button>
+      <button disabled class="btn">{{ action.label }}</button>
     {% endfor %}
+    </div>
   {% endif %}
 {% endif %}
+</div>
 
-<h2>Determinations ({{ case.determinations | length }})</h2>
+<h2 class="section">Determinations ({{ case.determinations | length }})</h2>
 {% for det in case.determinations %}
-<div style="border:1px solid var(--line); background:#fff; padding:0.8rem 1rem; margin:0.8rem 0">
-  <p><code>{{ det.agent_id }}@{{ det.agent_version }}</code>
-     — <strong>{{ det.outcome.value }}</strong> @ confidence {{ '%.2f' | format(det.confidence) }}</p>
-  <p>{{ det.rationale }}</p>
+<div class="card">
+  <div class="det-head">
+    <span class="agent-chip">{{ det.agent_id }}@{{ det.agent_version }}</span>
+    <span class="outcome {{ det.outcome.value }}">{{ det.outcome.value }}</span>
+    <span class="meter">
+      <span class="meter-label">confidence {{ '%.2f' | format(det.confidence) }}</span>
+      <span class="meter-track"><span class="meter-fill" style="width: {{ (det.confidence * 100) | round }}%"></span></span>
+    </span>
+  </div>
+  <p style="margin:0.3rem 0 0.5rem">{{ det.rationale }}</p>
   {% for citation in det.citations %}
-  <blockquote style="border-left:3px solid var(--accent); margin:0.5rem 0; padding:0.2rem 0.8rem">
+  <blockquote class="cite">
     <code>§{{ citation.chunk_id }}</code>: “{{ citation.quote }}”
   </blockquote>
   {% endfor %}
   {% if det.verifier_report is not none %}
   <details>
     <summary>Verifier report</summary>
-    <pre style="overflow-x:auto">{{ det.verifier_report | tojson(indent=2) }}</pre>
+    <pre>{{ det.verifier_report | tojson(indent=2) }}</pre>
   </details>
   {% endif %}
 </div>
 {% else %}
-<p class="note">No determinations yet.</p>
+<div class="card"><p class="note" style="margin:0">No determinations yet.</p></div>
 {% endfor %}
 
 {% if case_incidents %}
-<h2>Incidents</h2>
-<ul>
-  {% for incident in case_incidents %}
-  <li><a href="/incidents/{{ incident.incident_id }}"><code>{{ incident.incident_id }}</code></a>
-      — {{ incident.kind.value }} · {{ incident.status.value }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
-
-<h2>Activity</h2>
-<p class="note">Derived from the case record — not an event-stream replay (the §5 topics
-have no persistent subscriber).</p>
-<table>
-  <tbody>
-    {% for ts, label in feed %}
-    <tr><td class="note">{{ ts.strftime('%Y-%m-%d %H:%M:%S') }} UTC</td><td>{{ label }}</td></tr>
+<h2 class="section">Incidents</h2>
+<div class="card">
+  <ul style="margin:0; padding-left:1.2rem">
+    {% for incident in case_incidents %}
+    <li><a href="/incidents/{{ incident.incident_id }}"><code>{{ incident.incident_id }}</code></a>
+        — {{ incident.kind.value }} · <span class="badge {{ incident.status.value }}">{{ incident.status.value }}</span></li>
     {% endfor %}
-  </tbody>
-</table>
-
-<h2>Budget &amp; timers</h2>
-<p class="note">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
-· ${{ '%.4f' | format(case.budget.cost_usd) }}</p>
-{% if case.timers %}
-<ul>
-  {% for timer in case.timers %}
-  <li class="note"><code>{{ timer.timer_id }}</code> fires
-      {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</li>
-  {% endfor %}
-</ul>
+  </ul>
+</div>
 {% endif %}
+
+<h2 class="section">Activity</h2>
+<div class="card">
+  <p class="note" style="margin:0 0 0.7rem">Derived from the case record — not an event-stream replay
+  (the §5 topics have no persistent subscriber).</p>
+  <ul class="timeline">
+    {% for ts, label in feed %}
+    <li><span class="ts">{{ ts.strftime('%Y-%m-%d %H:%M:%S') }} UTC</span>{{ label }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<h2 class="section">Budget &amp; timers</h2>
+<div class="card">
+  <p class="note" style="margin:0">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
+  · ${{ '%.4f' | format(case.budget.cost_usd) }}</p>
+  {% if case.timers %}
+  <ul style="margin:0.5rem 0 0; padding-left:1.2rem">
+    {% for timer in case.timers %}
+    <li class="note"><code>{{ timer.timer_id }}</code> fires
+        {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
 {% if case.docs %}
-<h2>Documents</h2>
-<ul>{% for doc in case.docs %}<li><code>{{ doc }}</code></li>{% endfor %}</ul>
+<h2 class="section">Documents</h2>
+<div class="card">
+  <ul style="margin:0; padding-left:1.2rem">{% for doc in case.docs %}<li><code>{{ doc }}</code></li>{% endfor %}</ul>
+</div>
 {% endif %}
 {% endblock %}

@@ -2,10 +2,23 @@
 {% block title %}Case queue · CivicNexus{% endblock %}
 {% block content %}
 <h1>Case queue</h1>
+
+{% set pending = cases | selectattr('state.value', 'equalto', 'PENDING_HUMAN') | list | length %}
+{% set reviewing = cases | selectattr('state.value', 'equalto', 'IN_REVIEW') | list | length %}
+{% set quarantined = cases | selectattr('state.value', 'equalto', 'QUARANTINED') | list | length %}
+<div class="stats">
+  <div class="stat"><div class="v">{{ cases | length }}</div><div class="l">Cases on record</div></div>
+  <div class="stat"><div class="v">{{ pending }}</div><div class="l">Awaiting human review</div></div>
+  <div class="stat"><div class="v">{{ reviewing }}</div><div class="l">In fleet review</div></div>
+  <div class="stat"><div class="v">{{ quarantined }}</div><div class="l">Quarantined</div></div>
+</div>
+
 {% if invalid_count %}
 <p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
 validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
 {% endif %}
+
+<div class="card flush">
 <table>
   <thead>
     <tr>
@@ -25,11 +38,12 @@ validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
       <td>{{ case.applicant.name }}</td>
       <td><span class="badge {{ case.state.value }}">{{ case.state.value }}</span></td>
       <td>{{ case.determinations | length }}</td>
-      <td>{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+      <td class="note">{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
     </tr>
     {% else %}
     <tr><td colspan="6" class="note">No cases.</td></tr>
     {% endfor %}
   </tbody>
 </table>
+</div>
 {% endblock %}

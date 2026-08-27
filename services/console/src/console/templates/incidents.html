@@ -2,10 +2,13 @@
 {% block title %}Incidents · CivicNexus{% endblock %}
 {% block content %}
 <h1>Incidents</h1>
+<p class="note">Screening and containment events raised by the pipeline — opened by the
+machine, resolved only by a named human.</p>
 {% if invalid_count %}
 <p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
 validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
 {% endif %}
+<div class="card flush">
 <table>
   <thead>
     <tr><th>Incident</th><th>Case</th><th>Kind</th><th>Screening point</th><th>Status</th><th>Raised</th></tr>
@@ -17,12 +20,13 @@ validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
       <td><a href="/cases/{{ incident.case_id }}"><code>{{ incident.case_id }}</code></a></td>
       <td>{{ incident.kind.value }}</td>
       <td>{{ incident.screening_point.value if incident.screening_point else '—' }}</td>
-      <td><span class="badge">{{ incident.status.value }}</span></td>
-      <td>{{ incident.ts.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+      <td><span class="badge {{ incident.status.value }}">{{ incident.status.value }}</span></td>
+      <td class="note">{{ incident.ts.strftime('%Y-%m-%d %H:%M') }} UTC</td>
     </tr>
     {% else %}
     <tr><td colspan="6" class="note">No incidents.</td></tr>
     {% endfor %}
   </tbody>
 </table>
+</div>
 {% endblock %}

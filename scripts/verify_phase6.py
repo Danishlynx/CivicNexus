@@ -37,6 +37,7 @@ correct deployment. Same platform verification either way.
 """
 
 import os
+import re
 import subprocess
 import sys
 import time
@@ -289,12 +290,14 @@ def main() -> int:
         r = requests.get(f"{public}/incidents/{LIVE_INCIDENT}", timeout=30)
         body = r.text
         _check(r.status_code == 200 and "pi_and_jailbreak" in body, "incident view shows verdict")
+        # Canary check matches planted VALUES (CANARY-<ID>...), not the site
+        # footer's literal "CANARY-*" explainer, which appears by design.
         _check(
             "storage.googleapis.com" not in body
             and "X-Goog-Signature" not in body
             and 'href="gs://' not in body
-            and "CANARY-" not in body,
-            "incident view: no signed URL, no object link, no CANARY string",
+            and not re.search(r"CANARY-[A-Z0-9]", body),
+            "incident view: no signed URL, no object link, no planted CANARY value",
         )
 
         # 8. Quarantine re-admit via the clerk UI (Phase 5 gate item).

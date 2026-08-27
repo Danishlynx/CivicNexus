@@ -213,7 +213,7 @@ class TestCaseDetail:
         try:
             html = client.get("/cases/case-p").text
             assert "cannot write because IAM refuses" in html
-            assert "<button disabled>" in html
+            assert "<button disabled" in html
         finally:
             app.dependency_overrides.clear()
 
