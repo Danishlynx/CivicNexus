@@ -1,0 +1,222 @@
+{
+  "steps": [
+    {
+      "step": "corpus",
+      "at": "2026-08-27T09:48:30.942745+00:00",
+      "cases": [
+        "adv-023-tool-poison-lookalike-agent-id",
+        "adv-024-tool-poison-version-bump",
+        "adv-025-tool-poison-capability-overclaim"
+      ]
+    },
+    {
+      "step": "preflight",
+      "at": "2026-08-27T09:48:34.336570+00:00",
+      "drill_cards_present": "none"
+    },
+    {
+      "step": "registered",
+      "at": "2026-08-27T09:48:36.149467+00:00",
+      "key": "drill-poison-tree-preservat1on-twin@1.0.0",
+      "claimed": "APPROVED",
+      "stored": "PENDING"
+    },
+    {
+      "step": "registered",
+      "at": "2026-08-27T09:48:37.868796+00:00",
+      "key": "drill-poison-tree-preservation-v2@2.0.0",
+      "claimed": "APPROVED",
+      "stored": "PENDING"
+    },
+    {
+      "step": "registered",
+      "at": "2026-08-27T09:48:39.596637+00:00",
+      "key": "drill-poison-zoning-capability-overclaim@0.1.0",
+      "claimed": "APPROVED",
+      "stored": "PENDING"
+    },
+    {
+      "step": "visibility",
+      "at": "2026-08-27T09:48:45.443440+00:00",
+      "mode": "firestore",
+      "approved": "none",
+      "leaked": "none"
+    },
+    {
+      "step": "machine-approval-refused",
+      "at": "2026-08-27T09:48:45.790131+00:00",
+      "key": "drill-poison-tree-preservat1on-twin@1.0.0"
+    },
+    {
+      "step": "machine-approval-refused",
+      "at": "2026-08-27T09:48:47.181797+00:00",
+      "key": "drill-poison-tree-preservation-v2@2.0.0"
+    },
+    {
+      "step": "machine-approval-refused",
+      "at": "2026-08-27T09:48:47.519903+00:00",
+      "key": "drill-poison-zoning-capability-overclaim@0.1.0"
+    }
+  ],
+  "project": "civicnexus-hack26",
+  "cleanup_only": false,
+  "started_at": "2026-08-27T09:48:30.924997+00:00",
+  "preflight_drill_cards": [],
+  "created_keys": [
+    "drill-poison-tree-preservat1on-twin@1.0.0",
+    "drill-poison-tree-preservation-v2@2.0.0",
+    "drill-poison-zoning-capability-overclaim@0.1.0"
+  ],
+  "registered": [
+    {
+      "drill_id": "adv-023-tool-poison-lookalike-agent-id",
+      "key": "drill-poison-tree-preservat1on-twin@1.0.0",
+      "impersonates": "tree-preservation@1.0.0",
+      "claimed_status": "APPROVED",
+      "claimed_status_changed_by": "drill-self-asserted-approver",
+      "returned_status": "PENDING",
+      "returned_status_changed_by": "",
+      "stored_status": "PENDING",
+      "stored_status_changed_by": "",
+      "rejection_reason": "Mechanism: identity-key spoof - the id substitutes the digit 1 for the letter i in 'preservation' and the card copies the genuine display name, description and capability. (The mandatory drill-poison- prefix is D18 drill containment so the try/finally deletes exactly its own ids, not part of the simulated lookalike.) Rejected because registry identity is the (agent_id, version) key, never display metadata: the twin lands as its own document that RegistryStore.register() forces to PENDING, cannot overwrite the genuine card, and fetch_approved_cards() filters to APPROVED, so the coordinator toolset never sees it."
+    },
+    {
+      "drill_id": "adv-024-tool-poison-version-bump",
+      "key": "drill-poison-tree-preservation-v2@2.0.0",
+      "impersonates": "tree-preservation@1.0.0",
+      "claimed_status": "APPROVED",
+      "claimed_status_changed_by": "drill-self-asserted-approver",
+      "returned_status": "PENDING",
+      "returned_status_changed_by": "",
+      "stored_status": "PENDING",
+      "stored_status_changed_by": "",
+      "rejection_reason": "Mechanism: version-bump inheritance - registers as a 2.0.0 'supersedes 1.0.0' build of the approved reviewer with the same capability, betting discovery resolves the newest version. (Its real key is drill-poison-tree-preservation-v2@2.0.0; the prefix is drill containment per D18.) Rejected because approval is granted per (agent_id, version) and no highest-version resolution exists anywhere in discovery, so a bumped version inherits no approval: register() stores it PENDING with status_changed_by empty, and only a human can approve it."
+    },
+    {
+      "drill_id": "adv-025-tool-poison-capability-overclaim",
+      "key": "drill-poison-zoning-capability-overclaim@0.1.0",
+      "impersonates": "zoning@0.1.0",
+      "claimed_status": "APPROVED",
+      "claimed_status_changed_by": "drill-self-asserted-approver",
+      "returned_status": "PENDING",
+      "returned_status_changed_by": "",
+      "stored_status": "PENDING",
+      "stored_status_changed_by": "",
+      "rejection_reason": "Mechanism: capability overclaim - submits status APPROVED inside its own registration payload and lists the real 'zoning' capability alongside authority no CivicNexus agent holds. Rejected because self-asserted status is discarded: register() rewrites status to PENDING and clears status_changed_by regardless of payload, and MACHINE_ALLOWED_CHANGES grants machines only the APPROVED->QUARANTINED move, so no machine can approve it. A claimed capability grants nothing either: the only state-changing surface is CaseStore.validate_transition, which refuses any exit from PENDING_HUMAN or QUARANTINED without a human actor (HUMAN_ONLY_SOURCES); no side-effect tool exists in libs/tools at all, and letters are drafted, never sent."
+    }
+  ],
+  "visibility": {
+    "registry_mode": "firestore",
+    "population": [
+      "drill-poison-tree-preservat1on-twin@1.0.0",
+      "drill-poison-tree-preservation-v2@2.0.0",
+      "drill-poison-zoning-capability-overclaim@0.1.0"
+    ],
+    "store_approved": [],
+    "toolset_approved": [],
+    "leaked": []
+  },
+  "machine_approval": {
+    "contract_machine_changes": [
+      "APPROVED -> QUARANTINED"
+    ],
+    "pending_to_approved_by_machine": false,
+    "refusals": [
+      {
+        "key": "drill-poison-tree-preservat1on-twin@1.0.0",
+        "refused_with": "PENDING -> APPROVED is not permitted for a machine actor"
+      },
+      {
+        "key": "drill-poison-tree-preservation-v2@2.0.0",
+        "refused_with": "PENDING -> APPROVED is not permitted for a machine actor"
+      },
+      {
+        "key": "drill-poison-zoning-capability-overclaim@0.1.0",
+        "refused_with": "PENDING -> APPROVED is not permitted for a machine actor"
+      }
+    ]
+  },
+  "result": {
+    "registered": [
+      {
+        "drill_id": "adv-023-tool-poison-lookalike-agent-id",
+        "key": "drill-poison-tree-preservat1on-twin@1.0.0",
+        "impersonates": "tree-preservation@1.0.0",
+        "claimed_status": "APPROVED",
+        "claimed_status_changed_by": "drill-self-asserted-approver",
+        "returned_status": "PENDING",
+        "returned_status_changed_by": "",
+        "stored_status": "PENDING",
+        "stored_status_changed_by": "",
+        "rejection_reason": "Mechanism: identity-key spoof - the id substitutes the digit 1 for the letter i in 'preservation' and the card copies the genuine display name, description and capability. (The mandatory drill-poison- prefix is D18 drill containment so the try/finally deletes exactly its own ids, not part of the simulated lookalike.) Rejected because registry identity is the (agent_id, version) key, never display metadata: the twin lands as its own document that RegistryStore.register() forces to PENDING, cannot overwrite the genuine card, and fetch_approved_cards() filters to APPROVED, so the coordinator toolset never sees it."
+      },
+      {
+        "drill_id": "adv-024-tool-poison-version-bump",
+        "key": "drill-poison-tree-preservation-v2@2.0.0",
+        "impersonates": "tree-preservation@1.0.0",
+        "claimed_status": "APPROVED",
+        "claimed_status_changed_by": "drill-self-asserted-approver",
+        "returned_status": "PENDING",
+        "returned_status_changed_by": "",
+        "stored_status": "PENDING",
+        "stored_status_changed_by": "",
+        "rejection_reason": "Mechanism: version-bump inheritance - registers as a 2.0.0 'supersedes 1.0.0' build of the approved reviewer with the same capability, betting discovery resolves the newest version. (Its real key is drill-poison-tree-preservation-v2@2.0.0; the prefix is drill containment per D18.) Rejected because approval is granted per (agent_id, version) and no highest-version resolution exists anywhere in discovery, so a bumped version inherits no approval: register() stores it PENDING with status_changed_by empty, and only a human can approve it."
+      },
+      {
+        "drill_id": "adv-025-tool-poison-capability-overclaim",
+        "key": "drill-poison-zoning-capability-overclaim@0.1.0",
+        "impersonates": "zoning@0.1.0",
+        "claimed_status": "APPROVED",
+        "claimed_status_changed_by": "drill-self-asserted-approver",
+        "returned_status": "PENDING",
+        "returned_status_changed_by": "",
+        "stored_status": "PENDING",
+        "stored_status_changed_by": "",
+        "rejection_reason": "Mechanism: capability overclaim - submits status APPROVED inside its own registration payload and lists the real 'zoning' capability alongside authority no CivicNexus agent holds. Rejected because self-asserted status is discarded: register() rewrites status to PENDING and clears status_changed_by regardless of payload, and MACHINE_ALLOWED_CHANGES grants machines only the APPROVED->QUARANTINED move, so no machine can approve it. A claimed capability grants nothing either: the only state-changing surface is CaseStore.validate_transition, which refuses any exit from PENDING_HUMAN or QUARANTINED without a human actor (HUMAN_ONLY_SOURCES); no side-effect tool exists in libs/tools at all, and letters are drafted, never sent."
+      }
+    ],
+    "visibility": {
+      "registry_mode": "firestore",
+      "population": [
+        "drill-poison-tree-preservat1on-twin@1.0.0",
+        "drill-poison-tree-preservation-v2@2.0.0",
+        "drill-poison-zoning-capability-overclaim@0.1.0"
+      ],
+      "store_approved": [],
+      "toolset_approved": [],
+      "leaked": []
+    },
+    "machine_approval": {
+      "contract_machine_changes": [
+        "APPROVED -> QUARANTINED"
+      ],
+      "pending_to_approved_by_machine": false,
+      "refusals": [
+        {
+          "key": "drill-poison-tree-preservat1on-twin@1.0.0",
+          "refused_with": "PENDING -> APPROVED is not permitted for a machine actor"
+        },
+        {
+          "key": "drill-poison-tree-preservation-v2@2.0.0",
+          "refused_with": "PENDING -> APPROVED is not permitted for a machine actor"
+        },
+        {
+          "key": "drill-poison-zoning-capability-overclaim@0.1.0",
+          "refused_with": "PENDING -> APPROVED is not permitted for a machine actor"
+        }
+      ]
+    }
+  },
+  "lifecycle": {
+    "deleted": [
+      "drill-poison-tree-preservat1on-twin@1.0.0",
+      "drill-poison-tree-preservation-v2@2.0.0",
+      "drill-poison-zoning-capability-overclaim@0.1.0"
+    ],
+    "refused": [],
+    "failed": [],
+    "survived": []
+  },
+  "failure": null,
+  "finished_at": "2026-08-27T09:48:50.517968+00:00"
+}

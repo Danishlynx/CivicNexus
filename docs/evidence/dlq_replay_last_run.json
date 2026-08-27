@@ -1,0 +1,161 @@
+{
+  "steps": [
+    {
+      "step": "preflight",
+      "at": "2026-08-27T09:49:00.577805+00:00",
+      "dead_letter_topic": "projects/civicnexus-hack26/topics/timer.fired.dlq",
+      "attempts_configured": 5,
+      "dlq_sub_topic": "projects/civicnexus-hack26/topics/timer.fired.dlq"
+    },
+    {
+      "step": "published",
+      "at": "2026-08-27T09:49:02.042774+00:00",
+      "topic": "timer.fired",
+      "event_id": "d719b7f5-545a-4ece-8556-9cd8414930ee",
+      "message_id": "21092745267282356"
+    },
+    {
+      "step": "dead-lettered",
+      "at": "2026-08-27T09:50:55.781049+00:00",
+      "nacks": 5,
+      "elapsed_s": 113.7,
+      "delivery_attempt": "5"
+    },
+    {
+      "step": "republished",
+      "at": "2026-08-27T09:50:56.919185+00:00",
+      "count": 2,
+      "message_ids": [
+        "21450112103977872",
+        "20275041372612744"
+      ]
+    },
+    {
+      "step": "consume",
+      "at": "2026-08-27T09:51:01.526824+00:00",
+      "delivery": 1,
+      "claimed": true,
+      "side_effect": "drill_dlq_replay/d719b7f5-545a-4ece-8556-9cd8414930ee/side_effects/713e9b6e3a084bd4a1f47de01d12a23a"
+    },
+    {
+      "step": "consume",
+      "at": "2026-08-27T09:51:03.228289+00:00",
+      "delivery": 2,
+      "claimed": false,
+      "side_effect": "none"
+    },
+    {
+      "step": "side-effects",
+      "at": "2026-08-27T09:51:04.565329+00:00",
+      "written": 1,
+      "claimed_deliveries": 1,
+      "replays": 2
+    },
+    {
+      "step": "demo-drain",
+      "at": "2026-08-27T09:51:07.484244+00:00",
+      "acked": 3,
+      "error": "none"
+    }
+  ],
+  "project": "civicnexus-hack26",
+  "deadline_s": 600.0,
+  "started_at": "2026-08-27T09:48:51.117561+00:00",
+  "preflight": {
+    "drill_subscription": "projects/civicnexus-hack26/subscriptions/timer-fired-drill",
+    "drill_source_topic": "projects/civicnexus-hack26/topics/timer.fired",
+    "dead_letter_topic": "projects/civicnexus-hack26/topics/timer.fired.dlq",
+    "max_delivery_attempts_configured": 5,
+    "max_delivery_attempts_is_approximate": true,
+    "dlq_subscription": "projects/civicnexus-hack26/subscriptions/timer-fired-dlq-replay",
+    "dlq_subscription_topic": "projects/civicnexus-hack26/topics/timer.fired.dlq"
+  },
+  "case_id": "drill-dlq-20260827-a15d2286",
+  "event_id": "d719b7f5-545a-4ece-8556-9cd8414930ee",
+  "traceparent": "00-c0c173e5ade001e9fde4dfdae5d6d7f2-808ac72d4160b610-01",
+  "published_sha256": "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28",
+  "envelope": {
+    "event_id": "d719b7f5-545a-4ece-8556-9cd8414930ee",
+    "schema_version": 1,
+    "type": "timer.fired",
+    "case_id": "drill-dlq-20260827-a15d2286",
+    "ts": "2026-08-27T09:49:00.577805Z",
+    "actor": {
+      "agent_id": "dlq-replay-drill",
+      "agent_version": "1.0.0"
+    },
+    "traceparent": "00-c0c173e5ade001e9fde4dfdae5d6d7f2-808ac72d4160b610-01",
+    "payload": {
+      "drill": "dlq-replay",
+      "adr": "ADR-006 D13",
+      "reason": "synthetic dead-letter replay drill; no real case exists",
+      "timer_id": "timer-c473bf82cea9"
+    }
+  },
+  "publish_message_id": "21092745267282356",
+  "nacks": 5,
+  "dead_letter": {
+    "nacks_before_dead_letter": 5,
+    "elapsed_s": 113.7,
+    "message_id_on_dlq": "21092752551653904",
+    "attributes": {
+      "CloudPubSubDeadLetterSourceDeliveryCount": "5",
+      "CloudPubSubDeadLetterSourceSubscriptionProject": "civicnexus-hack26",
+      "event_type": "timer.fired",
+      "traceparent": "00-c0c173e5ade001e9fde4dfdae5d6d7f2-808ac72d4160b610-01",
+      "CloudPubSubDeadLetterSourceTopicPublishTime": "2026-08-27T09:49:02.508+00:00",
+      "CloudPubSubDeadLetterSourceSubscription": "timer-fired-drill",
+      "case_id": "drill-dlq-20260827-a15d2286"
+    },
+    "sha256": "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28",
+    "bytes": 454,
+    "foreign_messages_left_untouched": []
+  },
+  "replay_message_ids": [
+    "21450112103977872",
+    "20275041372612744"
+  ],
+  "consumed": [
+    {
+      "delivery": 1,
+      "event_id": "d719b7f5-545a-4ece-8556-9cd8414930ee",
+      "traceparent": "00-c0c173e5ade001e9fde4dfdae5d6d7f2-808ac72d4160b610-01",
+      "sha256": "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28",
+      "claimed": true,
+      "side_effect_doc": "drill_dlq_replay/d719b7f5-545a-4ece-8556-9cd8414930ee/side_effects/713e9b6e3a084bd4a1f47de01d12a23a",
+      "replayed_bytes_match_original": true,
+      "message_id": "21450112103977872"
+    },
+    {
+      "delivery": 2,
+      "event_id": "d719b7f5-545a-4ece-8556-9cd8414930ee",
+      "traceparent": "00-c0c173e5ade001e9fde4dfdae5d6d7f2-808ac72d4160b610-01",
+      "sha256": "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28",
+      "claimed": false,
+      "side_effect_doc": null,
+      "replayed_bytes_match_original": true,
+      "message_id": "20275041372612744"
+    }
+  ],
+  "continuity": {
+    "traceparent": "00-c0c173e5ade001e9fde4dfdae5d6d7f2-808ac72d4160b610-01",
+    "published_sha256": "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28",
+    "dead_letter_sha256": "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28",
+    "replay_sha256": [
+      "0d86daa6c17de1d5d398d2af3addbee3f16ca82b64228bb5458e055e7e433e28"
+    ],
+    "mismatches": []
+  },
+  "side_effect_count": 1,
+  "claimed_deliveries": 1,
+  "demo_drain": {
+    "subscription": "timer-fired-demo",
+    "acked_own_copies": [
+      "20275041372612744",
+      "21450112103977872",
+      "21092745267282356"
+    ],
+    "error": null
+  },
+  "finished_at": "2026-08-27T09:51:07.484244+00:00"
+}

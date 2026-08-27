@@ -1,0 +1,86 @@
+{
+  "steps": [
+    {
+      "step": "screened",
+      "at": "2026-08-27T10:58:52.634366+00:00",
+      "what": "day-0 application",
+      "point": "inbound_content",
+      "chars": 611
+    },
+    {
+      "step": "intake",
+      "at": "2026-08-27T10:59:04.655513+00:00",
+      "missing": [
+        "property_address"
+      ]
+    },
+    {
+      "step": "case_parked",
+      "at": "2026-08-27T10:59:13.976984+00:00",
+      "state": "INCOMPLETE_AWAITING_APPLICANT"
+    },
+    {
+      "step": "timer_scheduled",
+      "at": "2026-08-27T10:59:16.906679+00:00",
+      "timer_id": "timer-252ff3f488f8",
+      "fires_at": "2026-08-27T11:00:06.739788+00:00"
+    },
+    {
+      "step": "screen_memory_writes",
+      "at": "2026-08-27T10:59:22.137888+00:00",
+      "screened": 4,
+      "point": "memory_write"
+    },
+    {
+      "step": "memories_written",
+      "at": "2026-08-27T10:59:34.884404+00:00",
+      "direct_facts": 3,
+      "scope": {
+        "app_name": "civicnexus-caseflow",
+        "user_id": "case-5ea037e64ef8"
+      }
+    },
+    {
+      "step": "timer_fired",
+      "at": "2026-08-27T11:00:10.332307+00:00",
+      "elapsed_s": 53.1,
+      "warp_s": 51.8
+    },
+    {
+      "step": "control_probe_blocked",
+      "at": "2026-08-27T11:01:24.778265+00:00",
+      "reason": "engine reply unparseable: RuntimeError",
+      "control": {
+        "driver_note": "engine reply unparseable: RuntimeError"
+      }
+    },
+    {
+      "step": "memories_recalled",
+      "at": "2026-08-27T11:01:28.708582+00:00",
+      "count": 3
+    },
+    {
+      "step": "screened",
+      "at": "2026-08-27T11:02:02.825290+00:00",
+      "what": "resume review finding",
+      "point": "worker_output",
+      "chars": 802
+    },
+    {
+      "step": "PASS",
+      "at": "2026-08-27T11:02:12.078881+00:00",
+      "outcome": "request_info",
+      "citations": [
+        "17.44.100"
+      ],
+      "verifier": "passed",
+      "state": "PENDING_HUMAN"
+    }
+  ],
+  "config": {
+    "clock_multiplier": 20000.0,
+    "warp_seconds": 51.84
+  },
+  "case_id": "case-5ea037e64ef8",
+  "traceparent": "00-85fe86e7f98f04f6c9644253d9fc8dfb-acc9157ba7cb83b0-01"
+}

@@ -1,0 +1,81 @@
+[
+  {
+    "label": "BEFORE",
+    "attempts": [
+      {
+        "n": 1,
+        "seconds": 42.8,
+        "ok": true
+      }
+    ],
+    "reply": {
+      "findings": [
+        {
+          "capability": "zoning",
+          "finding": {
+            "citations": [
+              {
+                "chunk_id": "17.44.100",
+                "quote": "Not more than one room in a dwelling or in an accessory structure shall be employed for the home occupation;"
+              },
+              {
+                "chunk_id": "17.44.100",
+                "quote": "In no way shall the appearance of the structure be so altered or the conduct of the occupation within the structure be such that the structure be reasonably recognized as serving a nonresidential use, either by color, materials or construction, lighting, signs, sounds or voices, vibration, and the like;"
+              }
+            ],
+            "confidence": 0.9,
+            "outcome": "approve",
+            "rationale": "The applicant proposes to convert a detached garage (an accessory structure) into a home office, which is classified as a home occupation. Under Section 17.44.100(G), a home occupation is permitted to employ not more than one room in an accessory structure. The conversion of the detached garage to a single home office complies with this requirement. Additionally, the proposed driveway extension and removal of one mature oak tree do not alter the appearance of the structure in a way that would make it recognizable as serving a nonresidential use, satisfying Section 17.44.100(H). No retrieved provisions restrict the removal of trees or the extension of driveways for this use. Therefore, the application is approved as stated."
+          }
+        }
+      ],
+      "missing_capability": "tree_preservation"
+    }
+  },
+  {
+    "label": "AFTER",
+    "attempts": [
+      {
+        "n": 1,
+        "seconds": 502.2,
+        "ok": true
+      }
+    ],
+    "reply": {
+      "findings": [
+        {
+          "capability": "zoning",
+          "finding": {
+            "citations": [
+              {
+                "chunk_id": "17.44.100",
+                "quote": "Not more than one room in a dwelling or in an accessory structure shall be employed for the home occupation;"
+              },
+              {
+                "chunk_id": "17.44.005",
+                "quote": "ACCESSORY STRUCTURE. As set forth in Cal. Gov't Code \u00a7 66313; a structure that is accessory and incidental to a dwelling located on the same lot."
+              }
+            ],
+            "confidence": 0.9,
+            "outcome": "approve",
+            "rationale": "The applicant proposes to convert a detached garage into a home office. Under Monrovia Municipal Code \u00a7 17.44.005, a detached garage is defined as an accessory structure (\"a structure that is accessory and incidental to a dwelling located on the same lot\"). Under \u00a7 17.44.100(G), a home occupation is permitted within an accessory structure, provided that \"Not more than one room in a dwelling or in an accessory structure shall be employed for the home occupation.\" The conversion of the detached garage to a single home office room complies with this standard. No other retrieved sections of the municipal code restrict the removal of mature oak trees or driveway extensions. Since the stated facts satisfy every applicable requirement retrieved, the application is approved as stated."
+          }
+        },
+        {
+          "capability": "tree_preservation",
+          "finding": {
+            "citations": [
+              {
+                "chunk_id": "17.44.100",
+                "quote": "Not more than one room in a dwelling or in an accessory structure shall be employed for the home occupation;"
+              }
+            ],
+            "confidence": 1.0,
+            "outcome": "approve",
+            "rationale": "The applicant proposes to convert a detached garage into a home office. Under Monrovia Municipal Code \u00a7 17.44.100, home occupations are permitted provided that \"Not more than one room in a dwelling or in an accessory structure shall be employed for the home occupation;\". The conversion of the detached garage (an accessory structure) to a single-room home office complies with this standard. Furthermore, there are no provisions in the retrieved municipal code sections that restrict or prohibit the removal of the mature oak tree for the driveway extension. Therefore, the application is approved."
+          }
+        }
+      ]
+    }
+  }
+]

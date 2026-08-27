@@ -1,0 +1,88 @@
+{
+  "artifacts": [
+    {
+      "file": "drill-armor-off-20260827-123812.json",
+      "shape": "drill_run",
+      "arm": "armor_off",
+      "label": "drill-armor-off",
+      "run_at": "2026-08-27T12:38:12.610870+00:00",
+      "project": "civicnexus-hack26"
+    },
+    {
+      "file": "drill-armor-on-20260827-092910.json",
+      "shape": "drill_run",
+      "arm": "armor_on",
+      "label": "drill-armor-on",
+      "run_at": "2026-08-27T09:29:10.026580+00:00",
+      "project": null
+    },
+    {
+      "file": "drill-armor-on-20260827-094830.json",
+      "shape": "drill_run",
+      "arm": "armor_on",
+      "label": "drill-armor-on",
+      "run_at": "2026-08-27T09:48:30.588470+00:00",
+      "project": null
+    },
+    {
+      "file": "results-no-verifier.json",
+      "shape": "measured",
+      "arm": "verifier_off",
+      "label": "",
+      "run_at": "2026-08-27T11:16:14.535576+00:00",
+      "project": "civicnexus-hack26"
+    },
+    {
+      "file": "results-oldwiring-run1-20260825.json",
+      "shape": "measured",
+      "arm": "unlabelled",
+      "label": "",
+      "run_at": "2026-08-25T14:41:33.222650+00:00",
+      "project": "civicnexus-hack26"
+    },
+    {
+      "file": "results-oldwiring-run2-20260825.json",
+      "shape": "measured",
+      "arm": "unlabelled",
+      "label": "",
+      "run_at": "2026-08-25T15:22:29.800183+00:00",
+      "project": "civicnexus-hack26"
+    },
+    {
+      "file": "results-run5-deterministic-20260821.json",
+      "shape": "measured",
+      "arm": "unlabelled",
+      "label": "",
+      "run_at": "2026-08-21T15:45:17.004368+00:00",
+      "project": "civicnexus-hack26"
+    },
+    {
+      "file": "results-verifier-on-20260825.json",
+      "shape": "measured",
+      "arm": "verifier_on",
+      "label": "",
+      "run_at": "2026-08-25T15:22:29.800183+00:00",
+      "project": "civicnexus-hack26"
+    }
+  ],
+  "skipped": [],
+  "steps": [
+    {
+      "step": "discovered",
+      "at": "2026-08-27T12:39:37.899631+00:00",
+      "usable": 8,
+      "skipped": 0
+    }
+  ],
+  "project": "",
+  "archive_dir": "C:\\Users\\danis\\OneDrive\\Pictures\\CivicNexus\\evals\\archive",
+  "out": "C:\\Users\\danis\\OneDrive\\Pictures\\CivicNexus\\docs\\ablations.md",
+  "started_at": "2026-08-27T12:39:37.893626+00:00",
+  "charts": [],
+  "chart_note": "matplotlib unavailable (ModuleNotFoundError: No module named 'matplotlib'); it is not a project dependency. Install it in the dev group to render the PNGs; the tables above are unaffected.",
+  "report_bytes": 7754,
+  "verifier_arms": 2,
+  "armor_arms": 2,
+  "unlabelled": 3,
+  "finished_at": "2026-08-27T12:39:37.919647+00:00"
+}
