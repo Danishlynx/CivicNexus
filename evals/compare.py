@@ -233,7 +233,7 @@ def discover(archive_dir: Path, *, project: str) -> tuple[list[Artifact], list[t
             _persist()
             print(f"compare: SKIPPED {path.name} - {type(exc).__name__}: {exc}")
             continue
-        if artifact.project is not None and artifact.project != project:
+        if project and artifact.project is not None and artifact.project != project:
             cause = f"measured in project {artifact.project}, not PROJECT_ID {project}"
             skipped.append((path, cause))
             _record["skipped"].append({"file": path.name, "cause": cause})
@@ -973,10 +973,18 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    # PROJECT_ID is OPTIONAL here, deliberately. This tool only reads archived
+    # JSON - no network, no billed call - so requiring cloud env to regenerate a
+    # report would be a barrier with no safety value. When it IS set it earns
+    # its keep by refusing artifacts measured in a different project, which is
+    # how numbers from two projects end up in one table. When it is not, that
+    # protection is announced as OFF rather than silently skipped.
     project = os.environ.get("PROJECT_ID", "").strip()
     if not project:
-        print("FAIL: compare - PROJECT_ID is not set")
-        return 1
+        print(
+            "compare: NOTE - PROJECT_ID unset, so cross-project artifact "
+            "filtering is OFF; every archived artifact is included"
+        )
 
     archive_dir = Path(args.archive)
     out_path = Path(args.out)
