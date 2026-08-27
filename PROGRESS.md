@@ -105,11 +105,40 @@ audit output with their refutations.
    bindings for the reader SA (stated in its label); resource-scoped or
    group-mediated grants are outside its reach.
 
-**NEXT (human, one action):** from the repo root run
-`terraform -chdir=infra/terraform apply`
-(no -var needed — defaults are the live tags; plan shows 9 add / 0 destroy).
-Then paste both service URLs; the agent records them, runs
-`make verify-phase-6`, and the freeze decision follows its result.
+**APPLIED (2026-08-27 evening, human-authorized, agent-run):**
+`Apply complete! Resources: 9 added, 0 changed, 0 destroyed.` A first
+human-run attempt died before acquiring resources and left a stale GCS state
+lock; verified NO terraform process + ZERO resources created, force-unlocked
+(lock 1787847567610750), re-verified plan, then applied clean. **Live URLs:**
+
+- Public reader (the Devpost hosted URL):
+  https://civicnexus-console-wrhx6s33dq-uc.a.run.app
+- Clerk (private, invoker = danishlynx@gmail.com only):
+  https://civicnexus-console-clerk-wrhx6s33dq-uc.a.run.app
+
+**UI note:** human directed a quality pass overriding the D10 polish cut;
+pure-CSS design system landed (no JS framework — D1's rejection reasoning
+holds), commit 036ecc8; final image rebuilt (build 7b02730f) BEFORE the apply,
+so the deployed revision carries audit fixes + the redesign.
+
+## Session pause 2026-08-27 (night)
+
+`make verify-phase-6` was IN FLIGHT at pause: test gate half PASSED (283),
+deployed-services walk running; its result gets appended here when it lands.
+Local preview server stopped. Everything committed and pushed through the
+pause commit.
+
+**Tomorrow (Aug 28, freeze is Aug 29):**
+1. Read the verify-phase-6 result below; if green, the machine half of the
+   §11 exit is done — the human half is one browser clerk walk (video
+   rehearsal can double as it), then declare freeze scope.
+2. Remaining owed items: A7 billed demo-injection --with-letters run (quiet
+   window, closes screening point 3); optional ONE intentional CI push
+   (first-ever emulator-test run, rides billed eval-smoke — spend OK);
+   README (hosted URL + spin-up + redactor honesty paragraph), ARCHITECTURE
+   delta log, docs/shotlist.md at freeze.
+3. Timed reminders standing: video day = clean browser profile, no
+   third-party branding; hosted URL stays live through Oct 1.
 
 ## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
 
