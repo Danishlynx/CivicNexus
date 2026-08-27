@@ -302,6 +302,52 @@ applicant fields contain `CANARY-ROSA-NAME-2b8e` and
 `CANARY-ROSA-EMAIL-7f3a` verbatim; unexplained on a public page they look like a
 mistake, explained they are a governance talking point.
 
+### D13 — Public-exposure hardening: what an anonymous visitor can and cannot do
+
+**Human condition, ratified 2026-08-27: "make sure no one can abuse GCP from the
+public page."** This decision is the answer, written as enforceable properties
+rather than assurances. Each row names the mechanism that makes it true and how
+it is checked.
+
+The governing principle: **the public service is bounded by IAM, not by code
+politeness.** A code bug must not be able to widen the blast radius, so every
+capability the reader does not need is a permission it does not hold.
+
+| Abuse vector | Why it cannot happen | How it is enforced / checked |
+|---|---|---|
+| **Run up the AI bill** (the expensive one) | `sa-console-reader` holds `roles/datastore.viewer` and NOTHING else. It has no `aiplatform` permission, so a model or engine call returns 403 even if code attempted one. There is also no call site: no console route calls `query_json`, `verify_finding`, or an agent engine. | IAM grant list (A1) + a grep test over console source for `vertexai`, `aiplatform`, `agent_engines`, `query_json`, `verify_finding` |
+| **Write or corrupt case data** | `datastore.viewer` is read-only. Write routes are not mounted when `CONSOLE_MODE=reader`, and the reader constructs a refusing publisher rather than a real one. | IAM + route-mounting test + the D7 grep test for Firestore mutation calls |
+| **Forge an audit entry / fake a human approval** | The reader cannot write, so it cannot create an approvals row or a case transition. `caller_identity`-style unverified JWT decoding is explicitly NOT copied onto the public service (D2). | IAM + code review; the reader has no identity-trusting path at all |
+| **Read the quarantined attack documents** | The reader SA holds no Cloud Storage permission whatsoever, and no route serves object bytes. The incident view shows metadata only (D8). | IAM + no storage client is constructed in reader mode |
+| **Publish events / inject into the bus** | No `roles/pubsub.publisher` on the reader SA. Its publisher is a stub that raises. | IAM + unit test that the reader publisher refuses |
+| **Run up Cloud Run cost by hammering the URL** | `max_instance_count` is capped on the public service, so concurrent load is bounded rather than autoscaling into a bill. Idle cost stays ~$0 at `min_instances=0`. | Terraform `scaling.max_instance_count`, mirroring `registry_service.tf` |
+| **XSS via displayed content** | Every page renders through Jinja2 with autoescaping ON. This is not cosmetic: the incident view displays drill-fixture text that is *engineered to contain instructions*, and the applicant fields are attacker-influenceable by construction. | Jinja2 default autoescape (a stated reason for choosing it over f-string HTML in D1) |
+| **Reach the private clerk service** | It is a separate Cloud Run service with no `allUsers` binding — invoker is the named human plus the verify principal. | IAM (A4 binds `allUsers` to the READER only) |
+| **Reach the registry or any other service** | Unchanged: the registry stays private. The console reads `registry_agents` through Firestore, never by calling the registry service. | Existing IAM; no HTTP client to internal services |
+| **Harvest personal data** | There is none. All data is synthetic under fixed faker seeds, and every page carries a footer saying so and explaining the `CANARY-*` leak-detector strings. | Fixture rules (§9.2), enforced by existing dataset tests |
+
+**The one-sentence version for the README:** *the public console holds a single
+Google Cloud permission — read Firestore — so it cannot spend money, cannot
+write, cannot publish, and cannot read a quarantined document, regardless of what
+its code does.*
+
+**Residual risks, stated rather than implied away:**
+
+* An anonymous visitor CAN read every synthetic case, determination and incident.
+  That is intended — it is the demo — and the data is synthetic by construction.
+* Cloud Run's per-request cost is not zero. `max_instance_count` bounds the
+  worst case rather than eliminating it; a sustained flood would still register
+  on the bill. The existing budget alerts at $50/$100/$140 remain the backstop,
+  and B-012's standing rule applies: an alert is investigated, not absorbed.
+* This posture is only true once the IAM grants are applied EXACTLY as scoped. A
+  broader grant to the reader SA (for convenience, later) silently removes the
+  guarantee, so the grant list is pinned here and the verifier re-checks it.
+
+**`verify_phase6` asserts this posture**, so it cannot rot: it checks the reader
+service is reachable anonymously, that a write attempt through the public
+service fails, and that the reader SA's role list is exactly
+`[roles/datastore.viewer]`.
+
 ### D6 — "A full case from the UI alone" means `PENDING_HUMAN → APPROVED → ISSUED → CLOSED`. Intake is not in scope.
 
 The spec settles the ambiguity: §3.1 lists the console's responsibilities as
