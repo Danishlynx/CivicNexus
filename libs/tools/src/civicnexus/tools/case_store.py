@@ -152,6 +152,35 @@ class CaseStore:
             raise KeyError(f"case {case_id} does not exist")
         return Case.model_validate(snapshot.to_dict())
 
+    def list_cases(self) -> tuple[list[Case], list[str]]:
+        """Every case, newest-updated first, plus ids of documents that failed
+        validation (ADR-007 D5).
+
+        Sorted in Python — no composite Firestore index exists, and creating
+        one is Terraform this phase does not need. Per-document tolerance is a
+        MUST, not a nicety: ``Case`` is ``frozen=True, extra="forbid"``, so
+        without it one stray field in one document would 500 the entire
+        console queue. Skipped ids are RETURNED so the caller can say "N
+        documents failed validation" instead of silently narrowing the queue.
+        """
+        from pydantic import ValidationError
+
+        valid: list[Case] = []
+        invalid: list[str] = []
+        for snapshot in self._db.collection(self._collection).stream():
+            try:
+                valid.append(Case.model_validate(snapshot.to_dict()))
+            except ValidationError:
+                invalid.append(snapshot.id)
+                # ids only (D8): the failing document may hold applicant
+                # fields, so neither the doc nor the error detail is logged.
+                _log.warning(
+                    f"case document failed validation, excluded from listing: {snapshot.id}",
+                    extra={"case_id": snapshot.id},
+                )
+        valid.sort(key=lambda c: c.updated_at, reverse=True)
+        return valid, invalid
+
     def transition(
         self,
         case_id: str,

@@ -44,6 +44,25 @@ class IncidentStore:
             raise KeyError(f"incident {incident_id} does not exist")
         return Incident.model_validate(snapshot.to_dict())
 
+    def list_incidents(self) -> tuple[list[Incident], list[str]]:
+        """Every incident, newest first, plus ids of documents that failed
+        validation (ADR-007 D5 — same per-doc tolerance as the case queue)."""
+        from pydantic import ValidationError
+
+        valid: list[Incident] = []
+        invalid: list[str] = []
+        for snapshot in self._db.collection(self._collection).stream():  # type: ignore[attr-defined]
+            try:
+                valid.append(Incident.model_validate(snapshot.to_dict()))
+            except ValidationError:
+                invalid.append(snapshot.id)
+                _log.warning(
+                    f"incident document failed validation, excluded from listing: {snapshot.id}",
+                    extra={"incident_id": snapshot.id},
+                )
+        valid.sort(key=lambda i: i.ts, reverse=True)
+        return valid, invalid
+
     def resolve(self, incident_id: str, *, resolved_by: str) -> Incident:
         """Mark an incident RESOLVED — a named human action, never a machine's."""
         if not resolved_by:
