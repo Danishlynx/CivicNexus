@@ -53,7 +53,7 @@ def _query_with_backoff(remote: Any, message: str) -> tuple[dict[str, Any], list
     raise RuntimeError("unreachable")
 
 
-def _run_one(remote: Any, case: EvalCase) -> CaseResult:
+def _run_one(remote: Any, case: EvalCase, *, no_verifier: bool = False) -> CaseResult:
     started = time.monotonic()
     tokens_in = tokens_out = 0
     try:
@@ -99,7 +99,11 @@ def _run_one(remote: Any, case: EvalCase) -> CaseResult:
         )
         first_pass = report.passed
         retried = False
-        if not report.passed:
+        # ADR-006 D9, pinned semantics for the §9.5 ablation: --no-verifier still
+        # verifies ONCE so first-pass and grounding data exist on both arms, but
+        # it gates nothing and never retries. The verifier is not disabled — its
+        # corrective power is, which is the thing the ablation measures.
+        if not report.passed and not no_verifier:
             retried = True
             retry_msg = json.dumps(
                 {
@@ -193,6 +197,14 @@ def main() -> int:
         action="store_true",
         help="regenerate docs/eval-report.md after the run (even when gates fail)",
     )
+    parser.add_argument(
+        "--no-verifier",
+        action="store_true",
+        help=(
+            "ablation arm (ADR-006 D9): verify once for the data, but gate nothing "
+            "and never retry. Results are NOT a baseline - archive them labelled."
+        ),
+    )
     args = parser.parse_args()
 
     project = os.environ.get("PROJECT_ID")
@@ -218,7 +230,7 @@ def main() -> int:
     for i, case in enumerate(cases, 1):
         if i > 1:
             time.sleep(5)  # pace the shared quota
-        result = _run_one(remote, case)
+        result = _run_one(remote, case, no_verifier=args.no_verifier)
         results.append(result)
         status = result.error or (
             f"{result.observed_outcome} (expected {result.expected_outcome.value})"
@@ -230,11 +242,21 @@ def main() -> int:
     payload = {
         "run_at": datetime.now(UTC).isoformat(),
         "tag": args.tag,
+        # Labels the arm in the artifact itself, so an ablation run can never be
+        # mistaken for a baseline once it is archived (D9).
+        "config": {"no_verifier": args.no_verifier},
         "engine": deploy_state["resource_name"],
         "cases": [r.model_dump(mode="json") for r in results],
         "metrics": metrics.model_dump(mode="json"),
     }
-    RESULTS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    if args.no_verifier:
+        # Never let an ablation arm overwrite the shipping results.json.
+        ablation_path = RESULTS_PATH.parent / "archive" / "results-no-verifier.json"
+        ablation_path.parent.mkdir(parents=True, exist_ok=True)
+        ablation_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        print(f"runner: ablation arm written to {ablation_path} (NOT the baseline)")
+    else:
+        RESULTS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     if args.report:
         from evals import report as report_mod
 

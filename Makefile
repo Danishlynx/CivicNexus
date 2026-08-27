@@ -37,16 +37,19 @@ eval-full:
 demo-hotadd:
 	@uv run python scripts/demo_hotadd.py --approver $(APPROVER) && echo PASS: make demo-hotadd || (echo FAIL: make demo-hotadd && exit 1)
 
+# Needs PROJECT_ID. The $0 canary is a printed precondition (ADR-006 D10).
+# The letters leg is billable and OFF by default: add --with-letters with an OK.
 demo-injection:
-	@echo FAIL: demo-injection not implemented until Phase 5 && exit 1
+	@uv run python -m scripts.armor_canary --arm positive && uv run python -m scripts.demo_injection $(DEMO_ARGS) && echo PASS: make demo-injection || (echo FAIL: make demo-injection && exit 1)
 
 # Needs PROJECT_ID and CLOCK_MULTIPLIER (e.g. 20000 = 12 days in ~52s).
 # Billable (engine queries + memory ops) - run with the human's OK per RUNBOOK.
 demo-timewarp:
 	@uv run python scripts/demo_timewarp.py && echo PASS: make demo-timewarp || (echo FAIL: make demo-timewarp && exit 1)
 
+# Needs PROJECT_ID. Pub/Sub only - no engine calls, so effectively $0.
 dlq-replay:
-	@echo FAIL: dlq-replay not implemented until Phase 5 && exit 1
+	@uv run python -m scripts.dlq_replay && echo PASS: make dlq-replay || (echo FAIL: make dlq-replay && exit 1)
 
 verify-phase-0:
 	@$(MAKE) test && $(MAKE) smoke && uv run python scripts/verify_phase0.py && echo PASS: make verify-phase-0 || (echo FAIL: make verify-phase-0 && exit 1)
@@ -63,8 +66,13 @@ verify-phase-3:
 verify-phase-4:
 	@$(MAKE) test && $(MAKE) demo-timewarp && echo PASS: make verify-phase-4 || (echo FAIL: make verify-phase-4 && exit 1)
 
+# Phase 5 exit criteria (ARCHITECTURE §11, scoped by ADR-006). The $0 legs run
+# unconditionally; the billable demo legs are opt-in via DEMO_ARGS so the gate
+# can be re-checked without spend. Pass EXPECT=<n> to state the injection
+# denominator explicitly - it is 14/15 today with one characterised holdout
+# (B-014), so this target never hardcodes a number it did not measure.
 verify-phase-5:
-	@echo FAIL: verify-phase-5 not implemented until Phase 5 && exit 1
+	@$(MAKE) test && uv run python -m scripts.armor_canary && uv run python -m evals.drill_runner --expect $(or $(EXPECT),14) && uv run python -m scripts.drill_tool_poisoning && $(MAKE) dlq-replay && echo PASS: make verify-phase-5 || (echo FAIL: make verify-phase-5 && exit 1)
 
 verify-phase-6:
 	@echo FAIL: verify-phase-6 not implemented until Phase 6 && exit 1
