@@ -352,6 +352,53 @@ set; every run's payload is archived labelled under `evals/archive/`;
 `--report` is never passed (docs/eval-report.md untouched). Registry preflight
 (zero APPROVED cards) checked before run 1 (ADR-005).
 
+### Runs 1–2 MEASURED; root cause discovered; rules AMENDED before run 3
+
+**Run 1: 10/12 (0.833). Run 2: 9/12 (0.750).** Split under the original rule.
+Both artifacts archived (`results-lever1-run{1,2}-20260828.json`). Between the
+runs, per-check failure lists were added to the artifact (observability only,
+e48db79) — and run 2's artifact changed the diagnosis entirely:
+
+1. **The over-ask check fired ZERO times in run 2** (no `over-ask:` failure
+   anywhere). The hard guard did not trip. Lever 1 is measured INERT so far —
+   not harmful, not helpful — because it is gated behind step 4, and step 4
+   was failing spuriously (next item) on exactly the over-ask-class cases.
+2. **Real defect found: intake's instruction enumerated ONE permit type**
+   (`one of: garage_conversion` — never widened when home_occupation and
+   accessory_structure were added to config). Off-enum cases free-form a
+   string, miss the config lookup, `allowed_outcomes` comes back EMPTY, and
+   step 4 fails EVERY outcome with "outcome X is not allowed for this permit
+   type". **That misleading critique flipped golden-004 from a correct
+   request_info to a wrong approve on retry** (run 2, recorded in the
+   artifact); golden-007/012's failures carry the same signature in both runs.
+   The 10/12-vs-9/12 split is baseline variance (matches 2026-08-25's
+   10/12–9/12), not a lever effect.
+3. **Fixes shipped before run 3:** intake instruction enumerates all three
+   snake_case types with a free-form escape hatch for out-of-scope requests
+   (drill escalate-by-construction preserved); `resolve_permit_type()`
+   bridges FORMAT drift only (case/separators), never name drift; the
+   empty-allowed step-4 failure now reads "permit type is not configured…"
+   instead of outcome-steering language. Also observed for the record:
+   golden-002's entailment check correctly caught a wrong approve first-pass
+   but the retry over-corrected to request_info and PASSED entailment — the
+   decidability clause is not enforcing; noted as a future lever, not touched
+   tonight.
+
+**AMENDED rules, pre-committed before run 3 (the tiebreak):** run 3 measures
+the ship-candidate config = lever 1 + the three defect fixes, on the redeployed
+caseflow (intake fix, still Flash). (a) ≥10/12 → ship the config. (b) =9/12 →
+ship the DEFECT FIXES on their correctness evidence (the 004 flip is
+documented instrument harm; reverting a fixed defect to preserve a red
+baseline serves nothing) but claim NO accuracy improvement — the number is
+reported as within variance; lever 1's check stays only because it is
+measured inert and unit-pinned, and is re-evaluated at the next full run.
+(c) ≤8/12 → regression: roll the engine back to the pre-fix build, revert
+lever 1's check, report honestly. (d) If the over-ask check fires on an
+expected-request_info case in run 3, hard guard as before: stop, investigate.
+Lever 2's rules are unchanged (one Pro run after run 3, $12 ceiling, revert
+deploy same evening, ship only ≥11/12 + latency-compatible + human
+ratification).
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video

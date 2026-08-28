@@ -64,7 +64,7 @@ from civicnexus.contracts import (
     ReviewFinding,
     ScreeningPoint,
 )
-from civicnexus.contracts.permit_types import load_permit_types
+from civicnexus.contracts.permit_types import load_permit_types, resolve_permit_type
 from civicnexus.tools import (
     CaseStore,
     EventPublisher,
@@ -198,7 +198,7 @@ def drive_application(
     )
 
     permit_types = load_permit_types(PERMIT_TYPES)
-    permit_cfg = permit_types.get(application.permit_type)
+    permit_cfg = resolve_permit_type(permit_types, application.permit_type)
     allowed = permit_cfg.allowed_outcomes if permit_cfg else []
     report = verify_finding(
         finding,

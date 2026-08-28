@@ -99,6 +99,16 @@ def test_entailment_failure_carries_critique(corpus: Path) -> None:
     assert "does not decide" in report.critique
 
 
+def test_unknown_permit_type_fails_honestly_without_outcome_steering(corpus: Path) -> None:
+    # Empty allowed list = unconfigured permit type. The failure text must NOT
+    # read "pick a different outcome" — that wording measurably flipped a
+    # correct request_info to a wrong approve on retry (2026-08-28).
+    report = _run(_finding(), corpus, outcomes=[])
+    assert not report.passed and not report.outcome_legal
+    assert any("not configured" in f for f in report.failures)
+    assert not any("is not allowed for this permit type" in f for f in report.failures)
+
+
 def test_illegal_outcome_fails_step_four(corpus: Path) -> None:
     report = _run(
         _finding(outcome=DeterminationOutcome.APPROVE),

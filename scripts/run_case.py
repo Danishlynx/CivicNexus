@@ -22,7 +22,7 @@ from civicnexus.contracts import (
     EventType,
     ReviewFinding,
 )
-from civicnexus.contracts.permit_types import load_permit_types
+from civicnexus.contracts.permit_types import load_permit_types, resolve_permit_type
 from civicnexus.tools import CaseStore, EventPublisher, query_json
 from civicnexus.verifier import verify_finding
 
@@ -124,7 +124,7 @@ def main() -> int:
     # one retry with the critique; second failure still lands PENDING_HUMAN,
     # report attached, for the clerk to see.
     permit_types = load_permit_types(Path("config/permit_types.yaml"))
-    permit_cfg = permit_types.get(application.permit_type)
+    permit_cfg = resolve_permit_type(permit_types, application.permit_type)
     allowed = permit_cfg.allowed_outcomes if permit_cfg else []
     report = verify_finding(
         finding,

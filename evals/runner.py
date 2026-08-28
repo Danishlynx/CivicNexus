@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from civicnexus.contracts import Application, DeterminationOutcome, ReviewFinding
-from civicnexus.contracts.permit_types import load_permit_types
+from civicnexus.contracts.permit_types import load_permit_types, resolve_permit_type
 from civicnexus.tools import check_grounding, query_json_with_events, sum_usage
 from civicnexus.verifier import verify_finding
 
@@ -89,7 +89,7 @@ def _run_one(remote: Any, case: EvalCase, *, no_verifier: bool = False) -> CaseR
         finding = ReviewFinding.model_validate(parsed)
 
         # §7.3 gate: verify; one retry with the critique attached on failure.
-        permit_cfg = PERMIT_TYPES.get(application.permit_type)
+        permit_cfg = resolve_permit_type(PERMIT_TYPES, application.permit_type)
         allowed = permit_cfg.allowed_outcomes if permit_cfg else []
         report = verify_finding(
             finding,

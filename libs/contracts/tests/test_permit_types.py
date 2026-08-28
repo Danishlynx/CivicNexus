@@ -4,7 +4,11 @@ from pathlib import Path
 
 import pytest
 from civicnexus.contracts import DeterminationOutcome
-from civicnexus.contracts.permit_types import PermitTypeConfig, load_permit_types
+from civicnexus.contracts.permit_types import (
+    PermitTypeConfig,
+    load_permit_types,
+    resolve_permit_type,
+)
 from pydantic import ValidationError
 
 REPO_CONFIG = Path(__file__).resolve().parents[3] / "config" / "permit_types.yaml"
@@ -58,6 +62,23 @@ def test_rejects_empty_file(tmp_path: Path) -> None:
     p = _write(tmp_path, "")
     with pytest.raises(ValueError, match="non-empty mapping"):
         load_permit_types(p)
+
+
+def test_resolve_exact_match() -> None:
+    cfgs = load_permit_types(REPO_CONFIG)
+    assert resolve_permit_type(cfgs, "home_occupation") is cfgs["home_occupation"]
+
+
+def test_resolve_bridges_format_drift_only() -> None:
+    cfgs = load_permit_types(REPO_CONFIG)
+    # Case and separator variants the intake model has emitted resolve...
+    assert resolve_permit_type(cfgs, "Home Occupation") is cfgs["home_occupation"]
+    assert resolve_permit_type(cfgs, "  home-occupation ") is cfgs["home_occupation"]
+    assert resolve_permit_type(cfgs, "ACCESSORY_STRUCTURE") is cfgs["accessory_structure"]
+    # ...but a genuinely different name NEVER does — the out-of-scope drills'
+    # escalate-by-construction path depends on the miss.
+    assert resolve_permit_type(cfgs, "structure_relocation") is None
+    assert resolve_permit_type(cfgs, "street tree removal") is None
 
 
 def test_config_model_frozen() -> None:

@@ -193,7 +193,17 @@ def verify_finding(
 
     outcome_legal = finding.outcome in permit_allowed_outcomes
     if not outcome_legal:
-        failures.append(f"outcome {finding.outcome.value} is not allowed for this permit type")
+        if not permit_allowed_outcomes:
+            # Unknown permit type: NO outcome can pass. Say that honestly —
+            # the old "outcome X is not allowed" wording read as "pick a
+            # different outcome" and measurably flipped a correct request_info
+            # to a wrong approve on retry (2026-08-28, golden-004).
+            failures.append(
+                "permit type is not configured for this office - no outcome can "
+                "be verified as legal; an out-of-scope request escalates to a human"
+            )
+        else:
+            failures.append(f"outcome {finding.outcome.value} is not allowed for this permit type")
 
     outcome_entailed = False
     if sections_exist and quotes_verbatim and outcome_legal:

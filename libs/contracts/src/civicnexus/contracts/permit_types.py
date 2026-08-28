@@ -21,6 +21,23 @@ class PermitTypeConfig(BaseModel):
     sla_days: int = Field(gt=0)
 
 
+def resolve_permit_type(cfgs: dict[str, PermitTypeConfig], raw: str) -> PermitTypeConfig | None:
+    """Look up a permit type tolerating FORMAT drift only, never name drift.
+
+    Model-emitted type strings drift in case and separators ("Home Occupation"
+    vs home_occupation) — measured flipping golden-004 on 2026-08-28, when the
+    missed lookup made every outcome read illegal and the retry critique pushed
+    a correct request_info to a wrong approve. Normalization bridges exactly
+    that class. A genuinely different name (a request outside
+    config/permit_types.yaml) still returns None — the drills' out-of-scope
+    escalate-by-construction path depends on it.
+    """
+    if raw in cfgs:
+        return cfgs[raw]
+    normalized = "_".join(raw.strip().lower().replace("-", " ").replace("_", " ").split())
+    return cfgs.get(normalized)
+
+
 def load_permit_types(path: Path) -> dict[str, PermitTypeConfig]:
     """Load and validate the permit-type config file.
 
