@@ -271,16 +271,15 @@ unedited, whatever its gate status) then the ablation tables.
 Narration cues — every number packaged, none bare:
 
 - **The gate story, stated plainly (this is the strongest honesty beat —
-  do not rush it):** "This accuracy gate was **red for most of the build** —
-  65 to 80 percent across five full runs — and we shipped it red on this
-  public page rather than lower the threshold. The day before freeze, our
-  eval instrumentation found the real defect: a stale one-permit-type
+  do not rush it):** "This full-set accuracy gate reads **75 percent, and it
+  ships red** — we never lowered the threshold. The day before freeze, our
+  eval instrumentation found a real defect — a stale one-permit-type
   enumeration in intake that made the verifier's legality check fail
-  everything and corrupt retries. We fixed it and measured **twelve out of
-  twelve, twice consecutively** — groundedness 100%, citation recall 100%,
-  canary leaks zero. The red history is archived in the repo, next to the
-  fix." (Scope if asked: 12-case smoke subset ×2; full 20-case set not yet
-  re-measured post-fix.)
+  everything and corrupt retries. We fixed it and our CI smoke subset went
+  **twelve for twelve, three consecutive times**. The same-day full run put
+  the honest boundary on that fix: the eight harder held-out cases measure
+  three of eight, and the report names each miss. Groundedness 100 percent,
+  canary leaks zero, every run archived — the red history next to the fix."
 - **Screening-drill number, with its full B-014 packaging (binding rule — never
   the number alone):** "Fourteen of fifteen drill fixtures blocked, at
   `pi_and_jailbreak` **ENABLED, LOW_AND_ABOVE** — stable across three
@@ -504,11 +503,13 @@ EMAIL LOOP + CLERK WALK
   docs/adr/007-console.md:572, 656; enforced in scripts/verify_phase6.py:51 (NEVER_TOUCH).
 
 EVAL DASHBOARD BEAT
-- Headline (run 4, 2026-08-28): accuracy 100.00% GATES PASS; citation P/R 95.83/100;
-  groundedness 100%; verifier first-pass 91.67%; canary 0; p50/p95 56s/68s;
-  tokens 257,315: docs/eval-report.md:5-19 (regenerated from run 4).
+- Headline (full run, 2026-08-28): accuracy 75.00% (15/20) GATE FAIL; citation P/R
+  87.50/95.00; groundedness 100%; verifier first-pass 90%; canary 0; p50/p95 66s/84s;
+  tokens 529,470: docs/eval-report.md:1-20.
+- Smoke subset 12/12 ×3 post-fix (CI gate green); held-out 8 = 3/8 (010/013/020
+  over-ask, 008/014 over-decide): PROGRESS.md "Accuracy levers"; BLOCKERS B-006 addendum 2.
 - Red era: B-006, 65–80% across five runs, thresholds never lowered: BLOCKERS.md B-006.
-- Fix + both 12/12 runs + archived history: PROGRESS.md "Accuracy levers"; evals/archive/.
+- All runs archived: evals/archive/ (lever 1-2, shipfix 3-4, full, red-era baseline).
 - /evals renders report unedited whatever the gate status: PROGRESS.md:51.
 - Verifier ablation (acc 0.0pp; groundedness +8.3pp; precision +4.2pp; caught 7 / corrected 0;
   tokens 655,564 vs 258,703 = +396,861 ≈2.5x): docs/ablations.md:26-40; PROGRESS.md:458-476.

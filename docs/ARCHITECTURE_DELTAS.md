@@ -49,16 +49,17 @@ ratifying record (ADR / BLOCKERS id + date).
    `evals/runner.py` still contains no registry/APPROVED/preflight code.
    ADR-007 marked it "droppable to Phase 7" — it is now a Phase 7 owed item,
    and ADR-005's claim remains false until it lands.
-4. **The eval decision-accuracy gate was RED through the build, and went
-   green on measured evidence 2026-08-28:** 65–80% across five full runs
-   (B-006), shipped red and unedited on the public `/evals` page; the
-   threshold was never lowered (prime directive 9). The day before freeze,
-   artifact-level failure recording root-caused a stale one-permit-type
-   enumeration in intake (plus an outcome-steering verifier critique); after
-   the fix the 12-case smoke subset measured **12/12 twice consecutively,
-   all gates green** (both runs + the red-era baseline archived under
-   `evals/archive/`). Scope: smoke subset only; the full 20-case set is not
-   yet re-measured post-fix. See "Standing red gate" below for the history.
+4. **The eval decision-accuracy gate: red through the build, split honestly
+   at the freeze.** 65–80% across five full runs (B-006), shipped red and
+   unedited on the public `/evals` page; the threshold was never lowered
+   (prime directive 9). Freeze-eve artifact observability root-caused a stale
+   one-permit-type enumeration in intake (plus an outcome-steering verifier
+   critique); post-fix the 12-case smoke subset measured **12/12 three
+   consecutive times** (CI smoke gate green), while the same-day full 20-case
+   run measured **15/20 (75%) — full-set gate stays RED**, the 8 held-out
+   cases at 3/8 with the classic over-ask/over-decide split. All runs and the
+   red-era baseline archived under `evals/archive/`. See "Standing red gate"
+   below.
 5. **Two cited status lines were stale until this pass flagged them (both
    corrected repo-side at the freeze, 2026-08-28):** ADR-005's status line
    still read "proposed — requires human ratification" although its
@@ -616,11 +617,10 @@ product-loop section (human-directed).
   recorded human authorization + B-016, no ADR).
 - **Corrections to ratified ADRs: 5** (C1–C5), of which C4 is a ratified fix
   not yet implemented.
-- **Standing red gate: 0 as of 2026-08-28** (decision accuracy was red at
-  75.00% vs ≥85% through the build — B-006; root-caused and fixed at the
-  freeze, then measured 12/12 twice consecutively on the smoke subset, all
-  gates green. A measurement history, not a spec change; full-set
-  re-measurement still owed).
+- **Standing red gate: 1** (full-set decision accuracy 75.00% (15/20) vs
+  ≥85%, B-006 OPEN — measured 2026-08-28 post-fix. The 12-case CI smoke
+  subset is green at 12/12 ×3 after the freeze-eve defect fix; the 8
+  held-out cases measure 3/8. A measurement, not a spec change).
 - **Owed at Phase 7: 2** — ablation charts export (Definition of Done) and
   the ADR-007 D12 registry preflight (C4).
 

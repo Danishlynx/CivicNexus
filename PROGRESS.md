@@ -446,6 +446,25 @@ root-caused defect → 12/12 ×2, archived); B-006 addendum recorded (root cause
 found and fixed; full-set confirmation owed before CLOSED). Console image
 rebuild owed so the deployed `/evals` shows the regenerated report.
 
+### eval-full (human-authorized): 15/20 — fix confirmed on smoke ×3, B-006 stays OPEN, honestly narrowed
+
+**Full 20-case run (2026-08-28 evening, output observed directly), archived
+as `results-full-20260828.json`:** accuracy **75% (15/20), gate FAIL**;
+citation P/R 0.88/0.95; groundedness 1.00; leaks 0; zero errors; p95 84s;
+tokens 529,470. Structure: **the 12 smoke-subset cases went 12/12 a THIRD
+consecutive time**; the 8 held-out cases went **3/8** — over-asking on
+golden-010/013/020, over-deciding on golden-008/014. Evidence-precision
+consequence: the defect fix is confirmed as the whole story for the smoke
+subset and NOT for the held-out 8; B-006 stays OPEN with Addendum 2 recording
+the split and the remaining levers (entailment decidability enforcement;
+Pro-at-decision on the held-out cases — both untouched at freeze).
+README/deltas/shotlist re-scoped to the full-run truth same evening; the
+20-case report is the recorded `evals/results.json` + `docs/eval-report.md`.
+Console v0.1.6 rebuild owed so the deployed `/evals` serves the full-run
+report (the v0.1.5 page shows the smoke-only green report — divergence must
+not survive into the video). verify-phase-6 all 18 assertions PASSED against
+v0.1.5 earlier this evening.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video

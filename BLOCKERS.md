@@ -238,7 +238,26 @@ Executed:
 Google's edge** (the registry service stays deployed; re-probe before
 Phase 6 managed-mode work).
 
-## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (ROOT CAUSE FOUND AND FIXED 2026-08-28; smoke gate GREEN ×2; full-set confirmation owed)
+## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, narrowed 2026-08-28: smoke subset SOLVED ×3, held-out 8 measure 3/8)
+
+**Addendum 2 (2026-08-28, post-eval-full) — the full-set run scopes the fix
+honestly and B-006 stays OPEN.** `make eval-full` (20 cases, human-authorized):
+**15/20 (75%), gate FAIL** — with the 12 smoke-subset cases 12/12 AGAIN
+(third consecutive perfect) and the 8 held-out cases 3/8. So the earlier
+"dominant driver was a defect" claim is hereby narrowed per evidence-precision:
+TRUE for the smoke subset (12/12 ×3 post-fix), NOT the whole story for the
+held-out 8, where the classic split persists — over-asking on golden-010/013/
+020 (request_info where stated facts decide), over-deciding on golden-008/014
+(deny where a decision-critical fact is genuinely absent). Citation P/R
+0.88/0.95, groundedness 1.00, leaks 0, no errors. Artifact:
+`evals/archive/results-full-20260828.json`. The over-ask verifier check
+(step 5) did not rescue 010/013/020 — consistent with its design limit: it
+verifies the REQUESTED fact's presence, and these rationales request facts
+that are genuinely absent while dispositive stated facts already decide (the
+entailment decidability clause is the check that should catch this and does
+not enforce it — recorded as the remaining lever, untouched at freeze).
+Remaining levers, for the record: entailment decidability enforcement;
+Pro-at-decision (built, `ZONING_MODEL_ID`, unmeasured on the held-out 8).
 
 **Addendum (2026-08-28, freeze eve) — the dominant driver was a DEFECT, not
 model capability.** Artifact-level failure recording (added between two
