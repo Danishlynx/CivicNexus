@@ -40,8 +40,21 @@ class InboxStore:
         self._db = db
         self._collection = collection
 
-    def submit(self, raw: str, *, source: str, submitted_by: str) -> str:
-        """Queue one raw application (email-shaped text). Returns the id."""
+    def submit(
+        self,
+        raw: str,
+        *,
+        source: str,
+        submitted_by: str,
+        docs: list[str] | None = None,
+        screened: bool = False,
+    ) -> str:
+        """Queue one raw application (email-shaped text). Returns the id.
+
+        ``docs`` carries attachment provenance strings (name+hash+status);
+        ``screened`` marks feeder-side screening already done (Gmail path),
+        so the consumer knows whether the inbound screen is still owed.
+        """
         if not raw.strip():
             raise ValueError("an application submission cannot be empty")
         if len(raw) > MAX_RAW_CHARS:
@@ -59,6 +72,8 @@ class InboxStore:
                 "status": STATUS_NEW,
                 "submitted_at": datetime.now(UTC),
                 "case_id": "",
+                "docs": list(docs or []),
+                "screened": screened,
             }
         )
         _log.info(

@@ -5,6 +5,23 @@ paths, recommendation, who acts.
 
 ---
 
+## B-016 — vision.googleapis.com enabled via gcloud + terraform import (directive 6 record, 2026-08-28) — RESOLVED
+
+**What:** the Vision API (deterministic OCR for the attachment pipeline) was enabled
+with `gcloud services enable vision.googleapis.com` and then `terraform import`ed,
+instead of being applied from `apis.tf` directly.
+
+**Why not a plain apply (deliberate, refused at plan):** adding the service to
+`google_project_service.enabled` made `data.google_project.this` unknown at plan
+time, and the plan cascaded to **9 to add, 2 to change, 8 to destroy** — a forced
+replacement of 8 live IAM bindings. The apply was refused; enable-then-import
+touches only the one resource. Post-import `terraform plan` reports **"No
+changes."** The TF resource is committed in `apis.tf`, so state stays authoritative.
+
+**Recorded by the successor session** (the acting session was interrupted at its
+lint/gate step before writing this entry; the sequence is preserved in its
+transcript and reconstructed 2026-08-28).
+
 ## B-009 — demo run 2: two engine-side defects; composition crash is a demo-reliability trap (OPEN, fix decision with human)
 
 **Symptom (2026-08-21, run 2 of demo-hotadd):** BEFORE review crashed

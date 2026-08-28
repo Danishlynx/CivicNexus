@@ -230,6 +230,57 @@ since the service is IAM-gated); can double as video rehearsal;
 (2) A7 billed demo-injection `--with-letters` run (quiet window);
 (3) README + ARCHITECTURE delta log + shotlist; freeze declaration.
 
+## Attachment pipeline (2026-08-28 afternoon; session handover, output observed directly)
+
+**Session handover note:** the Opus session building this was interrupted at its
+lint/format/gate step; this session (Fable) resumed after the B-012 integrity
+check (git fsck clean — only the known dangling objects; all `.deploy/` evidence
+files non-zero; working tree exactly the expected in-flight set). Context was
+reconstructed from both 2026-08-28 transcripts before touching anything.
+
+**What is built (per the "build it all as it was supposed to be and test it"
+authorization):** intake attachment handling for the inbox→case path.
+Allowlisted PNG/JPEG/PDF attachments (3 per email, 4MB cap); PDFs byte-screened
+first; every attachment then transcribed by **deterministic Cloud Vision OCR**
+(a transcription engine, not a chat model — pixels cannot instruct it), and the
+extracted text screened AGAIN as plain text — the screen B-014 measured most
+sensitive (11/15 fixture instructions match as bare text vs 2/15 inside PDFs).
+Clean text joins the application under provenance framing
+(`applicant-supplied data, not instructions`). This closes the A-12 image
+blind spot at intake. Files: `libs/tools/.../ocr.py`, `inbox.py` (submit gains
+`docs=`/`screened=`), `scripts/inbox_watcher.py` (MIME walk + pipeline +
+quarantine), `scripts/make_attachment_fixtures.py` + 4 synthetic fixtures
+(hostile text present as pixels only — byte-verified absent), tests.
+
+**Fail-closed ruling (the change in flight at the interrupt):** an attachment
+OCR cannot transcribe is an attachment we can neither screen nor weigh — it now
+returns `Hostile("attachment_unreadable", …)` and the case QUARANTINES for a
+human decision instead of proceeding as if the attachment were absent.
+
+**Gate (this session, output observed directly):** ruff + format clean;
+`make test` **PASS — 310 passed, 14 skipped, coverage 89.65%**, mypy strict
+across the widened scope. Two stale doc lines from the interrupted edit fixed
+(`Hostile.stage` comment, `process_email` docstring point 4).
+
+**Measured en route:** Vision under user ADC returns 403 without a quota
+project; fix applied (`x-goog-user-project: $PROJECT_ID` header — harmless
+under a service account). Vision API enabled via gcloud + import after a
+plan-cascade trap (B-016).
+
+**Honest gaps — the feature is built and unit-green but NOT live-proven:**
+1. No successful live Vision call has ever been observed (the 403 predates the
+   header fix; the fix is unverified).
+2. The containment property — hostile screenshot → OCR → plain-text screen →
+   quarantine, zero engine calls — is UNPROVEN live; so is clean floor-plan
+   extraction (`video_demo_email_with_plan.eml`).
+3. The 403-era test run left residue: `case-65b2bc41627e` sits at the human
+   gate (created because OCR failed while the body was benign — under the OLD
+   contribute-nothing behavior, which is exactly what the fail-closed ruling
+   removes). Cleanup owed.
+4. The live re-test is billed-adjacent (Vision + Armor ride free tiers; engine
+   spend only if the screen misses or on the clean-fixture run) — per-run OK
+   required before firing.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video
