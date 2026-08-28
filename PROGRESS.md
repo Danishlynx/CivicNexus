@@ -13,7 +13,7 @@ Last updated: 2026-08-27. **Phase 5 GATE PASSED; Phase 6 (Console + freeze) OPEN
 | 3 Fleet + governance | **COMPLETE (gate passed 2026-08-26)** — deny test PASS (audit-backed 403); hot-add demo PASS first attempt post-ADR-005 |
 | 4 Durability | **COMPLETE (gate passed 2026-08-26)** — demo-timewarp PASS first attempt; recorded evidence accepted at the gate, live watch deferred to video rehearsal |
 | 5 Armor + drills | **COMPLETE (gate passed 2026-08-27, human: "i accept 14/15").** `make verify-phase-5` PASS; demo-injection PASS; timewarp re-proof PASS; both §9.5 ablations measured. Gate item defaults recorded: (1) injection block ratified at **14/15** with the characterised holdout NOT tuned away (B-014); (2) demo-injection scoped to points 1/2/4 with point 3 deferred to the Phase 6 console caller per D14's pre-agreed fallback. Phase 6 (Console + freeze) OPEN |
-| 6 Console + freeze | IN PROGRESS — opened 2026-08-27 |
+| 6 Console + freeze | **EXIT COMPLETE 2026-08-28 (both halves)** — machine: verify-phase-6 all 18 assertions green ×4 deployed revisions; human: the clerk drove `case-f319c7ccab71` (a real fleet-reviewed case from the email-loop rehearsal) PENDING_HUMAN→APPROVED→ISSUED→CLOSED in a browser via the IAM proxy, leaving `approvals/apr-ea2cfd823116` naming danishlynx@gmail.com / issue / ISSUED at 09:27:51Z; case verified CLOSED. Freeze declaration + freeze docs remain (Aug 29) |
 | 7 Ship | not started |
 
 ## Phase 6 (2026-08-27): ADR-007 RATIFIED, build open
