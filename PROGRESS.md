@@ -399,6 +399,41 @@ Lever 2's rules are unchanged (one Pro run after run 3, $12 ceiling, revert
 deploy same evening, ship only ≥11/12 + latency-compatible + human
 ratification).
 
+### Run 3 (ship-candidate config): 12/12, ALL GATES GREEN — first ever
+
+**Measured 2026-08-28 evening (output observed directly), archived as
+`results-shipfix-run3-20260828.json`:** accuracy **1.00 (12/12)**, citation
+P/R **1.00/1.00**, groundedness **1.00**, leak 0.00, p95 **58s** (halved from
+runs 1–2), tokens **237,942** (⅓ of run 2 — no wasted retries). `runner: all
+gates passed` — the §9.4 accuracy gate, red since Phase 2, measured GREEN.
+**golden-012 (cannabis) decided deny correctly for the first time in this
+subset's recorded history.** 11/12 first-pass clean; the one lookup miss
+(golden-015, intake free-formed an off-config type) hit the NEW honest
+"not configured" critique and the retry recovered to the correct approve —
+the exact path that flipped cases WRONG under the old wording. Over-ask check:
+0 firings across all three runs (inert, harmless, hard guard never tripped).
+Per the amended rule (a): **the config SHIPS.**
+
+**Attribution, stated precisely:** the improvement is the permit-type defect
+fix (intake enum + tolerant lookup + non-steering critique), NOT the over-ask
+check (never fired) and NOT a model change (same Flash, same engine, updated
+in place). Single-run caveat: B-006 measured 65–80% swings historically, so
+12/12 once is not yet "stable".
+
+**Pre-committed BEFORE the stability run (run 4, same config, ~$1):**
+(a) ≥11/12 → the result is declared reproducible-class; run 4's artifact
+becomes the recorded `evals/results.json`, `--report` regenerates
+docs/eval-report.md, and the README/delta-log/shotlist "honestly red gate"
+passages are updated to the new honest state (green, with the fix narrative
+and both runs cited). (b) ≤10/12 → the old 2026-08-25 baseline is restored
+byte-identical as planned, both new runs stay archived, and every doc keeps
+the red gate with the run-3/4 numbers reported as variance-caveated evidence.
+**Lever 2 (Pro) deviation, flagged:** with Flash at 12/12 and p95 58s, the
+Pro run can no longer answer its question on this subset (ceiling reached);
+skipping it saves the $12 ceiling and avoids engine churn before the video.
+The override stays built and deployable (`ZONING_MODEL_ID`), recorded as an
+available-but-unneeded lever. Human may override and order the run.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video

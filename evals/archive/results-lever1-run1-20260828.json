@@ -1,0 +1,341 @@
+{
+  "run_at": "2026-08-28T13:20:11.141641+00:00",
+  "tag": "smoke",
+  "config": {
+    "no_verifier": false
+  },
+  "engine": "projects/civicnexus-hack26/locations/us-central1/reasoningEngines/2118760555991793664",
+  "cases": [
+    {
+      "case_id": "golden-001-maria-bakery-compliant-approve",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "approve",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 48.34399999999732,
+      "tokens_in": 21424,
+      "tokens_out": 1833
+    },
+    {
+      "case_id": "golden-002-maria-bakery-nonresident-helper-deny",
+      "tags": [
+        "smoke",
+        "borderline"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 41.875,
+      "tokens_in": 20881,
+      "tokens_out": 1040
+    },
+    {
+      "case_id": "golden-003-home-occupation-illuminated-sign-deny",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100",
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 78.25,
+      "tokens_in": 60579,
+      "tokens_out": 2288
+    },
+    {
+      "case_id": "golden-004-home-occupation-rooms-unclear-request-info",
+      "tags": [
+        "smoke",
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 79.125,
+      "tokens_in": 42173,
+      "tokens_out": 1733
+    },
+    {
+      "case_id": "golden-005-furniture-shop-outside-lumber-deny",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 37.76499999999942,
+      "tokens_in": 20080,
+      "tokens_out": 988
+    },
+    {
+      "case_id": "golden-006-garage-adu-oversized-addition-two-foot-setback-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.005"
+      ],
+      "observed_citations": [
+        "17.44.005"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 40.625,
+      "tokens_in": 22809,
+      "tokens_out": 1154
+    },
+    {
+      "case_id": "golden-007-detached-backyard-adu-640sf-within-limits-approve",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.005"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.005",
+        "17.44.005",
+        "17.44.005",
+        "17.44.005"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 124.60899999999674,
+      "tokens_in": 128909,
+      "tokens_out": 3524
+    },
+    {
+      "case_id": "golden-009-gas-tank-residential-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.080"
+      ],
+      "observed_citations": [
+        "17.44.080",
+        "17.44.080"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 92.03199999999197,
+      "tokens_in": 25989,
+      "tokens_out": 2034
+    },
+    {
+      "case_id": "golden-012-cannabis-twelve-plants-shed-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.104"
+      ],
+      "observed_citations": [
+        "17.44.005"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 3322.2649999999994,
+      "tokens_in": 22047,
+      "tokens_out": 1100
+    },
+    {
+      "case_id": "golden-015-satellite-dish-under-threshold-approve",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "approve",
+      "required_citations": [
+        "17.44.150"
+      ],
+      "observed_citations": [
+        "17.44.150",
+        "17.44.150"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 73.75,
+      "tokens_in": 24715,
+      "tokens_out": 2420
+    },
+    {
+      "case_id": "golden-016-home-recycling-dropoff-driveway-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.140",
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100",
+        "17.44.100",
+        "17.44.100",
+        "17.44.140"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 84.70300000000861,
+      "tokens_in": 39157,
+      "tokens_out": 3455
+    },
+    {
+      "case_id": "golden-018-garage-indoor-swap-meet-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.190"
+      ],
+      "observed_citations": [
+        "17.44.190",
+        "17.44.190",
+        "17.44.100",
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 58.21899999999732,
+      "tokens_in": 15483,
+      "tokens_out": 1922
+    }
+  ],
+  "metrics": {
+    "cases": 12,
+    "errors": 0,
+    "decision_accuracy": 0.8333333333333334,
+    "citation_precision": 0.875,
+    "citation_recall": 0.9166666666666666,
+    "groundedness_first_pass": 1.0,
+    "verifier_first_pass": 0.4166666666666667,
+    "leak_rate": 0.0,
+    "latency_p50_s": 78.25,
+    "latency_p95_s": 124.60899999999674,
+    "tokens_total": 467737,
+    "gates_passed": false,
+    "gate_failures": [
+      "decision_accuracy 0.833 < 0.85"
+    ]
+  }
+}

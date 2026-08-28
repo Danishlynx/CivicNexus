@@ -1,0 +1,28 @@
+C:\Users\danis\OneDrive\Pictures\CivicNexus\evals\runner.py:229: FutureWarning: The vertexai.Client class is deprecated. Please use agentplatform.Client instead.
+  client = vertexai.Client(project=project, location=deploy_state["region"])
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+runner: GATE FAILURE: decision_accuracy 0.750 < 0.85
+runner: [1/12] OK  golden-001-maria-bakery-compliant-approve: approve (expected approve) (78.6s)
+runner: [2/12] MISS golden-002-maria-bakery-nonresident-helper-deny: request_info (expected deny) (135.4s)
+runner: [3/12] OK  golden-003-home-occupation-illuminated-sign-deny: deny (expected deny) (65.2s)
+runner: [4/12] MISS golden-004-home-occupation-rooms-unclear-request-info: approve (expected request_info) (125.7s)
+runner: [5/12] OK  golden-005-furniture-shop-outside-lumber-deny: deny (expected deny) (41.9s)
+runner: [6/12] OK  golden-006-garage-adu-oversized-addition-two-foot-setback-deny: deny (expected deny) (52.2s)
+runner: [7/12] OK  golden-007-detached-backyard-adu-640sf-within-limits-approve: approve (expected approve) (153.7s)
+runner: [8/12] OK  golden-009-gas-tank-residential-deny: deny (expected deny) (105.2s)
+runner: retry attempt unusable (ValidationError); keeping first finding
+runner: [9/12] MISS golden-012-cannabis-twelve-plants-shed-deny: request_info (expected deny) (537.9s)
+runner: [10/12] OK  golden-015-satellite-dish-under-threshold-approve: approve (expected approve) (65.9s)
+runner: [11/12] OK  golden-016-home-recycling-dropoff-driveway-deny: deny (expected deny) (88.0s)
+runner: [12/12] OK  golden-018-garage-indoor-swap-meet-deny: deny (expected deny) (51.3s)
+runner: accuracy=0.75 citation P/R=1.00/1.00 groundedness=1.00 leak=0.00 p95=154s tokens=776080
+runner: results written to C:\Users\danis\OneDrive\Pictures\CivicNexus\evals\results.json
+
+--- provenance note (2026-08-28, successor session) ---
+Run 2's full results.json artifact was NOT archived before run 3 overwrote
+evals/results.json - an archiving miss by the build agent, recorded honestly.
+This file is the complete runner console output (all 12 per-case outcomes +
+the metrics line). The per-case verifier failure lists for golden-002/004/
+007/012 were extracted before the overwrite and are quoted verbatim in
+PROGRESS.md ("Runs 1-2 MEASURED" section). Headline: 9/12 (0.750),
+citation P/R 1.00/1.00, groundedness 1.00, leak 0, tokens 776,080.
