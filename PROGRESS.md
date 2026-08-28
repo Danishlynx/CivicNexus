@@ -465,6 +465,48 @@ report (the v0.1.5 page shows the smoke-only green report — divergence must
 not survive into the video). verify-phase-6 all 18 assertions PASSED against
 v0.1.5 earlier this evening.
 
+### Stuck-at-75 study (2026-08-28 night, $0, 6-agent max-effort fan-out) — findings + Pro-run rules PRE-COMMITTED
+
+**Per-miss verdicts (each agent walked the statute text against the fixture
+facts, checked the artifact's citations, and adversarially tested the
+expectation):**
+
+| Case | Mechanism | Pro-fixable? |
+|---|---|---|
+| 008 (deny vs request_info) | co-retrieved §17.44.100 applied to a B&B that §17.44.030 controls — specific-vs-general harmonization failure; retrieval complete, expectation sound | **LIKELY** |
+| 010 (request_info vs approve) | over-ask: stated negations/entailments not credited; the entailment decidability clause (unenforced) co-signed it | **LIKELY** |
+| 013 (request_info vs approve) | over-ask licensed by "strict compliance" statute wording; genuinely borderline; historic coin-flip (MISS/OK/MISS) | UNCERTAIN |
+| 014 (deny vs request_info) | **fixture defect candidate:** the application text self-contradicts ("kitchen plus one spare room … one room only"), licensing a grounded (G) deny the entailment gate certified; also wrong-section citation | UNCERTAIN — weak evidence either way |
+| 020 (request_info vs approve) | over-ask + **intake taxonomy gap**: type outside config disabled verifier steps 3/5 and the retry critique nudged escalate; Flash held approve on golden-015 under identical conditions | UNCERTAIN, leaning fixable |
+
+**History forensics:** only 3 full runs have per-case data (08-19 ×2, tonight).
+Permanent misses: 010, 020 (0/3). Churners: 008 (OK,OK,MISS — the only
+always-pass→miss flip; tonight's intake-enum fix plausibly nudged its
+"home_occupation" frame — recorded as possible regression within variance),
+013 (MISS,OK,MISS), 014 (OK,MISS,MISS). Held-out per-slot miss rate 46% vs
+smoke 11% — "smoke is the easier half" is measured, not assumed. 4 of 5
+misses had CORRECT citations: the failure is decisions, not law or retrieval.
+
+**Structural discoveries recorded for POST-freeze (no instrument changes
+tonight):** (1) intake types outside `config/permit_types.yaml` silently
+disable the verifier's corrective loop (015/020 class) — taxonomy/config gap;
+(2) golden-014's fixture wording contradicts itself — instrument-defect
+candidate in the frozen dataset, recorded not edited; (3) entailment
+decidability clause remains the unenforced lever for the over-ask class.
+
+**Pro-run rules, PRE-COMMITTED before data:** one full 20-case run with
+`ZONING_MODEL_ID=gemini-2.5-pro` (intake/verifier stay Flash). Ceiling $12
+(~₹1,050); abort on repeated 429s or any case >15 min. Engine REVERTS to the
+proven Flash config immediately after, regardless of result — the video runs
+on Flash unless the human separately ratifies otherwise after seeing number +
+latency. Interpretation: ≥17/20 with smoke-12 intact → the model lever is
+measured effective; the gate claim updates ONLY with both runs cited and Pro
+named as the setting. ≤16/20 → recorded as "model quality measured, not the
+constraint for these cases" — equally publishable, no re-rolls, n=1 either
+way. 008-regression check rides along free: its Pro result is noted against
+the OK,OK,MISS history. Requires the human's explicit go under the
+2026-08-28 spend regime (estimate $3–8, ceiling $12).
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video
