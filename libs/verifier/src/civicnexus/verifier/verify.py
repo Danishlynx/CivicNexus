@@ -1,10 +1,13 @@
-"""The four-step verification of a review finding (ARCHITECTURE §7.3).
+"""The five-step verification of a review finding (ARCHITECTURE §7.3).
 
 Steps 1 and 2 are deterministic string checks against the committed corpus text —
 the same ground truth the citations claim. Step 3 is a structured entailment
 check by a cheap model call (injectable for tests). Step 4 checks outcome
-legality for the permit type. The report is attached to the determination and
-persists to the audit trail; it never silently disappears.
+legality for the permit type. Step 5 (request_info findings only) rejects
+over-asking: a judge must produce a VERBATIM quote of the already-stated
+information, and the check fires only when code confirms the quote against the
+application — the model proposes, the code enforces. The report is attached to
+the determination and persists to the audit trail; it never silently disappears.
 """
 
 import json
@@ -16,6 +19,7 @@ from civicnexus.contracts import DeterminationOutcome, ReviewFinding
 from pydantic import BaseModel, ConfigDict, Field
 
 EntailmentFn = Callable[[str], "EntailmentVerdict"]
+OveraskFn = Callable[[str], "OveraskVerdict"]
 
 
 class EntailmentVerdict(BaseModel):
@@ -27,8 +31,18 @@ class EntailmentVerdict(BaseModel):
     critique: str
 
 
+class OveraskVerdict(BaseModel):
+    """Step 5 answer: is the requested information already stated?"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    already_stated: bool
+    quote: str = ""
+    critique: str = ""
+
+
 class VerifierReport(BaseModel):
-    """Outcome of all four §7.3 steps for one finding."""
+    """Outcome of all five §7.3 steps for one finding."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -37,6 +51,7 @@ class VerifierReport(BaseModel):
     quotes_verbatim: bool
     outcome_entailed: bool
     outcome_legal: bool
+    no_overask: bool = True
     failures: list[str] = Field(default_factory=list)
     critique: str = ""
 
@@ -69,8 +84,33 @@ if unsupported, say exactly what the reviewer got wrong and what the correct
 reading is"}}"""
 
 
-def _default_entailment(prompt: str) -> EntailmentVerdict:
-    """Entailment via Gemini Flash on the global endpoint (ADR-001 item 8).
+_OVERASK_PROMPT = """You are a strict verification gate for municipal permit determinations.
+
+The reviewer chose request_info, claiming decision-critical information is
+missing from the application.
+
+APPLICATION FACTS (JSON):
+{application}
+
+REVIEWER RATIONALE (what they say is missing):
+{rationale}
+
+Question: does the application ALREADY state the information the reviewer is
+requesting?
+- A hedged or undecided statement ("maybe", "not sure yet", "haven't decided")
+  is NOT stated information — requesting clarification of a hedge is proper.
+- Only answer already_stated=true if a specific value or sentence in the
+  application answers what the reviewer asked for.
+- If already_stated=true, "quote" MUST be an exact contiguous substring copied
+  verbatim from the APPLICATION JSON above (it will be machine-checked; a
+  paraphrase fails).
+
+Answer as strict JSON: {{"already_stated": true/false, "quote": "verbatim
+substring or empty", "critique": "one sentence"}}"""
+
+
+def _generate_structured[TModel: BaseModel](prompt: str, schema: type[TModel]) -> TModel:
+    """One structured Flash call on the global endpoint (ADR-001 item 8).
 
     ADR-005 §5: bounded transient retry lives HERE and only here (single
     retry layer per failure domain) — a lone 429 must not redden both gated
@@ -96,10 +136,10 @@ def _default_entailment(prompt: str) -> EntailmentVerdict:
                 config=genai_types.GenerateContentConfig(
                     temperature=0.0,
                     response_mime_type="application/json",
-                    response_schema=EntailmentVerdict,
+                    response_schema=schema,
                 ),
             )
-            return EntailmentVerdict.model_validate(json.loads(response.text or "{}"))
+            return schema.model_validate(json.loads(response.text or "{}"))
         except Exception as exc:
             message = str(exc)
             if not any(t in message for t in ("429", "503", "500", "UNAVAILABLE", "RESOURCE")):
@@ -107,7 +147,15 @@ def _default_entailment(prompt: str) -> EntailmentVerdict:
             last_exc = exc
             if attempt < 3:
                 time.sleep((2**attempt) * 5 + random.uniform(0, 3))
-    raise last_exc if last_exc else RuntimeError("entailment retries exhausted")
+    raise last_exc if last_exc else RuntimeError("structured-call retries exhausted")
+
+
+def _default_entailment(prompt: str) -> EntailmentVerdict:
+    return _generate_structured(prompt, EntailmentVerdict)
+
+
+def _default_overask(prompt: str) -> OveraskVerdict:
+    return _generate_structured(prompt, OveraskVerdict)
 
 
 def verify_finding(
@@ -117,8 +165,9 @@ def verify_finding(
     permit_allowed_outcomes: list[DeterminationOutcome],
     corpus_dir: Path,
     entailment: EntailmentFn | None = None,
+    overask: OveraskFn | None = None,
 ) -> VerifierReport:
-    """Run all four §7.3 checks; cheap deterministic steps gate the model call."""
+    """Run all five §7.3 checks; cheap deterministic steps gate the model calls."""
     failures: list[str] = []
 
     section_texts: dict[str, str] = {}
@@ -166,12 +215,50 @@ def verify_finding(
     else:
         critique = "; ".join(failures)
 
+    # Step 5 — over-ask legality (request_info only), gated on steps 1-4 so a
+    # finding never pays two model calls when it is already failing. The check
+    # fires ONLY on a machine-confirmed verbatim quote: the judge proposes,
+    # this code verifies the quote against the application the reviewer saw.
+    no_overask = True
+    if (
+        finding.outcome is DeterminationOutcome.REQUEST_INFO
+        and sections_exist
+        and quotes_verbatim
+        and outcome_legal
+        and outcome_entailed
+    ):
+        application_json = json.dumps(application, ensure_ascii=False)
+        overask_verdict = (overask or _default_overask)(
+            _OVERASK_PROMPT.format(application=application_json, rationale=finding.rationale)
+        )
+        quote_normalized = " ".join(overask_verdict.quote.split())
+        quote_confirmed = bool(quote_normalized) and quote_normalized in " ".join(
+            application_json.split()
+        )
+        if overask_verdict.already_stated and quote_confirmed:
+            no_overask = False
+            failures.append(
+                f"over-ask: the application already states the requested "
+                f"information: {overask_verdict.quote!r}"
+            )
+            critique = (
+                f"Your request_info is rejected: the application already states "
+                f"{overask_verdict.quote!r}. Re-apply the decision rule treating this "
+                f"as a stated fact and decide; request_info remains correct only if "
+                f"some OTHER decision-critical fact is genuinely absent — name it."
+            )
+
     return VerifierReport(
-        passed=sections_exist and quotes_verbatim and outcome_entailed and outcome_legal,
+        passed=sections_exist
+        and quotes_verbatim
+        and outcome_entailed
+        and outcome_legal
+        and no_overask,
         sections_exist=sections_exist,
         quotes_verbatim=quotes_verbatim,
         outcome_entailed=outcome_entailed,
         outcome_legal=outcome_legal,
+        no_overask=no_overask,
         failures=failures,
         critique=critique,
     )

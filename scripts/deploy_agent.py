@@ -108,6 +108,9 @@ def main() -> int:
         env_lines.append(f"REGISTRY_URL={os.environ['REGISTRY_URL']}\n")
     if os.environ.get("REGISTRY_MODE"):  # B-007 interim: firestore read path
         env_lines.append(f"REGISTRY_MODE={os.environ['REGISTRY_MODE']}\n")
+    if os.environ.get("ZONING_MODEL_ID"):  # B-006 Pro-at-decision lever (zoning only)
+        env_lines.append(f"ZONING_MODEL_ID={os.environ['ZONING_MODEL_ID']}\n")
+        print(f"deploy_agent: ZONING_MODEL_ID override -> {os.environ['ZONING_MODEL_ID']}")
 
     # ADR-005 §1.3: apply manifest defaults, then hard-fail on any gap.
     manifest = ENV_MANIFEST.get(agent_dir.name, {})

@@ -11,7 +11,9 @@ from caseflow_agent.schemas import ReviewFindingOut
 zoning_agent = Agent(
     name="zoning",
     mode="single_turn",
-    model=os.environ.get("MODEL_ID", "gemini-3.5-flash"),
+    # B-006 Pro-at-decision lever: the decision step alone may run a stronger
+    # model; intake/coordinator stay on MODEL_ID. Falls back to MODEL_ID.
+    model=os.environ.get("ZONING_MODEL_ID") or os.environ.get("MODEL_ID", "gemini-3.5-flash"),
     # A legal reviewer must be deterministic: identical facts, identical ruling.
     generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
     description="Reviews applications against the municipal zoning code with cited determinations.",

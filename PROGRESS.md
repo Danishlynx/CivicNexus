@@ -303,6 +303,55 @@ observed directly):**
 itself); the PDF leg of `process_email` is unit-tested + probe-verified but no
 end-to-end `.eml` PDF run has been made.
 
+## Accuracy levers (2026-08-28 evening): decision rules PRE-COMMITTED before any data
+
+**Authorization:** the human ordered both levers built and tested ("you can
+build them both… build and test them"). Spend flagged: projected ceiling for
+the measurement set is ~$18 (2 flash smoke runs ≈ $2–6 total; one
+Pro-at-decision smoke run, ceiling $12) — above the ~$10/day guard, proceeding
+under the explicit order; runner token counts monitored per run.
+
+**Both levers target the ONE diagnosed failure mode (B-006): over-asking.**
+Current baseline on the 12-case smoke subset, shipped wiring: 10/12 and 9/12
+(2026-08-25, pre-committed SHIP-OLD rule).
+
+**Lever 1 — verifier over-ask legality check (driver-side, no engine change):**
+a fifth §7.3 check, only for `request_info` findings that pass the other four:
+a Flash judge is asked whether the application already states the requested
+information and must answer with a VERBATIM quote; code then byte-verifies the
+quote (whitespace-normalized) against the application JSON — the check fires
+ONLY on a machine-confirmed quote (LLM proposes, code enforces — the ADR-004
+lesson applied to decisions). The retry critique then names the stated fact.
+Hedged statements are explicitly NOT stated facts (mirrors the zoning decision
+rule), protecting legitimate request_info cases.
+
+**Lever 1 ship rule (pre-committed):** two 12-case smoke runs on the deployed
+stack. BOTH ≥10/12 → SHIP. Both ≤9/12 → REVERT the check. Split → one
+tiebreak run, ≥10/12 ships. HARD GUARD regardless of totals: if the over-ask
+check fires on any case whose EXPECTED outcome is request_info, that is
+instrument harm — stop and investigate before shipping. A run with >2 errored
+cases is INVALID (environment, not code) and re-runs.
+
+**Lever 2 — Pro at the decision step only:** `ZONING_MODEL_ID` env override in
+the zoning agent (falls back to `MODEL_ID`; intake/coordinator/verifier stay
+Flash), baked by deploy_agent.py only when set. Measured as ONE 12-case smoke
+ablation with `ZONING_MODEL_ID=gemini-2.5-pro` (GA model chosen over
+3.1-pro-preview for quota stability; both measured AVAILABLE 2026-08-21,
+B-006 addendum 2), layered on whatever Lever 1 decision the rule produced.
+
+**Lever 2 rules (pre-committed):** spend ceiling $12; abort on repeated 429s
+or any case >15 min. The deploy REVERTS to the proven Flash config the same
+evening regardless of result (hermetic redeploy + warmup re-proof) — the video
+records on the proven stack; Pro ships only if it measures ≥11/12 AND latency
+is video-compatible AND the human ratifies keeping it after seeing the numbers.
+Results reported as a measured ablation either way, per evidence-precision.
+
+**Instrument protection:** `evals/results.json` (the recorded smoke artifact)
+is backed up before run 1 and restored byte-identical after the measurement
+set; every run's payload is archived labelled under `evals/archive/`;
+`--report` is never passed (docs/eval-report.md untouched). Registry preflight
+(zero APPROVED cards) checked before run 1 (ADR-005).
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video

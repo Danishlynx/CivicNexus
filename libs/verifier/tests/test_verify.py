@@ -1,11 +1,11 @@
-"""Unit tests for the §7.3 verifier (entailment injected — no model calls)."""
+"""Unit tests for the §7.3 verifier (model checks injected — no model calls)."""
 
 from pathlib import Path
 
 import pytest
 from civicnexus.contracts import Citation, DeterminationOutcome, ReviewFinding
 from civicnexus.verifier import verify_finding
-from civicnexus.verifier.verify import EntailmentVerdict
+from civicnexus.verifier.verify import EntailmentVerdict, OveraskVerdict
 
 ALL_OUTCOMES = [
     DeterminationOutcome.APPROVE,
@@ -40,13 +40,26 @@ def _no(_prompt: str) -> EntailmentVerdict:
     return EntailmentVerdict(supported=False, critique="the cited text does not decide this")
 
 
-def _run(finding: ReviewFinding, corpus: Path, entailment=_yes, outcomes=ALL_OUTCOMES):  # type: ignore[no-untyped-def]
+def _absent(_prompt: str) -> OveraskVerdict:
+    return OveraskVerdict(already_stated=False, quote="", critique="genuinely missing")
+
+
+APPLICATION: dict[str, object] = {
+    "permit_type": "garage_conversion",
+    "project_description": "The office occupies one room of 120 square feet in the garage.",
+}
+
+
+def _run(  # type: ignore[no-untyped-def]
+    finding: ReviewFinding, corpus: Path, entailment=_yes, outcomes=ALL_OUTCOMES, overask=_absent
+):
     return verify_finding(
         finding,
-        application={"permit_type": "garage_conversion"},
+        application=APPLICATION,
         permit_allowed_outcomes=outcomes,
         corpus_dir=corpus,
         entailment=entailment,
+        overask=overask,
     )
 
 
@@ -98,4 +111,64 @@ def test_illegal_outcome_fails_step_four(corpus: Path) -> None:
 def test_report_payload_round_trips(corpus: Path) -> None:
     payload = _run(_finding(), corpus).as_payload()
     assert payload["passed"] is True
+    assert payload["no_overask"] is True
     assert isinstance(payload["failures"], list)
+
+
+def _request_info() -> ReviewFinding:
+    return _finding(
+        outcome=DeterminationOutcome.REQUEST_INFO,
+        rationale="The floor area of the office is not stated.",
+    )
+
+
+def test_overask_confirmed_quote_fails_step_five(corpus: Path) -> None:
+    def stated(_p: str) -> OveraskVerdict:
+        return OveraskVerdict(
+            already_stated=True, quote="one room of 120 square feet", critique="stated"
+        )
+
+    report = _run(_request_info(), corpus, overask=stated)
+    assert not report.passed and not report.no_overask
+    assert any("over-ask" in f for f in report.failures)
+    assert "120 square feet" in report.critique  # retry critique names the fact
+
+
+def test_overask_hallucinated_quote_never_fires(corpus: Path) -> None:
+    def hallucinated(_p: str) -> OveraskVerdict:
+        return OveraskVerdict(
+            already_stated=True, quote="a fact the application never states", critique=""
+        )
+
+    report = _run(_request_info(), corpus, overask=hallucinated)
+    # Code confirms quotes; the model alone cannot fail a finding.
+    assert report.passed and report.no_overask
+
+
+def test_overask_absent_information_passes(corpus: Path) -> None:
+    report = _run(_request_info(), corpus, overask=_absent)
+    assert report.passed and report.no_overask
+
+
+def test_overask_not_called_for_decided_outcomes(corpus: Path) -> None:
+    calls: list[int] = []
+
+    def counting(_p: str) -> OveraskVerdict:
+        calls.append(1)
+        return OveraskVerdict(already_stated=False, quote="")
+
+    report = _run(_finding(), corpus, overask=counting)  # DENY finding
+    assert report.passed
+    assert calls == []
+
+
+def test_overask_skipped_when_entailment_fails(corpus: Path) -> None:
+    calls: list[int] = []
+
+    def counting(_p: str) -> OveraskVerdict:
+        calls.append(1)
+        return OveraskVerdict(already_stated=False, quote="")
+
+    report = _run(_request_info(), corpus, entailment=_no, overask=counting)
+    assert not report.passed
+    assert calls == []  # a failing finding never pays the second model call
