@@ -44,7 +44,7 @@ guardrails removed it from the pipeline, and only a named human may re-admit or 
     <div class="actions">
     {% for action in actions %}
       <form method="post" action="/cases/{{ case.case_id }}/action" style="display:inline"
-            {% if action.slug in ('deny', 'discard') %}onsubmit="return confirm('Record {{ action.label }} for {{ case.case_id }}? This is written to the audit log.')"{% endif %}>
+            {% if action.slug in ('deny', 'discard') %}data-confirm="Record {{ action.label }} for {{ case.case_id }}? This is written to the audit log."{% endif %}>
         <input type="hidden" name="target" value="{{ action.target.value }}">
         <button type="submit" class="btn btn-{{ action.slug }}">{{ action.label }}</button>
       </form>

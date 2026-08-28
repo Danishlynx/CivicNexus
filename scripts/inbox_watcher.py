@@ -7,7 +7,9 @@ Two feeders, one queue, one consumer:
   queues each one into Firestore ``inbox/``. Receiving is the only
   direction — the system never sends mail (fixture rules). Credentials come
   from env (``INBOX_EMAIL`` + ``INBOX_APP_PASSWORD``, a Gmail app password)
-  and are never stored.
+  and are never stored. Fetches use BODY.PEEK and a message is marked seen
+  ONLY after it is durably queued, so a crash never loses an application
+  (2026-08-28 audit).
 - The clerk console's "New application" form queues into the same ``inbox/``.
 - The consumer loop claims NEW submissions and drives the PROVEN pipeline —
   the same chain every phase gate ran (scripts/run_case.py): intake agent
@@ -16,17 +18,20 @@ Two feeders, one queue, one consumer:
   PENDING_HUMAN. Incomplete applications honestly land
   INCOMPLETE_AWAITING_APPLICANT instead.
 
-Run it in a terminal beside the console (which live-updates) and the whole
-loop is visible: email sent -> case appears -> states advance -> citation
-lands -> the human gate pulses.
+Resilience (2026-08-28 audit): the loop survives transient IMAP/Firestore
+errors (log + backoff, never die); startup requeues claims stranded by a
+crashed prior run; an interrupt during a drive marks the submission FAILED
+with the partially created case id before exiting. SINGLE consumer per
+project — the designed demo shape.
 
 BILLED: each processed application makes engine calls (intake + review).
-Run only with a spend OK per the standing eval-spend rule.
+``--max-cases`` (default 3) bounds a run's spend so a flood of matching
+emails cannot drive unbounded engine calls.
 
 Usage:
-  uv run python scripts/inbox_watcher.py --consume            # form-fed only
-  uv run python scripts/inbox_watcher.py --consume --watch-gmail
-  uv run python scripts/inbox_watcher.py --once path/to/application.txt
+  uv run python scripts/inbox_watcher.py --consume --i-accept-billing
+  uv run python scripts/inbox_watcher.py --consume --watch-gmail --i-accept-billing
+  uv run python scripts/inbox_watcher.py --once path.txt --i-accept-billing
 """
 
 import argparse
@@ -35,6 +40,7 @@ import email.header
 import imaplib
 import json
 import os
+import re
 import secrets
 import sys
 import time
@@ -48,6 +54,7 @@ from civicnexus.contracts import (
     Case,
     CaseState,
     EventType,
+    ReviewFinding,
 )
 from civicnexus.contracts.permit_types import load_permit_types
 from civicnexus.tools import CaseStore, EventPublisher, InboxStore, query_json
@@ -58,7 +65,10 @@ CORPUS_DIR = Path("data/corpus")
 PERMIT_TYPES = Path("config/permit_types.yaml")
 AGENT_VERSION = "0.1.0"
 SUBJECT_MARKER = "permit application"
-POLL_S = 5.0
+QUEUE_POLL_S = 5.0
+GMAIL_POLL_S = 15.0
+ERROR_BACKOFF_S = 20.0
+MAX_EMAIL_BODY_CHARS = 20_000
 
 
 def _traceparent() -> str:
@@ -74,11 +84,15 @@ def _log(message: str) -> None:
 # --------------------------------------------------------------------------
 
 
-def drive_application(raw_application: str, *, store: CaseStore, remote: Any) -> str:
+def drive_application(
+    raw_application: str, *, store: CaseStore, remote: Any, created: list[str] | None = None
+) -> str:
     """Drive one raw application through intake -> review -> PENDING_HUMAN.
 
-    Returns the case id. Mirrors run_case.py (the proven chain) so the demo
-    path and the gate-proof path cannot drift apart.
+    Returns the case id; appends it to ``created`` the moment the case
+    exists, so a caller can attribute a partial case on failure. Mirrors
+    run_case.py (the proven chain) so the demo path and the gate-proof path
+    cannot drift apart.
     """
     traceparent = _traceparent()
     case_id = f"case-{secrets.token_hex(6)}"
@@ -107,6 +121,8 @@ def drive_application(raw_application: str, *, store: CaseStore, remote: Any) ->
         ),
         traceparent=traceparent,
     )
+    if created is not None:
+        created.append(case_id)
     _log(f"case {case_id} opened (RECEIVED)")
     store.transition(
         case_id,
@@ -135,8 +151,6 @@ def drive_application(raw_application: str, *, store: CaseStore, remote: Any) ->
     )
     _log(f"case {case_id} in fleet review - the zoning specialist is reading the code…")
     review_msg = json.dumps({"task": "review", "application": application.model_dump()})
-    from civicnexus.contracts import ReviewFinding
-
     finding = ReviewFinding.model_validate(
         query_json(remote, review_msg, user_prefix="inbox-watcher")
     )
@@ -198,6 +212,8 @@ def drive_application(raw_application: str, *, store: CaseStore, remote: Any) ->
         traceparent=traceparent,
         payload={"determinations": 1},
     )
+    if "CANARY-" in json.dumps(finding.model_dump()):
+        _log("WARNING - a canary string surfaced in the finding (leak signal)")
     _log(
         f"case {case_id} at the HUMAN GATE - outcome={finding.outcome.value} "
         f"citations={[c.chunk_id for c in finding.citations]}"
@@ -206,28 +222,49 @@ def drive_application(raw_application: str, *, store: CaseStore, remote: Any) ->
 
 
 # --------------------------------------------------------------------------
-# Gmail feeder (IMAP, read-only direction)
+# Gmail feeder (IMAP; PEEK fetches, seen only after durable queueing)
 # --------------------------------------------------------------------------
 
 
 def _decode_header(value: str) -> str:
     parts = email.header.decode_header(value)
-    return "".join(
-        p.decode(enc or "utf-8", errors="replace") if isinstance(p, bytes) else p
-        for p, enc in parts
-    )
+    out = []
+    for part, enc in parts:
+        if isinstance(part, bytes):
+            try:
+                out.append(part.decode(enc or "utf-8", errors="replace"))
+            except LookupError:  # unknown codec name in the header
+                out.append(part.decode("latin-1", errors="replace"))
+        else:
+            out.append(part)
+    return "".join(out)
+
+
+def _decode_bytes(payload: bytes, charset: str | None) -> str:
+    try:
+        return payload.decode(charset or "utf-8", errors="replace")
+    except LookupError:
+        return payload.decode("latin-1", errors="replace")
 
 
 def _plain_body(message: email.message.Message) -> str:
+    """Best-effort text body: text/plain, then de-tagged text/html, then repr."""
     if message.is_multipart():
         for part in message.walk():
             if part.get_content_type() == "text/plain":
                 payload = part.get_payload(decode=True)
                 if isinstance(payload, bytes):
-                    return payload.decode(part.get_content_charset() or "utf-8", errors="replace")
+                    return _decode_bytes(payload, part.get_content_charset())
+        for part in message.walk():
+            if part.get_content_type() == "text/html":
+                payload = part.get_payload(decode=True)
+                if isinstance(payload, bytes):
+                    html = _decode_bytes(payload, part.get_content_charset())
+                    return re.sub(r"<[^>]+>", " ", html)
+        return ""
     payload = message.get_payload(decode=True)
     if isinstance(payload, bytes):
-        return payload.decode(message.get_content_charset() or "utf-8", errors="replace")
+        return _decode_bytes(payload, message.get_content_charset())
     return str(message.get_payload())
 
 
@@ -235,29 +272,42 @@ def email_to_raw_application(message: email.message.Message) -> str:
     """Reshape a real email into the fixture format intake already parses."""
     sender = _decode_header(message.get("From", ""))
     subject = _decode_header(message.get("Subject", ""))
-    body = _plain_body(message).strip()
+    body = _plain_body(message).strip()[:MAX_EMAIL_BODY_CHARS]
     return f"From: {sender}\nTo: permits@civicnexus-demo.test\nSubject: {subject}\n\n{body}\n"
 
 
 def poll_gmail_once(inbox: InboxStore) -> int:
-    """Queue any UNSEEN matching emails; returns how many were queued."""
+    """Queue UNSEEN matching emails; mark seen ONLY after a durable submit.
+
+    Non-matching mail is never touched (PEEK fetches leave flags alone), and
+    a submit failure leaves the message unseen for the next poll.
+    """
     address = os.environ["INBOX_EMAIL"]
     password = os.environ["INBOX_APP_PASSWORD"]
     queued = 0
     with imaplib.IMAP4_SSL("imap.gmail.com") as imap:
         imap.login(address, password)
         imap.select("INBOX")
-        _status, data = imap.search(None, "UNSEEN")
+        status, data = imap.search(None, "UNSEEN")
+        if status != "OK" or not data or data[0] is None:
+            _log(f"gmail search returned {status}; will retry next poll")
+            return 0
         for uid in data[0].split():
-            _status, fetched = imap.fetch(uid, "(RFC822)")
-            if not fetched or not isinstance(fetched[0], tuple):
+            status, header_data = imap.fetch(uid, "(BODY.PEEK[HEADER.FIELDS (SUBJECT)])")
+            if status != "OK" or not header_data or not isinstance(header_data[0], tuple):
+                continue
+            subject_blob = header_data[0][1].decode("utf-8", errors="replace")
+            if SUBJECT_MARKER not in subject_blob.lower():
+                continue  # not an application; flags untouched, mail unread
+            status, fetched = imap.fetch(uid, "(BODY.PEEK[])")
+            if status != "OK" or not fetched or not isinstance(fetched[0], tuple):
                 continue
             message = email.message_from_bytes(fetched[0][1])
             subject = _decode_header(message.get("Subject", ""))
-            if SUBJECT_MARKER not in subject.lower():
-                continue  # leave non-applications untouched (stays unseen? no - fetch marks seen)
             raw = email_to_raw_application(message)
             inbox.submit(raw, source="gmail", submitted_by=address)
+            # Durably queued - ONLY NOW consume the message.
+            imap.store(uid, "+FLAGS", "\\Seen")
             queued += 1
             _log(f"email queued: {subject!r}")
     return queued
@@ -269,7 +319,11 @@ def poll_gmail_once(inbox: InboxStore) -> int:
 
 
 def _connect() -> tuple[CaseStore, InboxStore, Any]:
-    project = os.environ["PROJECT_ID"]
+    project = os.environ.get("PROJECT_ID")
+    if not project:
+        raise SystemExit("inbox_watcher: PROJECT_ID env var is required")
+    if not STATE_FILE.exists():
+        raise SystemExit(f"inbox_watcher: {STATE_FILE} missing - deploy caseflow first")
     deploy_state = json.loads(STATE_FILE.read_text(encoding="utf-8-sig"))
 
     import vertexai
@@ -286,6 +340,32 @@ def _connect() -> tuple[CaseStore, InboxStore, Any]:
     return store, InboxStore(db), remote
 
 
+def _process_one(store: CaseStore, inbox: InboxStore, remote: Any) -> bool:
+    """Claim and drive at most one submission; True if one was processed."""
+    submission = inbox.next_new()
+    if not submission:
+        return False
+    sid = submission["submission_id"]
+    inbox.claim(sid)
+    _log(f"processing {sid} (source={submission['source']})")
+    created: list[str] = []
+    try:
+        case_id = drive_application(submission["raw"], store=store, remote=remote, created=created)
+        inbox.finish(sid, case_id=case_id)
+        return True
+    except BaseException as exc:
+        # Everything - including KeyboardInterrupt - releases the claim
+        # honestly before propagating or continuing (2026-08-28 audit: a
+        # stranded PROCESSING row is a silently lost application).
+        partial = created[0] if created else ""
+        inbox.fail(sid, reason=f"{type(exc).__name__}: {exc}", case_id=partial)
+        suffix = f" (partial case {partial})" if partial else ""
+        _log(f"FAILED {sid}: {type(exc).__name__}: {exc}{suffix}")
+        if not isinstance(exc, Exception):
+            raise  # KeyboardInterrupt/SystemExit still stop the watcher
+        return True
+
+
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
@@ -295,6 +375,12 @@ def main() -> int:
     parser.add_argument("--consume", action="store_true", help="consume the inbox/ queue")
     parser.add_argument("--watch-gmail", action="store_true", help="also poll Gmail via IMAP")
     parser.add_argument("--once", metavar="FILE", help="drive one application file and exit")
+    parser.add_argument(
+        "--max-cases",
+        type=int,
+        default=3,
+        help="stop after driving this many cases (bounds billed spend; default 3)",
+    )
     parser.add_argument(
         "--i-accept-billing",
         action="store_true",
@@ -319,30 +405,36 @@ def main() -> int:
         _log(f"done - case {case_id}")
         return 0
 
+    requeued = inbox.requeue_stale()
+    if requeued:
+        _log(f"recovered {len(requeued)} stale claim(s) from a prior run: {requeued}")
+
     _log(
-        "consuming the simulated inbox"
+        f"consuming the simulated inbox (max {args.max_cases} case(s) this run)"
         + (" + polling Gmail" if args.watch_gmail else "")
-        + " (Ctrl+C to stop)"
+        + " - Ctrl+C to stop"
     )
+    driven = 0
+    last_gmail_poll = 0.0
     while True:
         try:
-            if args.watch_gmail:
+            if args.watch_gmail and time.monotonic() - last_gmail_poll >= GMAIL_POLL_S:
+                last_gmail_poll = time.monotonic()
                 poll_gmail_once(inbox)
-            submission = inbox.next_new()
-            if submission:
-                sid = submission["submission_id"]
-                inbox.claim(sid)
-                _log(f"processing {sid} (source={submission['source']})")
-                try:
-                    case_id = drive_application(submission["raw"], store=store, remote=remote)
-                    inbox.finish(sid, case_id=case_id)
-                except Exception as exc:
-                    inbox.fail(sid, reason=f"{type(exc).__name__}: {exc}")
-                    _log(f"FAILED {sid}: {type(exc).__name__}: {exc}")
-            time.sleep(POLL_S)
+            if _process_one(store, inbox, remote):
+                driven += 1
+                if driven >= args.max_cases:
+                    _log(f"max-cases reached ({args.max_cases}) - stopping (spend bound)")
+                    return 0
+            time.sleep(QUEUE_POLL_S)
         except KeyboardInterrupt:
             _log("stopped")
             return 0
+        except Exception as exc:
+            # A transient IMAP/Firestore blip must not kill the demo's
+            # background consumer - log, back off, keep going.
+            _log(f"transient error ({type(exc).__name__}: {exc}) - retrying in {ERROR_BACKOFF_S}s")
+            time.sleep(ERROR_BACKOFF_S)
 
 
 if __name__ == "__main__":

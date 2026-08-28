@@ -68,9 +68,11 @@
 {% endmacro %}
 
 {% block content %}
-{% if request.query_params.get('submitted') %}
-<div class="toast">Application queued as <code>{{ request.query_params.get('submitted') }}</code> —
+{% set submitted = request.query_params.get('submitted') %}
+{% if mode == 'clerk' and submitted and submitted[:4] == 'sub-' %}
+<div class="toast">Application queued as <code>{{ submitted }}</code> —
 the intake agent will open a case shortly; this page updates itself.</div>
+<script>history.replaceState(null, '', '/');</script>
 {% endif %}
 
 <p class="live-dot">Live — this page updates as the fleet works</p>

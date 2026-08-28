@@ -6,8 +6,12 @@ submission, land here as raw email-shaped text, and are consumed by the
 watcher, which drives the intake → review pipeline. The inbox never sends
 mail — receiving is the only direction (fixture rules).
 
-Write-once rows keyed by ``submission_id``; processing is claimed by a status
-flip so a second watcher cannot double-drive a case.
+Concurrency model, stated honestly (2026-08-28 audit): this is a
+SINGLE-CONSUMER queue — one watcher per project, which is the designed demo
+shape. The status flip prevents re-pickup by that consumer's own loop; it is
+not a compare-and-swap, so running two watchers concurrently is unsupported.
+``requeue_stale`` exists so a crashed consumer's claims are recovered at the
+next startup instead of stranding submissions in PROCESSING forever.
 """
 
 from datetime import UTC, datetime
@@ -23,6 +27,11 @@ STATUS_PROCESSING = "PROCESSING"
 STATUS_PROCESSED = "PROCESSED"
 STATUS_FAILED = "FAILED"
 
+#: Firestore documents cap at ~1 MiB; a real application email is a few KiB.
+#: Enforced here so an oversized submission fails loudly at the door instead
+#: of crashing the consumer later (2026-08-28 audit).
+MAX_RAW_CHARS = 200_000
+
 
 class InboxStore:
     """The only sanctioned reader/writer of ``inbox/`` documents."""
@@ -35,6 +44,10 @@ class InboxStore:
         """Queue one raw application (email-shaped text). Returns the id."""
         if not raw.strip():
             raise ValueError("an application submission cannot be empty")
+        if len(raw) > MAX_RAW_CHARS:
+            raise ValueError(
+                f"application submission too large ({len(raw)} chars > {MAX_RAW_CHARS})"
+            )
         submission_id = f"sub-{uuid4().hex[:12]}"
         doc = self._db.collection(self._collection).document(submission_id)
         doc.create(
@@ -60,11 +73,45 @@ class InboxStore:
         return submission_id
 
     def next_new(self) -> dict[str, Any] | None:
-        """The oldest NEW submission, or None. (Python-side sort; tiny queue.)"""
-        rows = [snapshot.to_dict() for snapshot in self._db.collection(self._collection).stream()]
-        new = [r for r in rows if r and r.get("status") == STATUS_NEW]
+        """The oldest NEW submission, or None.
+
+        Server-side status filter (automatic single-field index) so the poll
+        reads only actionable rows, not the whole collection's raw bodies.
+        """
+        rows = [
+            snapshot.to_dict()
+            for snapshot in self._db.collection(self._collection)
+            .where("status", "==", STATUS_NEW)
+            .stream()
+        ]
+        new = [r for r in rows if r]
         new.sort(key=lambda r: r.get("submitted_at") or datetime.now(UTC))
         return new[0] if new else None
+
+    def requeue_stale(self) -> list[str]:
+        """Reset PROCESSING rows back to NEW (crashed-consumer recovery).
+
+        Called at consumer startup, when no other consumer may exist
+        (single-consumer model above); returns the requeued ids.
+        """
+        stale = [
+            snapshot.to_dict()
+            for snapshot in self._db.collection(self._collection)
+            .where("status", "==", STATUS_PROCESSING)
+            .stream()
+        ]
+        requeued: list[str] = []
+        for row in stale:
+            if not row:
+                continue
+            sid = row["submission_id"]
+            self._set_status(sid, STATUS_NEW)
+            requeued.append(sid)
+            _log.warning(
+                f"stale claim requeued {sid} (prior consumer did not finish)",
+                extra={"audit": True, "submission_id": sid},
+            )
+        return requeued
 
     def claim(self, submission_id: str) -> None:
         self._set_status(submission_id, STATUS_PROCESSING)
@@ -77,12 +124,12 @@ class InboxStore:
             extra={"audit": True, "submission_id": submission_id, "case_id": case_id},
         )
 
-    def fail(self, submission_id: str, *, reason: str) -> None:
+    def fail(self, submission_id: str, *, reason: str, case_id: str = "") -> None:
         doc = self._db.collection(self._collection).document(submission_id)
-        doc.update({"status": STATUS_FAILED, "failure": reason[:500]})
+        doc.update({"status": STATUS_FAILED, "failure": reason[:500], "case_id": case_id})
         _log.warning(
             f"application processing failed {submission_id}",
-            extra={"audit": True, "submission_id": submission_id},
+            extra={"audit": True, "submission_id": submission_id, "case_id": case_id},
         )
 
     def _set_status(self, submission_id: str, status: str) -> None:

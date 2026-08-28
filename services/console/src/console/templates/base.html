@@ -360,6 +360,7 @@
       seeing them here, contained, is the system working.
     </span>
   </footer>
+  <noscript><style>.live-dot { display: none; }</style></noscript>
   <script>
     (function () {
       var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -378,11 +379,33 @@
           });
         });
       }
+
+      /* confirm guards without JS-string interpolation: the message lives in
+         a data attribute, so applicant/case content never enters JS source. */
+      var submitting = false;
+      document.addEventListener('submit', function (event) {
+        var confirmMsg = event.target.dataset && event.target.dataset.confirm;
+        if (confirmMsg && !window.confirm(confirmMsg)) {
+          event.preventDefault();
+          return;
+        }
+        submitting = true;  /* a live reload must never cancel a human action */
+      });
+
       /* live updates: reload when the watched signature changes.
-         body[data-live="queue"] watches all cases; "case:<id>" watches one. */
+         body[data-live="queue"] watches all cases; "case:<id>" watches one.
+         Discipline: never reload while a form is pending or focused; pause in
+         hidden tabs; back off when nothing changes (public-poll cost). */
       var live = document.body.dataset.live;
       if (!live) return;
       var last = null;
+      var interval = reduced ? 30000 : 6000;
+      var minInterval = interval, maxInterval = 60000, unchanged = 0;
+      function formBusy() {
+        if (submitting) return true;
+        var active = document.activeElement;
+        return !!(active && active.closest && active.closest('form'));
+      }
       function signature(cases) {
         if (live.indexOf('case:') === 0) {
           var id = live.slice(5);
@@ -391,18 +414,29 @@
         }
         return cases.map(function (c) { return c.case_id + '|' + c.state + '|' + c.updated_at; }).join(';');
       }
+      function schedule() { setTimeout(poll, interval); }
       function poll() {
+        if (document.hidden || formBusy()) { schedule(); return; }
         fetch('/api/cases', { cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .then(function (body) {
             var sig = signature(body.cases || []);
-            if (last !== null && sig !== last) { location.reload(); return; }
+            if (last !== null && sig !== last) {
+              if (!formBusy()) { location.reload(); return; }
+            } else if (last !== null) {
+              unchanged += 1;
+              if (unchanged >= 10) interval = Math.min(maxInterval, interval * 2);
+            }
+            if (last !== null && sig !== last) { unchanged = 0; interval = minInterval; }
             last = sig;
+            schedule();
           })
-          .catch(function () { /* transient; keep polling */ });
+          .catch(function () { schedule(); /* transient; keep polling */ });
       }
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) { unchanged = 0; interval = minInterval; }
+      });
       poll();
-      setInterval(poll, 6000);
     })();
   </script>
 </body>

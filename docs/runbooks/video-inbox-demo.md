@@ -20,6 +20,10 @@ $env:INBOX_APP_PASSWORD='<app password>'   # typed, never saved
 uv run python scripts/inbox_watcher.py --consume --watch-gmail --i-accept-billing
 ```
 
+Spend is bounded: the watcher stops after `--max-cases` drives (default 3), so
+a flood of matching emails can never run up unbounded engine calls. Crash
+recovery is automatic — a restart requeues anything a dead run left claimed.
+
 ## Browser (the other half of the split screen)
 
 Clerk console via the IAM proxy (separate terminal, started before recording):

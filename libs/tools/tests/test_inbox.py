@@ -4,6 +4,7 @@ from typing import Any
 
 import pytest
 from civicnexus.tools import InboxStore
+from civicnexus.tools.inbox import MAX_RAW_CHARS
 
 
 class _FakeSnapshot:
@@ -28,6 +29,14 @@ class _FakeDoc:
         self._store[self._key].update(patch)
 
 
+class _FakeQuery:
+    def __init__(self, docs: list[dict[str, Any]]) -> None:
+        self._docs = docs
+
+    def stream(self) -> list[_FakeSnapshot]:
+        return [_FakeSnapshot(d) for d in self._docs]
+
+
 class _FakeDb:
     def __init__(self) -> None:
         self.docs: dict[str, dict[str, Any]] = {}
@@ -37,6 +46,10 @@ class _FakeDb:
 
     def document(self, key: str) -> _FakeDoc:
         return _FakeDoc(self.docs, key)
+
+    def where(self, field: str, op: str, value: Any) -> _FakeQuery:
+        assert op == "=="
+        return _FakeQuery([d for d in self.docs.values() if d.get(field) == value])
 
     def stream(self) -> list[_FakeSnapshot]:
         return [_FakeSnapshot(d) for d in self.docs.values()]
@@ -64,12 +77,32 @@ class TestInboxStore:
         with pytest.raises(ValueError, match="cannot be empty"):
             InboxStore(_FakeDb()).submit("   ", source="gmail", submitted_by="a@x.test")
 
-    def test_failure_records_reason(self) -> None:
+    def test_oversized_submission_refused_at_the_door(self) -> None:
+        # Firestore caps documents at ~1 MiB; fail loudly on submit, never
+        # crash the consumer later (2026-08-28 audit).
+        with pytest.raises(ValueError, match="too large"):
+            InboxStore(_FakeDb()).submit(
+                "x" * (MAX_RAW_CHARS + 1), source="gmail", submitted_by="a@x.test"
+            )
+
+    def test_failure_records_reason_and_partial_case(self) -> None:
         db = _FakeDb()
         inbox = InboxStore(db)
         sid = inbox.submit("raw", source="gmail", submitted_by="a@x.test")
         inbox.claim(sid)
-        inbox.fail(sid, reason="ValidationError: boom")
+        inbox.fail(sid, reason="ValidationError: boom", case_id="case-partial")
         assert db.docs[sid]["status"] == "FAILED"
         assert "boom" in db.docs[sid]["failure"]
+        assert db.docs[sid]["case_id"] == "case-partial"
         assert inbox.next_new() is None
+
+    def test_requeue_stale_recovers_crashed_claims(self) -> None:
+        # A consumer that died mid-drive leaves PROCESSING rows; the next
+        # startup recovers them instead of stranding the application forever.
+        inbox = InboxStore(_FakeDb())
+        sid = inbox.submit("raw", source="gmail", submitted_by="a@x.test")
+        inbox.claim(sid)
+        assert inbox.next_new() is None
+        assert inbox.requeue_stale() == [sid]
+        queued = inbox.next_new()
+        assert queued is not None and queued["submission_id"] == sid
