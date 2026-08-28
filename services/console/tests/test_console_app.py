@@ -64,11 +64,30 @@ class TestReaderSurface:
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
 
-    def test_queue_renders_cases_newest_first(self, reader: TestClient) -> None:
+    def test_human_queue_oldest_waiting_first(self, reader: TestClient) -> None:
+        # 2026-08-28 UX ruling: the human-gate section works FIFO - the case
+        # waiting longest renders first (case-b is older than case-a).
         html = reader.get("/").text
-        assert html.index("case-a") < html.index("case-b")
+        assert html.index("case-b") < html.index("case-a")
+        assert "waiting" in html  # wait-age chip on human-gate rows
         assert "PENDING_HUMAN" in html
         assert "PUBLIC · READ-ONLY" in html
+
+    def test_queue_search_filters_rows(self, reader: TestClient) -> None:
+        html = reader.get("/?q=case-a").text
+        assert "case-a" in html
+        assert '<a href="/cases/case-b">' not in html
+        assert "1 of 2 cases match" in html
+
+    def test_queue_state_filter(self, reader: TestClient) -> None:
+        html = reader.get("/?state=IN_REVIEW").text
+        assert '<a href="/cases/case-a">' not in html
+        assert "0 of 2 cases match" in html
+
+    def test_queue_limit_bounds_sections(self, reader: TestClient) -> None:
+        html = reader.get("/?limit=1").text
+        assert "Showing 1 of 2" in html
+        assert "show all" in html
 
     def test_synthetic_data_footer_on_every_page(self, reader: TestClient) -> None:
         html = reader.get("/").text

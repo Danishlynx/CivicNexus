@@ -153,6 +153,27 @@
     td a { text-decoration: none; font-weight: 550; }
     td a:hover { text-decoration: underline; }
     .cell-sub { display: block; font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+    .cell-sub.wait { color: var(--amber-tonal-fg); font-weight: 550; }
+    td, .stage .n, .stat .v, .timeline .ts { font-variant-numeric: tabular-nums; }
+    .table-foot { margin: 0; padding: 0.6rem 1.4rem; border-top: 1px solid var(--line-2); }
+    /* ---------------- queue controls ---------------- */
+    .queue-head { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; align-items: center;
+                  justify-content: space-between; margin-bottom: 1rem; }
+    .filterbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .filterbar input[type="search"] {
+      font: 400 0.9rem var(--font); color: var(--ink); min-width: 17rem;
+      padding: 0.5rem 1.05rem; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface); transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .filterbar input[type="search"]:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(11,87,208,.15);
+    }
+    .filterbar select {
+      font: 400 0.9rem var(--font); color: var(--ink-2);
+      padding: 0.5rem 0.85rem; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface);
+    }
+    .filterbar select:focus { outline: none; border-color: var(--primary); }
     /* ---------------- chips ---------------- */
     .badge {
       display: inline-flex; align-items: center; gap: 0.42rem;

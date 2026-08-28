@@ -18,11 +18,11 @@ a request body. The incident view renders metadata only.
 """
 
 import os
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from civicnexus.contracts import Actor, Case, EventEnvelope, Incident
+from civicnexus.contracts import Actor, Case, CaseState, EventEnvelope, Incident
 from civicnexus.otel import get_logger
 from civicnexus.tools import ApprovalStore, CaseStore, IncidentStore
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
@@ -122,15 +122,43 @@ def health() -> dict[str, str]:
 
 
 @read_router.get("/", response_class=HTMLResponse)
-def queue(request: Request, cases: CaseStore = Depends(get_case_store)) -> HTMLResponse:
+def queue(
+    request: Request,
+    cases: CaseStore = Depends(get_case_store),
+    q: str = "",
+    state: str = "",
+    limit: int = 50,
+) -> HTMLResponse:
+    """The queue, designed to stay calm at volume: text search, state filter,
+    and bounded sections with explicit shown-of-total counts, so a clerk
+    facing 10,000 cases still sees an operable page (2026-08-28 UX ruling)."""
     listed, invalid = cases.list_cases()
+    total = len(listed)
+    needle = q.strip().lower()
+    if needle:
+        listed = [
+            c
+            for c in listed
+            if needle in c.case_id.lower()
+            or needle in c.applicant.name.lower()
+            or needle in c.permit_type.lower()
+        ]
+    if state:
+        listed = [c for c in listed if c.state.value == state]
+    limit = max(1, min(limit, 10_000))
     return _templates.TemplateResponse(
         request,
         "queue.html",
         {
             "mode": request.app.state.mode,
             "cases": listed,
+            "total": total,
             "invalid_count": len(invalid),
+            "q": q,
+            "state": state,
+            "limit": limit,
+            "all_states": [s.value for s in CaseState],
+            "now": datetime.now(UTC),
         },
     )
 

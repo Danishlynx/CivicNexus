@@ -25,7 +25,15 @@
 </section>
 {% endblock %}
 
-{% macro case_row(case) %}
+{% macro wait_age(case) %}
+  {%- set age = now - case.updated_at -%}
+  {%- if age.days > 0 -%}{{ age.days }}d {{ (age.seconds // 3600) }}h
+  {%- elif age.seconds >= 3600 -%}{{ age.seconds // 3600 }}h {{ (age.seconds % 3600) // 60 }}m
+  {%- else -%}{{ (age.seconds // 60) | round | int }}m
+  {%- endif -%}
+{% endmacro %}
+
+{% macro case_row(case, show_wait=false) %}
     <tr>
       <td>
         <a href="/cases/{{ case.case_id }}"><code>{{ case.case_id }}</code></a>
@@ -44,11 +52,13 @@
           <span class="note">—</span>
         {% endif %}
       </td>
-      <td class="note">{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+      <td class="note">{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC
+        {% if show_wait %}<span class="cell-sub wait">waiting {{ wait_age(case) }}</span>{% endif %}
+      </td>
     </tr>
 {% endmacro %}
 
-{% macro case_table(rows) %}
+{% macro case_table(rows, show_wait=false) %}
 <div class="card flush">
 <table>
   <thead>
@@ -61,9 +71,13 @@
     </tr>
   </thead>
   <tbody>
-    {% for case in rows %}{{ case_row(case) }}{% endfor %}
+    {% for case in rows[:limit] %}{{ case_row(case, show_wait) }}{% endfor %}
   </tbody>
 </table>
+{% if rows | length > limit %}
+<p class="note table-foot">Showing {{ limit }} of {{ rows | length }} —
+  <a href="/?q={{ q | urlencode }}&amp;state={{ state | urlencode }}&amp;limit=10000">show all</a></p>
+{% endif %}
 </div>
 {% endmacro %}
 
@@ -75,7 +89,24 @@ the intake agent will open a case shortly; this page updates itself.</div>
 <script>history.replaceState(null, '', '/');</script>
 {% endif %}
 
-<p class="live-dot">Live — this page updates as the fleet works</p>
+<div class="queue-head">
+  <p class="live-dot">Live — this page updates as the fleet works</p>
+  <form method="get" action="/" class="filterbar" role="search">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search case, applicant, or permit type"
+           aria-label="Search cases">
+    <select name="state" aria-label="Filter by state">
+      <option value="">All states</option>
+      {% for s in all_states %}
+      <option value="{{ s }}" {{ 'selected' if s == state }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-close">Filter</button>
+    {% if q or state %}<a class="btn btn-close" href="/">Clear</a>{% endif %}
+  </form>
+</div>
+{% if q or state %}
+<p class="note">{{ cases | length }} of {{ total }} case{{ 's' if total != 1 else '' }} match.</p>
+{% endif %}
 
 {% if invalid_count %}
 <p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
@@ -83,27 +114,27 @@ validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
 {% endif %}
 
 {% if not cases %}
-<div class="card"><p class="note" style="margin:0">No cases.</p></div>
+<div class="card"><p class="note" style="margin:0">No cases{{ ' match this filter' if q or state }}.</p></div>
 {% else %}
 {% set human_states = ['PENDING_HUMAN', 'QUARANTINED', 'APPROVED', 'ISSUED', 'DENIED'] %}
-{% set human_cases = cases | selectattr('state.value', 'in', human_states) | list %}
+{% set human_cases = cases | selectattr('state.value', 'in', human_states) | sort(attribute='updated_at') | list %}
 {% set fleet_cases = cases | rejectattr('state.value', 'in', human_states + ['CLOSED']) | list %}
 {% set closed_cases = cases | selectattr('state.value', 'equalto', 'CLOSED') | list %}
 
 {% if human_cases %}
-<h2 class="section">Awaiting human judgment
-  <span class="sub">— the fleet has done its work; a named clerk holds the pen</span></h2>
-{{ case_table(human_cases) }}
+<h2 class="section">Awaiting human judgment ({{ human_cases | length }})
+  <span class="sub">— oldest waiting first; the fleet has done its work, a named clerk holds the pen</span></h2>
+{{ case_table(human_cases, show_wait=true) }}
 {% endif %}
 
 {% if fleet_cases %}
-<h2 class="section">In the fleet's hands
+<h2 class="section">In the fleet's hands ({{ fleet_cases | length }})
   <span class="sub">— intake, triage, and cited review run autonomously</span></h2>
 {{ case_table(fleet_cases) }}
 {% endif %}
 
 {% if closed_cases %}
-<h2 class="section">Closed</h2>
+<h2 class="section">Closed ({{ closed_cases | length }})</h2>
 {{ case_table(closed_cases) }}
 {% endif %}
 {% endif %}
