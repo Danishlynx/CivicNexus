@@ -4,13 +4,13 @@ steps:
     args:
       - build
       - -t
-      - us-central1-docker.pkg.dev/$PROJECT_ID/civicnexus/console:v0.1.3
+      - us-central1-docker.pkg.dev/$PROJECT_ID/civicnexus/console:v0.1.4
       - -f
       - services/console/Dockerfile
       - .
 
 images:
-  - us-central1-docker.pkg.dev/$PROJECT_ID/civicnexus/console:v0.1.3
+  - us-central1-docker.pkg.dev/$PROJECT_ID/civicnexus/console:v0.1.4
 
 options:
   logging: CLOUD_LOGGING_ONLY

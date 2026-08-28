@@ -22,7 +22,7 @@ validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
       <td><a href="/cases/{{ incident.case_id }}"><code>{{ incident.case_id }}</code></a></td>
       <td>{{ incident.kind.value }}</td>
       <td>{{ incident.screening_point.value if incident.screening_point else '—' }}</td>
-      <td><span class="badge {{ incident.status.value }}">{{ incident.status.value }}</span></td>
+      <td><span class="status {{ incident.status.value }}"><span class="g"></span>{{ incident.status.value | status_label }}</span></td>
       <td class="note">{{ incident.ts.strftime('%Y-%m-%d %H:%M') }} UTC</td>
     </tr>
     {% else %}

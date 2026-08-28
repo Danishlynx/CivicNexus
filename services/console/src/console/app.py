@@ -41,6 +41,35 @@ _ACTOR = Actor(agent_id="console", agent_version="0.1.0")
 
 _templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
+#: Humanized status labels — raw enum values never reach a reader's eye; the
+#: machine value stays present in the class attribute for tooling and tests.
+_STATUS_LABELS = {
+    "RECEIVED": "Received",
+    "TRIAGED": "Triaged",
+    "INCOMPLETE_AWAITING_APPLICANT": "Awaiting applicant",
+    "IN_REVIEW": "In review",
+    "VERIFICATION_FAILED": "Verification failed",
+    "PAUSED_BUDGET": "Budget paused",
+    "PENDING_HUMAN": "Pending human review",
+    "APPROVED": "Approved",
+    "DENIED": "Denied",
+    "INFO_REQUESTED": "Info requested",
+    "ISSUED": "Issued",
+    "QUARANTINED": "Quarantined",
+    "CLOSED": "Closed",
+    "OPEN": "Open",
+    "RESOLVED": "Resolved",
+    "MATCH_FOUND": "Match found",
+    "NO_MATCH_FOUND": "No match",
+}
+
+
+def _status_label(value: str) -> str:
+    return _STATUS_LABELS.get(value, value.replace("_", " ").capitalize())
+
+
+_templates.env.filters["status_label"] = _status_label
+
 
 def resolve_mode(raw: str | None) -> str:
     """Map the CONSOLE_MODE env var to a mode, failing CLOSED to reader."""

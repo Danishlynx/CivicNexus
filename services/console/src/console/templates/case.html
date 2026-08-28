@@ -4,7 +4,7 @@
 {% block content %}
 <p class="crumb"><a href="/">Queue</a> / <code>{{ case.case_id }}</code></p>
 <h1 class="page"><code>{{ case.case_id }}</code>
-  <span class="badge {{ case.state.value }}">{{ case.state.value }}</span></h1>
+  <span class="status {{ case.state.value }}"><span class="g"></span>{{ case.state.value | status_label }}</span></h1>
 <p class="live-dot">Live — this record updates as the fleet works</p>
 
 {% set stage_map = {'RECEIVED': 0, 'TRIAGED': 1, 'INCOMPLETE_AWAITING_APPLICANT': 1,
@@ -24,13 +24,8 @@
 guardrails removed it from the pipeline, and only a named human may re-admit or discard it.</div>
 {% endif %}
 
-<div class="card">
-  <dl class="meta">
-    <dt>Permit type</dt><dd><strong>{{ case.permit_type }}</strong></dd>
-    <dt>Applicant</dt><dd>{{ case.applicant.name }} &lt;{{ case.applicant.email }}&gt;</dd>
-    {% if trace_url %}<dt>Telemetry</dt><dd><a href="{{ trace_url }}">Open the reasoning trace in Cloud Trace</a></dd>{% endif %}
-  </dl>
-</div>
+<div class="case-grid">
+<div class="case-main">
 
 <h2 class="section">The human gate</h2>
 <div class="card">
@@ -109,15 +104,28 @@ completed review of this case.</p></div>
   <ul style="margin:0; padding-left:1.2rem">
     {% for incident in case_incidents %}
     <li><a href="/incidents/{{ incident.incident_id }}"><code>{{ incident.incident_id }}</code></a>
-        — {{ incident.kind.value }} · <span class="badge {{ incident.status.value }}">{{ incident.status.value }}</span></li>
+        — {{ incident.kind.value }} · <span class="status {{ incident.status.value }}"><span class="g"></span>{{ incident.status.value | status_label }}</span></li>
     {% endfor %}
   </ul>
 </div>
 {% endif %}
 
-<h2 class="section">Case record</h2>
+</div>
+<aside class="case-rail">
+
+<h2 class="section">Case file</h2>
 <div class="card">
-  <p class="note" style="margin:0 0 0.75rem">Derived from the case record — not an event-stream
+  <h3>Application</h3>
+  <dl class="meta">
+    <dt>Permit type</dt><dd><strong>{{ case.permit_type }}</strong></dd>
+    <dt>Applicant</dt><dd>{{ case.applicant.name }}<br><span class="note">{{ case.applicant.email }}</span></dd>
+    {% if trace_url %}<dt>Telemetry</dt><dd><a href="{{ trace_url }}">Open the reasoning trace</a></dd>{% endif %}
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Activity</h3>
+  <p class="note" style="margin:0 0 0.7rem">Derived from the case record — not an event-stream
   replay (the §5 topics have no persistent subscriber).</p>
   <ul class="timeline">
     {% for ts, label in feed %}
@@ -127,23 +135,23 @@ completed review of this case.</p></div>
 </div>
 
 <div class="card">
-  <dl class="meta">
-    <dt>Budget</dt>
-    <dd class="note">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
-        · ${{ '%.4f' | format(case.budget.cost_usd) }}</dd>
-    {% if case.timers %}
-    <dt>Timers</dt>
-    <dd>
-      {% for timer in case.timers %}
-      <span class="note"><code>{{ timer.timer_id }}</code> fires
-      {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</span><br>
-      {% endfor %}
-    </dd>
-    {% endif %}
-    {% if case.docs %}
-    <dt>Documents</dt>
-    <dd>{% for doc in case.docs %}<code>{{ doc }}</code>{{ ' · ' if not loop.last }}{% endfor %}</dd>
-    {% endif %}
-  </dl>
+  <h3>Budget &amp; timers</h3>
+  <p class="note" style="margin:0">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
+  · ${{ '%.4f' | format(case.budget.cost_usd) }}</p>
+  {% if case.timers %}
+  <ul style="margin:0.5rem 0 0; padding-left:1.1rem">
+    {% for timer in case.timers %}
+    <li class="note"><code>{{ timer.timer_id }}</code> fires
+        {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if case.docs %}
+  <h3 style="margin-top:0.9rem">Documents</h3>
+  <ul style="margin:0; padding-left:1.1rem">{% for doc in case.docs %}<li class="note"><code>{{ doc }}</code></li>{% endfor %}</ul>
+  {% endif %}
+</div>
+
+</aside>
 </div>
 {% endblock %}

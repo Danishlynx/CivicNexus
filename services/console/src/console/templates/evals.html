@@ -1,10 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Evals · CivicNexus{% endblock %}
 {% block content %}
-<h1 class="page">Eval report</h1>
-<p class="note" style="max-width:46rem">Rendered unedited from <code>docs/eval-report.md</code> —
-including the failing decision-accuracy gate, which stays red until the system earns it (B-006).
-An honest number beats a green dashboard: the same harness that produced this report caught a
-real regression before it shipped.</p>
+<div class="page-hero">
+  <h1>Every claim on this page was measured.
+    <em>Including the ones that fail.</em></h1>
+  <p>The same harness that produced these numbers caught a real regression before it
+  shipped. The full report renders unedited below — red gates included.</p>
+</div>
+
+<div class="dash-tiles">
+  <div class="tile">
+    <div class="v">100%</div>
+    <div class="h">Groundedness, first pass</div>
+    <p>Every quoted span in a determination is byte-checked against the committed
+    municipal code — with the verifier on, no first-pass finding shipped an unverifiable
+    quote.</p>
+  </div>
+  <div class="tile">
+    <div class="v">14 of 15</div>
+    <div class="h">Adversarial drills contained</div>
+    <p>Screening drill fixtures blocked at the shipped sensitivity, with one
+    characterised boundary miss deliberately not tuned away — the levers and the
+    progression table are in the report.</p>
+  </div>
+  <div class="tile">
+    <div class="v">0.0%</div>
+    <div class="h">Canary leak rate</div>
+    <p>Planted synthetic-PII canary strings surfaced downstream in zero eval runs and
+    zero ablation arms.</p>
+  </div>
+</div>
+<p class="tiles-note">Measured by the project's own eval harness against the live stack —
+provenance, failure modes, and the gates that are still red are in the report below.</p>
+
 <pre class="report">{{ report }}</pre>
 {% endblock %}

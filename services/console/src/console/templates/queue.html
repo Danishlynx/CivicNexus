@@ -6,6 +6,21 @@
 {% set sv = cases | map(attribute='state.value') | list %}
 {% set n_gate = sv.count('PENDING_HUMAN') %}
 <section class="masthead">
+  <svg class="seal" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+    <circle cx="100" cy="100" r="96" stroke="currentColor" stroke-width="1.4"/>
+    <circle cx="100" cy="100" r="88" stroke="currentColor" stroke-width="0.7"
+            stroke-dasharray="2.2 4.4"/>
+    <circle cx="100" cy="100" r="64" stroke="currentColor" stroke-width="1.1"/>
+    <circle cx="100" cy="100" r="58" stroke="currentColor" stroke-width="0.6"
+            stroke-dasharray="1.6 7"/>
+    <g transform="translate(64 64) scale(3)">
+      <path d="M12 2.5 21 7v2H3V7l9-4.5Z" fill="currentColor"/>
+      <path d="M5 10h2.6v8H5v-8Zm5.7 0h2.6v8h-2.6v-8Zm5.7 0H19v8h-2.6v-8Z" fill="currentColor" opacity=".6"/>
+      <path d="M3 19.5h18V21H3v-1.5Z" fill="currentColor"/>
+    </g>
+    <path d="M100 22l2.4 5h-4.8l2.4-5Zm0 156l2.4-5h-4.8l2.4 5ZM22 100l5 2.4v-4.8l-5 2.4Zm156 0l-5 2.4v-4.8l5 2.4Z"
+          fill="currentColor" opacity=".7"/>
+  </svg>
   <div class="masthead-inner">
     <h1>Permit casework, reviewed by a governed AI fleet.<br>
         <em>Humans hold the only pen.</em></h1>
@@ -40,7 +55,7 @@
         <span class="cell-sub">{{ case.permit_type }}</span>
       </td>
       <td>{{ case.applicant.name }}</td>
-      <td><span class="badge {{ case.state.value }}">{{ case.state.value }}</span></td>
+      <td><span class="status {{ case.state.value }}"><span class="g"></span>{{ case.state.value | status_label }}</span></td>
       <td>
         {% if case.determinations %}
           {% set last = case.determinations | last %}
@@ -134,8 +149,11 @@ validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
 {% endif %}
 
 {% if closed_cases %}
-<h2 class="section">Closed ({{ closed_cases | length }})</h2>
-{{ case_table(closed_cases) }}
+<details class="collapse">
+  <summary>Closed ({{ closed_cases | length }})
+    <span class="sub">— the finished record, tucked away</span></summary>
+  {{ case_table(closed_cases) }}
+</details>
 {% endif %}
 {% endif %}
 {% endblock %}
