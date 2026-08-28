@@ -53,14 +53,25 @@ def _fresh_traceparent() -> str:
 
 
 def _named_human(request: Request, form_fallback: str) -> str:
-    """The audited identity: the platform-verified token's email claim.
+    """The audited identity, in strict preference order.
 
-    The form-field fallback is honoured ONLY when running against the local
-    emulator (there is no platform in front of you locally) — gated on the
-    emulator env var so it can never attribute an action in production
-    (2026-08-27 audit finding: an unenforced comment is not a guard).
+    1. The forwarded token's email claim — kept first so that if the platform
+       ever forwards a caller token, it wins. MEASURED 2026-08-28: Cloud Run
+       validates and CONSUMES the Authorization credential; the container
+       receives no decodable caller token (tested with Authorization alone
+       and with the X-Serverless-Authorization dual-header pattern).
+    2. ``CLERK_SOLE_INVOKER`` — the platform truth this deployment actually
+       provides: the clerk service's ``run.invoker`` binding admits EXACTLY
+       ONE named human, so any request reaching this code was made by that
+       principal. The env var only restates who IAM already admits, and
+       ``verify_phase6`` asserts the binding is exactly that one member, so
+       this assumption is pinned, not hoped. Set only on the clerk service.
+    3. The form field, ONLY against the local emulator (no platform locally;
+       2026-08-27 audit finding: an unenforced comment is not a guard).
     """
     named = caller_identity(request)
+    if not named:
+        named = os.environ.get("CLERK_SOLE_INVOKER", "").strip()
     if not named and os.environ.get("FIRESTORE_EMULATOR_HOST"):
         named = form_fallback.strip()
     return named

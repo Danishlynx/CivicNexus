@@ -285,16 +285,52 @@ class TestClerkActions:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         monkeypatch.delenv("FIRESTORE_EMULATOR_HOST", raising=False)
+        monkeypatch.delenv("CLERK_SOLE_INVOKER", raising=False)  # F14: pin, never inherit
         client, cases, _ = clerk_setup
         response = client.post("/cases/case-p/action", data={"target": "APPROVED"})
         assert response.status_code == 400
         assert cases.transitions == []
+
+    def test_sole_invoker_attribution_when_platform_consumes_token(
+        self,
+        clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # Measured 2026-08-28: Cloud Run consumes the Authorization credential,
+        # so the deployed clerk sees no token. Attribution falls back to the
+        # configured sole invoker - sound because IAM admits exactly one
+        # principal, and verify_phase6 asserts that binding.
+        client, cases, _ = clerk_setup
+        monkeypatch.delenv("FIRESTORE_EMULATOR_HOST", raising=False)
+        monkeypatch.setenv("CLERK_SOLE_INVOKER", "danishlynx@gmail.com")
+        response = client.post("/cases/case-p/action", data={"target": "APPROVED"})
+        assert response.status_code == 303
+        assert cases.transitions[-1]["payload"] == {
+            "action": "approve",
+            "approver": "danishlynx@gmail.com",
+        }
+
+    def test_token_identity_wins_over_sole_invoker(
+        self,
+        clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        client, cases, _ = clerk_setup
+        monkeypatch.setenv("CLERK_SOLE_INVOKER", "fallback@x.test")
+        response = client.post(
+            "/cases/case-p/action",
+            data={"target": "APPROVED"},
+            headers=_bearer("clerk@city.test"),
+        )
+        assert response.status_code == 303
+        assert cases.transitions[-1]["payload"]["approver"] == "clerk@city.test"
 
     def test_form_approver_honoured_only_under_emulator(
         self,
         clerk_setup: tuple[TestClient, FakeCaseStore, FakeApprovalStore],
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        monkeypatch.delenv("CLERK_SOLE_INVOKER", raising=False)
         # 2026-08-27 audit finding: the local-dev fallback must be a guard,
         # not a comment. Without the emulator marker a form-supplied name is
         # refused; with it (real local dev) it is honoured.

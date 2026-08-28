@@ -57,8 +57,10 @@ class TestModeResolution:
 
 
 class TestReaderSurface:
-    def test_healthz(self, reader: TestClient) -> None:
-        response = reader.get("/healthz")
+    def test_health(self, reader: TestClient) -> None:
+        # /api/health, not /healthz: Google's frontend owns /healthz on
+        # run.app and the container never sees it (measured 2026-08-28).
+        response = reader.get("/api/health")
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
 
@@ -122,7 +124,7 @@ class TestClerkMounting:
         app.dependency_overrides[get_case_store] = lambda: fake
         try:
             client = TestClient(app)
-            assert client.get("/healthz").status_code == 200
+            assert client.get("/api/health").status_code == 200
             assert "case-a" in client.get("/").text
             assert "CLERK" in client.get("/").text
         finally:

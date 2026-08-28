@@ -20,7 +20,7 @@
 variable "console_image" {
   description = "Full image URI for the console service (built by Cloud Build before apply)."
   type        = string
-  default     = "us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/console:v0.1.0"
+  default     = "us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/console:v0.1.1"
 }
 
 resource "google_service_account" "console_reader" {
@@ -113,6 +113,14 @@ resource "google_cloud_run_v2_service" "console_clerk" {
       env {
         name  = "CONSOLE_MODE"
         value = "clerk"
+      }
+      # Attribution ground truth (measured 2026-08-28: Cloud Run consumes the
+      # Authorization credential, so the app can never decode the caller).
+      # Sound ONLY while run.invoker on this service is exactly this human -
+      # verify_phase6 asserts that binding, so widening it turns the gate red.
+      env {
+        name  = "CLERK_SOLE_INVOKER"
+        value = "danishlynx@gmail.com"
       }
     }
   }

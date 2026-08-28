@@ -1,8 +1,8 @@
 """Phase 6 exit verifier (ADR-007 §4) — HTTP and Firestore only, no engine calls.
 
 Asserts, in order:
-  1. the public reader serves /healthz to an unauthenticated caller (with a
-     bounded wait for fresh-IAM propagation on first run after apply);
+  1. the public reader serves /api/health to an unauthenticated caller (with
+     a bounded wait for fresh-IAM propagation on first run after apply);
   2. the public surface is the READER: write attempt is a route-less 404 with
      Starlette's generic body, the queue page carries the read-only badge, the
      reader SA's PROJECT-LEVEL role list is exactly [roles/datastore.viewer]
@@ -130,6 +130,22 @@ def _runtime_service_account(project: str, region: str, service: str, token: str
     return str(response.json().get("template", {}).get("serviceAccount", ""))
 
 
+def _service_invokers(project: str, region: str, service: str, token: str) -> set[str]:
+    """Members holding run.invoker on one Cloud Run service."""
+    response = requests.get(
+        f"https://run.googleapis.com/v2/projects/{project}/locations/{region}"
+        f"/services/{service}:getIamPolicy",
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=30,
+    )
+    response.raise_for_status()
+    members: set[str] = set()
+    for binding in response.json().get("bindings", []):
+        if binding.get("role") == "roles/run.invoker":
+            members.update(binding.get("members", []))
+    return members
+
+
 def _clerk_act(
     clerk_url: str, token: str, case_id: str, target: CaseState, *, retry_auth: bool = False
 ) -> int:
@@ -181,15 +197,17 @@ def main() -> int:
     assert walk_id not in NEVER_TOUCH and quarantine_id not in NEVER_TOUCH
 
     # 1. Public health, anonymous - bounded wait for fresh-IAM propagation.
+    # /api/health, NOT /healthz: Google's frontend intercepts the literal
+    # /healthz path on run.app and answers 404 itself (measured 2026-08-28).
     status = 0
     for attempt in range(_HEALTH_ATTEMPTS):
-        status = requests.get(f"{public}/healthz", timeout=30).status_code
+        status = requests.get(f"{public}/api/health", timeout=30).status_code
         if status == 200:
             break
         if attempt < _HEALTH_ATTEMPTS - 1:
-            print(f"  /healthz {status} (fresh-IAM propagation?) - retry in {_HEALTH_WAIT_S}s")
+            print(f"  /api/health {status} (fresh-IAM propagation?) - retry in {_HEALTH_WAIT_S}s")
             time.sleep(_HEALTH_WAIT_S)
-    _check(status == 200, f"public /healthz unauthenticated -> {status}")
+    _check(status == 200, f"public /api/health unauthenticated -> {status}")
 
     # 2. The public surface is the READER, and the exposure is IAM-bounded.
     r = requests.post(f"{public}/cases/{walk_id}/action", data={"target": "APPROVED"}, timeout=30)
@@ -222,6 +240,15 @@ def main() -> int:
     _check(
         clerk_sa == f"sa-console-clerk@{project}.iam.gserviceaccount.com",
         f"clerk service RUNS AS sa-console-clerk (got {clerk_sa!r})",
+    )
+    # Pins CLERK_SOLE_INVOKER attribution (Cloud Run consumes the caller's
+    # Authorization credential, so the app attributes to the ONLY principal
+    # IAM admits — sound if and only if this binding stays exactly one human).
+    sole = os.environ.get("CLERK_INVOKER", "user:danishlynx@gmail.com")
+    invokers = _service_invokers(project, region, "civicnexus-console-clerk", adc)
+    _check(
+        invokers == {sole},
+        f"clerk run.invoker binding is EXACTLY [{sole}] (got {sorted(invokers)})",
     )
     r = requests.post(
         f"{clerk}/cases/{walk_id}/action",

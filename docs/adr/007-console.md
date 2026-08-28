@@ -224,6 +224,19 @@ offered in the submission testing instructions on request.
 **Do not copy `caller_identity` into the reader.** On the clerk service, keep it
 — there the platform really did verify the token.
 
+*(Platform correction, measured 2026-08-28 against the deployed services:
+Cloud Run validates and CONSUMES the caller's Authorization credential — the
+container receives no decodable token, with either the plain or the
+dual-header `X-Serverless-Authorization` pattern. Clerk attribution therefore
+uses `CLERK_SOLE_INVOKER`: the service's `run.invoker` binding admits exactly
+one named human, so any request reaching the app is that principal by
+platform proof. `verify_phase6` asserts the binding is exactly that one
+member, so the assumption is enforced, not assumed. `caller_identity` remains
+first-preference if a token ever appears. Separately: Google's frontend
+intercepts the literal `/healthz` path on run.app — health moved to
+`/api/health`, and B-007's "stale revision /healthz 404" note is explained by
+the same interception.)*
+
 ### D3 — Implement `ApprovalStore` for real. It is on the critical path, not a nicety.
 
 New `libs/tools/src/civicnexus/tools/approvals.py`, mirroring `IncidentStore`

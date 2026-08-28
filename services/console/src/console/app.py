@@ -102,8 +102,12 @@ def get_approval_store() -> ApprovalStore:
 read_router = APIRouter()
 
 
-@read_router.get("/healthz")
-def healthz() -> dict[str, str]:
+@read_router.get("/api/health")
+def health() -> dict[str, str]:
+    """Liveness. Deliberately NOT ``/healthz``: Google's frontend intercepts
+    that literal path on run.app and answers its own 404 before the container
+    is ever consulted (measured 2026-08-28; also explains B-007's registry
+    "/healthz 404s on the deployed revision" note — it was never staleness)."""
     return {"status": "ok"}
 
 
