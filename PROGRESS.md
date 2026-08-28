@@ -267,19 +267,41 @@ project; fix applied (`x-goog-user-project: $PROJECT_ID` header — harmless
 under a service account). Vision API enabled via gcloud + import after a
 plan-cascade trap (B-016).
 
-**Honest gaps — the feature is built and unit-green but NOT live-proven:**
-1. No successful live Vision call has ever been observed (the 403 predates the
-   header fix; the fix is unverified).
-2. The containment property — hostile screenshot → OCR → plain-text screen →
-   quarantine, zero engine calls — is UNPROVEN live; so is clean floor-plan
-   extraction (`video_demo_email_with_plan.eml`).
-3. The 403-era test run left residue: `case-65b2bc41627e` sits at the human
-   gate (created because OCR failed while the body was benign — under the OLD
-   contribute-nothing behavior, which is exactly what the fail-closed ruling
-   removes). Cleanup owed.
-4. The live re-test is billed-adjacent (Vision + Armor ride free tiers; engine
-   spend only if the screen misses or on the clean-fixture run) — per-run OK
-   required before firing.
+**LIVE-PROVEN (2026-08-28 ~11:41–11:45Z, human per-run OK "do it", output
+observed directly):**
+1. **403 fix proven in isolation ($0 probe):** `extract_image_text` on
+   `floor_plan.png` under user ADC returned 286 chars of faithful
+   transcription — the `x-goog-user-project` header unblocks Vision.
+2. **Containment PROVEN, $0, zero engine calls:** `--once
+   drill_hostile_screenshot.eml` → OCR read the pixel-rendered override text →
+   plain-text screen `pi_and_jailbreak MATCH_FOUND at HIGH` (the strongest
+   confidence tier — corroborates B-014's plain-text-most-sensitive finding) →
+   `case-1216f7712d35` RECEIVED→QUARANTINED, incident `inc-420ff7fd33a1`,
+   bytes at `gs://…-docs-quarantine/case-1216f7712d35/hostile_screenshot.png`,
+   one traceparent across all three audit events. The engine was never called.
+3. **Clean enrichment PROVEN (billed, ~rehearsal-class spend):** `--once
+   video_demo_email_with_plan.eml` (caseflow warmed, attempt 1, 4.8s) →
+   attachment screened+extracted → intake `complete=True` → fleet review →
+   **verifier PASSED first pass** → **outcome=approve**, §17.44.100 citations,
+   `case-13ee94915b12` at the human gate in **~62s** (case.received 11:43:21Z
+   → PENDING_HUMAN 11:44:23Z). Case record carries
+   `docs=['floor_plan.png sha256:7a0da51a661299ea screened+extracted']`;
+   verifier critique names the §17.44.100(G) one-room limitation the floor
+   plan evidences. Video note: this is the on-camera approve the shot list
+   wants, faster than the 2m0s no-attachment rehearsal.
+4. **Short-PDF edge refuted ($0 probe):** `extract_pdf_text` with pinned
+   `pages=[1..5]` accepts a 1-page synthetic PDF and transcribes it
+   faithfully — the fewer-than-5-pages failure mode does not exist.
+5. **Residue cleaned (authorized):** `cases/case-65b2bc41627e` (the 403-era
+   artifact of the old contribute-nothing behavior) deleted, verified gone.
+   `case-1216f7712d35` persists as ordinary containment content (A7 run-1
+   precedent); `case-13ee94915b12` left at the gate as a live demo-able case.
+
+**Evidence-precision scope:** the Gmail IMAP attachment leg has not fired live
+(both runs used the `.eml` fixture path; the IMAP walk shares
+`extract_attachments`/`process_email` and the rehearsal proved the IMAP hop
+itself); the PDF leg of `process_email` is unit-tested + probe-verified but no
+end-to-end `.eml` PDF run has been made.
 
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
