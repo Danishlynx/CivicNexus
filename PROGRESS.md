@@ -128,6 +128,47 @@ deployed-services walk running; its result gets appended here when it lands.
 Local preview server stopped. Everything committed and pushed through the
 pause commit.
 
+## verify-phase-6 GREEN (2026-08-28 morning, output observed directly)
+
+**The overnight run died silently (exit 4, buffered output lost, B-012
+abnormal-death class; zero fixture residue confirmed). The morning re-run
+FAILED 8 assertions — and every failure traced to two MEASURED Cloud Run
+platform behaviours, not to our system:**
+
+1. **Google's frontend intercepts the literal `/healthz` path on run.app**
+   and answers its own HTML 404 before the container is consulted (sibling
+   routes serve fine). Health moved to `/api/health`. This also explains
+   B-007's "registry /healthz 404s, revision must be stale" note — same
+   interception, the staleness reading was wrong.
+2. **Cloud Run validates and CONSUMES the caller's Authorization credential**
+   — the container receives no decodable token (measured with the plain
+   header AND the X-Serverless-Authorization dual-header pattern; the token
+   itself was decoded locally and carries the email claim). Clerk attribution
+   now uses `CLERK_SOLE_INVOKER`: sound because the clerk's `run.invoker`
+   binding admits EXACTLY ONE named human, and the verifier ASSERTS that
+   binding, so widening it turns the gate red. Token decode stays first
+   preference; the form fallback stays emulator-gated.
+
+Fixes shipped as image v0.1.1 + one revision-only apply
+(`0 added, 2 changed, 0 destroyed`, agent-run under the standing
+authorization). Then, **all 18 assertions passed** (make test 285 green +
+`verify_phase6.py` clean, = the verify-phase-6 chain):
+anonymous `/api/health` 200; route-less 404 with generic body + reader badge;
+reader SA project roles exactly [datastore.viewer]; BOTH services run as
+their declared SAs; clerk invoker binding EXACTLY [user:danishlynx@gmail.com];
+anonymous clerk 403; **clerk walk APPROVED→ISSUED→CLOSED through the deployed
+UI with `approvals/apr-79b91f861652` naming danishlynx@gmail.com / issue /
+ISSUED**; public queue renders the fixture; incident metadata leak-free;
+QUARANTINED re-admitted via the clerk UI; try/finally cleanup verified
+(fixtures + approvals row removed).
+
+**Machine half of the §11 Phase 6 exit: DONE. Remaining for the phase:**
+(1) human half — the clerk drives one real case in a browser (via
+`gcloud run services proxy civicnexus-console-clerk --region us-central1`,
+since the service is IAM-gated); can double as video rehearsal;
+(2) A7 billed demo-injection `--with-letters` run (quiet window);
+(3) README + ARCHITECTURE delta log + shotlist; freeze declaration.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video
