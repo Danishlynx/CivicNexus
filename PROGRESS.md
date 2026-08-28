@@ -162,6 +162,40 @@ ISSUED**; public queue renders the fixture; incident metadata leak-free;
 QUARANTINED re-admitted via the clerk UI; try/finally cleanup verified
 (fixtures + approvals row removed).
 
+## Product loop + curated console (2026-08-28, human-directed, output observed directly)
+
+**The demo loop now exists end to end and the machine gate stayed green
+through three deployed revisions (v0.1.1 → v0.1.3, each a
+0-add/2-change/0-destroy apply):**
+
+- **Simulated inbox made real:** `InboxStore` (Firestore `inbox/`, write-once
+  + claim/finish/fail + startup requeue; single-consumer model stated
+  honestly), fed by (a) a REAL Gmail inbox via `scripts/inbox_watcher.py`
+  (IMAP BODY.PEEK; mail marked seen ONLY after durable queueing; receive-only
+  per fixture rules) and (b) the clerk console's "New application" form —
+  one queue, two feeders, one consumer driving the PROVEN run_case chain.
+  Spend: `--i-accept-billing` + `--max-cases` (default 3) bound every run.
+- **Live console:** pages poll `/api/cases` and reload on change (paused for
+  hidden tabs and while any form is focused/in flight; 6s→60s backoff), so
+  the email → case → citation → human-gate walk is watchable with no
+  keypress. Runbook: `docs/runbooks/video-inbox-demo.md`; demo email:
+  `data/fixtures/video_demo_email.txt` (rehearsal still owed — billed,
+  needs the spend OK).
+- **Design system v3** (human-directed, Material-inspired language, zero
+  third-party assets/trademarks) + **volume-calm queue** (2026-08-28 UX
+  ruling): search, state filter, bounded sections with shown-of-total counts,
+  human-gate FIFO (oldest-waiting-first with wait-age chips), tabular
+  numerals. Scale limits recorded in BACKLOG for the README failure-modes
+  section (full-collection reads pagination-less by freeze-scope choice).
+- **Pre-ship audit (24 agents): 18 confirmed findings (7 major), 2 refuted —
+  ALL closed** (commit eea411f): watcher crash/interrupt recovery, IMAP
+  no-loss ordering, resilient consumer loop, spend bounds, inbox size cap +
+  server-side status filter, reload-vs-human-action guard, public polling
+  cost bounds, JS-context-safe confirms, clerk-gated toast.
+- **verify-phase-6 re-run against deployed v0.1.3: all 18 assertions
+  passed** (2026-08-28 08:01Z and again post-v0.1.3), including the clerk
+  walk with `approvals/` row and the sole-invoker binding pin.
+
 **Machine half of the §11 Phase 6 exit: DONE. Remaining for the phase:**
 (1) human half — the clerk drives one real case in a browser (via
 `gcloud run services proxy civicnexus-console-clerk --region us-central1`,
