@@ -196,6 +196,33 @@ through three deployed revisions (v0.1.1 → v0.1.3, each a
   passed** (2026-08-28 08:01Z and again post-v0.1.3), including the clerk
   walk with `approvals/` row and the sole-invoker binding pin.
 
+## Rehearsal + A7 (2026-08-28 midday, output observed directly)
+
+**First live firing of the email→permit loop (rehearsal, human spend OK):**
+`inbox_watcher --once` drove the demo email through the deployed stack while
+the human watched the console update itself. Measured: email → case on
+screen ≈ 10s; full email → human gate = **2m 0s** including a REAL §7.3
+verifier rejection ("approval unsupported — doesn't address non-resident
+employees, outside storage, appearance") → retry with critique → PASS with
+outcome request_info. Case `case-f319c7ccab71`, nine §17.44.100 citations.
+Demo email strengthened afterwards to pre-answer every §17.44.100 condition
+(the video wants an approve); the human's own Gmail-leg rehearsal doubles as
+the approve confirmation. Timing for the shot list: budget ~2.5 min for the
+review segment, with GCP-console footage as the planned cutaway.
+
+**A7 CLOSED — screening point 3 measured live (`make demo-injection
+DEMO_ARGS=--with-letters` PASS):** point 1 on adv-002 (pdf): flagged by
+pi_and_jailbreak, quarantined byte-identical, incident `inc-bc04c3c098aa`,
+case `case-5276b0abf213` QUARANTINED, `incident.raised` consumed with a
+byte-equal traceparent, zero engine calls before the screen; **point 3:
+letter draft screened NO_MATCH at letter_draft and staged as
+action.pending_approval** (436/200 tokens). All four §6.3 points now hold
+live measurements. Run 1 failed on a guard FALSE POSITIVE — the letters
+deploy state names the project by NUMBER while the guard compared the ID
+(same project); fixed to accept both spellings of OUR project while still
+refusing foreign ones. Run 1's drill artifacts (case-f0e315cd9a00 +
+inc-9be2565c1efc) persist as ordinary containment content alongside run 2's.
+
 **Machine half of the §11 Phase 6 exit: DONE. Remaining for the phase:**
 (1) human half — the clerk drives one real case in a browser (via
 `gcloud run services proxy civicnexus-console-clerk --region us-central1`,

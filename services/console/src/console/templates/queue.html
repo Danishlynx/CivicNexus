@@ -61,7 +61,7 @@
           {% set last = case.determinations | last %}
           <strong>{{ last.outcome.value | replace('_', ' ') }}</strong>
           {% if last.citations %}
-          <span class="cell-sub">cites {% for c in last.citations %}§{{ c.chunk_id }}{{ ', ' if not loop.last }}{% endfor %}</span>
+          <span class="cell-sub">cites {% for chunk in last.citations | map(attribute='chunk_id') | unique | list %}§{{ chunk }}{{ ', ' if not loop.last }}{% endfor %}</span>
           {% endif %}
         {% else %}
           <span class="note">—</span>

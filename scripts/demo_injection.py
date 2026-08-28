@@ -620,12 +620,39 @@ def engine_exposure(screened: bytes) -> list[dict[str, Any]]:
 
 
 # --------------------------------------------------------------- letters leg
+def _project_identifiers(project: str) -> set[str]:
+    """The project id AND its number: engine canonical names use the NUMBER
+    form (every Phase 1 resource path does), so an id-only comparison
+    false-positives on our own project (measured 2026-08-28, A7 run 1)."""
+    identifiers = {project}
+    try:
+        import google.auth
+        import google.auth.transport.requests
+        import requests
+
+        credentials, _ = google.auth.default()
+        credentials.refresh(google.auth.transport.requests.Request())  # type: ignore[no-untyped-call]
+        response = requests.get(
+            f"https://cloudresourcemanager.googleapis.com/v1/projects/{project}",
+            headers={"Authorization": f"Bearer {credentials.token}"},
+            timeout=15,
+        )
+        if response.ok:
+            number = str(response.json().get("projectNumber", ""))
+            if number:
+                identifiers.add(number)
+    except Exception:
+        pass
+    return identifiers
+
+
 def letters_remote(project: str) -> Any:
     """Resolve the letters engine from deploy state, refusing a cross-project file.
 
     This leg bills, so the state file is checked against the validated
     PROJECT_ID rather than trusted: a stale file would spend in another project
-    silently.
+    silently. Both the project id and its number are accepted as OUR project —
+    the refusal is for FOREIGN projects, not for the number spelling of ours.
     """
     import vertexai
 
@@ -633,7 +660,8 @@ def letters_remote(project: str) -> Any:
         raise DrillFailure(f"{LETTERS_STATE} missing - deploy letters before --with-letters")
     state = json.loads(LETTERS_STATE.read_text(encoding="utf-8-sig"))
     resource = str(state["resource_name"])
-    if not resource.startswith(f"projects/{project}/"):
+    prefixes = tuple(f"projects/{p}/" for p in _project_identifiers(project))
+    if not resource.startswith(prefixes):
         raise DrillFailure(f"letters deploy state names another project: {resource}")
     client = vertexai.Client(project=project, location=str(state["region"]))
     return client.agent_engines.get(name=resource)
