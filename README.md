@@ -244,6 +244,21 @@ decide: golden-010/013/020) and over-deciding (`deny` where a decision-
 critical fact is genuinely absent: golden-008/014). All runs, including the
 red-era baseline, are archived in `evals/archive/`.
 
+### Ablation 0 — decision-step model: Gemini Flash vs 2.5 Pro (2026-08-28)
+
+A statute-level study of the five misses predicted two were model-fixable;
+one full run with Pro at the zoning step alone (`ZONING_MODEL_ID` override)
+tested it. **Both predicted cases converted — and Pro scored the same 15/20**,
+regressing a previously solid deny into an information request and failing
+one case on output-schema compliance (a malformed citation Flash never
+produces), with groundedness dropping below its gate (0.90) and ~50% higher
+latency. Measured conclusion: **model tier is not the constraint.** Across
+the two models, 17 of 20 cases passed under at least one config; the residual
+three decompose into one borderline-calibration case, one self-contradicting
+test fixture (recorded as an instrument defect, deliberately not edited), and
+one permit-taxonomy config gap. Both artifacts are archived; the shipped
+config remains Flash.
+
 ### Ablation 1 — groundedness verifier OFF vs ON
 
 Single run per arm (from `docs/ablations.md`; both arms archived and labelled):

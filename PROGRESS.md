@@ -496,7 +496,11 @@ decidability clause remains the unenforced lever for the over-ask class.
 
 **Pro-run rules, PRE-COMMITTED before data:** one full 20-case run with
 `ZONING_MODEL_ID=gemini-2.5-pro` (intake/verifier stay Flash). Ceiling $12
-(~₹1,050); abort on repeated 429s or any case >15 min. Engine REVERTS to the
+(~₹1,050); abort on repeated 429s or any case >15 min. **AMENDED by the human
+before the run started ("dont worry about money on this run, dont use that
+$12 ceiling"): the cost ceiling and cost-motivated aborts are removed for
+this run — it goes to completion; only the runner's own §7.5 retry/backoff
+governs.** Everything else (revert-after, interpretation rules) unchanged. Engine REVERTS to the
 proven Flash config immediately after, regardless of result — the video runs
 on Flash unless the human separately ratifies otherwise after seeing number +
 latency. Interpretation: ≥17/20 with smoke-12 intact → the model lever is
@@ -506,6 +510,32 @@ constraint for these cases" — equally publishable, no re-rolls, n=1 either
 way. 008-regression check rides along free: its Pro result is noted against
 the OK,OK,MISS history. Requires the human's explicit go under the
 2026-08-28 spend regime (estimate $3–8, ceiling $12).
+
+### Pro-at-decision MEASURED (2026-08-28 night): 15/20 — net zero, study validated, measurement FROZEN
+
+**One full 20-case run, `ZONING_MODEL_ID=gemini-2.5-pro`, human full go (cost
+ceiling waived for this run only), archived as
+`results-pro-at-decision-20260828.json`.** Result: **15/20 (75%)** — same
+headline as Flash, different misses. The study's two LIKELY predictions both
+converted (008 harmonized §17.44.030-over-§17.44.100; 010 approved on stated
+negations) — the statute-level causal analysis was validated. Pro gave both
+points back with failure modes Flash does not have: **009 regressed**
+(smoke-solid deny → request_info) and **017 failed ReviewFinding validation**
+(malformed citation, extra `section_id: None`), dragging groundedness to
+0.90 (below its 0.95 gate) and citation P/R to 0.88/0.90; p95 106s; 418,664
+tokens. 013/014/020 missed identically under both models.
+
+**Decision (human, "accept what it is and continue"): measurement FROZEN at
+75% full-set / 12-12 smoke ×3.** Claims: across the two models 17/20 cases
+passed under at least one config; the residual three decompose as
+calibration-on-borderline (013), fixture self-contradiction (014, instrument
+defect, recorded not edited), config/taxonomy gap (020). "Model tier is not
+the constraint" is now measured, not assumed. Engine reverted to the proven
+Flash config same night (revert deploy + warmup logged below);
+`evals/results.json` restored to the Flash full run — the Pro artifact is an
+archived ablation, never the baseline. Remaining accuracy levers recorded in
+B-006 for post-submission: decidability enforcement, fixture repair, permit
+taxonomy extension.
 
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the

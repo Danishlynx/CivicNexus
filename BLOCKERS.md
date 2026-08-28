@@ -259,6 +259,20 @@ not enforce it — recorded as the remaining lever, untouched at freeze).
 Remaining levers, for the record: entailment decidability enforcement;
 Pro-at-decision (built, `ZONING_MODEL_ID`, unmeasured on the held-out 8).
 
+**Addendum 3 (2026-08-28 night) — Pro-at-decision measured: net zero; model
+tier is NOT the constraint.** One full run with `gemini-2.5-pro` at zoning:
+15/20. The study's LIKELYs both converted (008, 010 fixed) but Pro regressed
+009 (over-ask on a smoke-solid deny) and broke 017 on output-schema
+compliance (ReviewFinding ValidationError), also failing the groundedness
+gate at 0.90. Residual core under BOTH models: 013 (borderline calibration),
+014 (fixture self-contradiction — instrument defect), 020 (permit-taxonomy
+gap disabling verifier remedies). Post-submission fix list, in order:
+(1) enforce the entailment decidability clause; (2) repair golden-014's
+fixture wording + expectation (documented dataset change, re-measure);
+(3) extend config/permit_types.yaml for the 015/020 class (keep drill
+out-of-scope types absent). Measurement frozen at 75% by human decision;
+engine reverted to Flash.
+
 **Addendum (2026-08-28, freeze eve) — the dominant driver was a DEFECT, not
 model capability.** Artifact-level failure recording (added between two
 measurement runs) exposed it: the intake agent's instruction still enumerated
