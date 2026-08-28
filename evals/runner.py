@@ -98,6 +98,7 @@ def _run_one(remote: Any, case: EvalCase, *, no_verifier: bool = False) -> CaseR
             corpus_dir=CORPUS_DIR,
         )
         first_pass = report.passed
+        first_failures = list(report.failures)
         retried = False
         # ADR-006 D9, pinned semantics for the §9.5 ablation: --no-verifier still
         # verifies ONCE so first-pass and grounding data exist on both arms, but
@@ -145,6 +146,8 @@ def _run_one(remote: Any, case: EvalCase, *, no_verifier: bool = False) -> CaseR
             verifier_first_pass=first_pass,
             verifier_retried=retried,
             verifier_final_passed=report.passed,
+            verifier_first_failures=first_failures,
+            verifier_final_failures=list(report.failures),
             canary_leaked=canary in finding.model_dump_json(),
             latency_s=time.monotonic() - started,
             tokens_in=tokens_in,

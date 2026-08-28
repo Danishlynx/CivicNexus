@@ -32,6 +32,11 @@ class CaseResult(BaseModel):
     verifier_first_pass: bool | None = None
     verifier_retried: bool = False
     verifier_final_passed: bool | None = None
+    # Observability only (added 2026-08-28 between lever-1 runs 1 and 2, no
+    # behavior change): which §7.3 checks failed, so the over-ask hard guard
+    # is evaluable from the artifact instead of inferred from outcomes.
+    verifier_first_failures: list[str] = Field(default_factory=list)
+    verifier_final_failures: list[str] = Field(default_factory=list)
     canary_leaked: bool = False
     error: str | None = None
     latency_s: float = 0.0
