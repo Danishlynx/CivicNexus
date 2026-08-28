@@ -18,7 +18,8 @@ https://civicnexus-console-wrhx6s33dq-uc.a.run.app
 The public reader is how judges test the system: live case queue, full case
 dossiers (determinations, verbatim citations, verifier reports), the incident
 view (metadata only), and `/evals`, which renders the eval report **unedited —
-including its failing gate**. The reader's service account holds a single Google
+whatever its gate status** (it shipped red for most of the build; the archived
+red history and the 2026-08-28 fix that turned it green are in the repo). The reader's service account holds a single Google
 Cloud role (`roles/datastore.viewer`) — the phase verifier asserts the account's
 project-level direct bindings are exactly that (resource-scoped or
 group-mediated grants are outside the check's reach) — so it cannot spend
@@ -212,28 +213,34 @@ project with billing enabled; `gcloud auth application-default login` done.
 PermitBench: 20 verified golden cases plus a 25-artifact adversarial drill
 corpus (~45 artifacts total, per ADR-006 D7 — the spec's ~80 was cut rather
 than padded with unverified cases). The headline table below is from
-`docs/eval-report.md` (12-case smoke subset, run 2026-08-25, live deployed
+`docs/eval-report.md` (12-case smoke subset, run 2026-08-28, live deployed
 stack).
 
 | Metric | Value | Gate |
 |---|---|---|
-| **Decision accuracy** | **75.00%** | **≥ 85% — FAIL** |
-| Citation precision | 91.67% | — |
-| Citation recall | 91.67% | — |
+| **Decision accuracy** | **100.00%** | **≥ 85% — pass** |
+| Citation precision | 95.83% | — |
+| Citation recall | 100.00% | — |
 | Groundedness first-pass | 100.00% | ≥ 95% — pass |
-| Verifier first-pass (§7.3 headline) | 41.67% | reported |
+| Verifier first-pass (§7.3 headline) | 91.67% | reported |
 | Canary leak rate | 0.00% | = 0 — pass |
-| Latency p50 / p95 | 97s / 164s | — |
-| Tokens (run total) | 655,564 | — |
+| Latency p50 / p95 | 56s / 68s | — |
+| Tokens (run total) | 257,315 | — |
 
-**The decision-accuracy gate is red and ships red.** Five full 20-case runs
-measured 65–80% accuracy (run-to-run variance on identical configs is real —
-tracked as B-006). The gate threshold was never lowered to pass; the failure is
-stated in the report, rendered unedited at the public `/evals` page, and the
-three missed cases are named in the report's "Where it still fails" section.
-The dominant failure mode is decisions, not law: over-asking (`request_info`
-where the code as stated already decides), with citation fidelity and
-groundedness strong throughout.
+**This gate was red for most of the build, and the history is kept, not
+erased.** Five full 20-case runs measured 65–80% accuracy (B-006); the
+threshold was never lowered, and the red report shipped unedited on the public
+`/evals` page throughout. On 2026-08-28, artifact-level failure recording
+exposed the actual root cause: the intake agent's instruction still enumerated
+only ONE permit type from Phase 1, so off-enum cases missed the config lookup,
+the verifier's legality step failed every outcome, and its misleading critique
+corrupted retries (it measurably flipped one correct finding to a wrong one).
+After the fix — intake enumerates all configured types, the lookup tolerates
+format drift only, the critique no longer steers outcomes — the smoke subset
+measured **12/12 twice consecutively** (runs archived in `evals/archive/`,
+including the red history). Scope stated honestly: two consecutive perfect
+runs on the 12-case smoke subset; the full 20-case set has not been
+re-measured since the fix.
 
 ### Ablation 1 — groundedness verifier OFF vs ON
 
@@ -351,8 +358,12 @@ query, machine approval refused by contract and by the live store.
 Stated because a judged project with honest gaps beats one with invented
 results.
 
-- **Decision accuracy is below its gate: 75% vs ≥85% (B-006).** Measured
-  65–80% across five full runs; the gate ships red and visible at `/evals`.
+- **Decision accuracy carried a red gate for most of the build (B-006):**
+  65–80% across five full runs, shipped red and visible at `/evals` throughout.
+  Root-caused and fixed 2026-08-28 (intake permit-type enum defect + an
+  outcome-steering verifier critique); the smoke subset then measured 12/12
+  twice consecutively. The full 20-case set is NOT yet re-measured since the
+  fix, and B-006's variance history stands as the caveat on any single run.
 - **Outcome variance (B-006 family; first recorded at the Phase 1 gate):**
   identical facts can yield deny vs request_info across runs — both defensible
   readings of the statute, but the variance is real and characterized, not
@@ -445,7 +456,7 @@ URLS
 - Reader single role [datastore.viewer] + verifier scope caveat (project-level direct bindings only): PROGRESS.md:104-106,158 (verify-phase-6 assertion + D13 scope note), ADR-007 D13 table + "one-sentence version" (docs/adr/007-console.md:333-349).
 - Clerk sole invoker = user:danishlynx@gmail.com; widening turns the gate red: PROGRESS.md:148-151,159; ADR-007 D2 platform correction (007-console.md:227-238).
 - Judge access on request = invoker grant (verifier's pinned binding updated in the same change), not shared credentials; disabled controls + IAM reason on public page: ADR-007 D2 "What it gives up" (007-console.md:216-223); BACKLOG.md item 1 (judge access clause); mechanism per PROGRESS.md:148-151,158-159 (the binding is the gate).
-- /evals renders report unedited, failing gate visible: ADR-007 D5 (007-console.md:291); PROGRESS.md:51-53.
+- /evals renders report unedited whatever its gate status: ADR-007 D5 (007-console.md:291); PROGRESS.md:51-53; red-through-the-build history + 2026-08-28 green flip: PROGRESS.md "Accuracy levers" section, evals/archive/results-*-20260828*.
 - Clerk-walk evidence row: approvals/apr-ea2cfd823116 naming danishlynx@gmail.com / issue / ISSUED on case-f319c7ccab71 (PROGRESS.md:16); the verify-walk row apr-79b91f861652 was removed by try/finally cleanup (PROGRESS.md:162-163); case.html explains the row, no reader route renders approvals contents (services/console/src/console/templates/case.html:48-52).
 
 WHAT-IT-DOES NUMBERS
@@ -487,7 +498,7 @@ SPIN-UP
 - make test 310 passed, 14 skipped, coverage 89.65%: PROGRESS.md:260-262.
 
 EVALS
-- Headline table values (75.00 / 91.67 / 91.67 / 100.00 / 41.67 / 0.00 / 97s/164s / 655,564; FAIL line; 12 cases, run 2026-08-25): docs/eval-report.md:1-19.
+- Headline table values (100.00 / 95.83 / 100.00 / 100.00 / 91.67 / 0.00 / 56s/68s / 257,315; Gates: PASS; 12 cases, run 2026-08-28): docs/eval-report.md:1-19 (regenerated from run 4). Red-era table (75.00, run 2026-08-25) archived at evals/archive/results-smoke-baseline-backup-20260828.json; fix narrative + both 12/12 runs: PROGRESS.md "Accuracy levers" section.
 - Gate red statement + 65-80% five-run range + over-asking failure mode: BLOCKERS.md B-006 (241-263); PROGRESS.md:575-580.
 - Three missed cases named: docs/eval-report.md:38-43.
 - ~45 artifacts (20 golden + 25 adversarial, census 15/4/3/3): ADR-006 D7 (docs/adr/006:130-135); PROGRESS.md:439,812-813.

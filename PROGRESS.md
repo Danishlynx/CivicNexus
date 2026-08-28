@@ -434,6 +434,18 @@ skipping it saves the $12 ceiling and avoids engine churn before the video.
 The override stays built and deployable (`ZONING_MODEL_ID`), recorded as an
 available-but-unneeded lever. Human may override and order the run.
 
+### Run 4: 12/12 AGAIN — reproducible-class; rule (a) executed
+
+**Run 4 (2026-08-28, output observed directly): 12/12, all gates passed.**
+Citation P/R 0.96/1.00, groundedness 1.00, leak 0, p95 68s, tokens 257,315.
+Archived as `results-shipfix-run4-20260828.json`. Per pre-committed rule (a):
+run 4 adopted as the recorded `evals/results.json`; `docs/eval-report.md`
+regenerated (**Gates: PASS**); README / ARCHITECTURE_DELTAS / shotlist
+red-gate passages updated to the honest history (red through the build →
+root-caused defect → 12/12 ×2, archived); B-006 addendum recorded (root cause
+found and fixed; full-set confirmation owed before CLOSED). Console image
+rebuild owed so the deployed `/evals` shows the regenerated report.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video

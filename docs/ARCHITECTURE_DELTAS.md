@@ -49,11 +49,16 @@ ratifying record (ADR / BLOCKERS id + date).
    `evals/runner.py` still contains no registry/APPROVED/preflight code.
    ADR-007 marked it "droppable to Phase 7" — it is now a Phase 7 owed item,
    and ADR-005's claim remains false until it lands.
-4. **The eval decision-accuracy gate is RED, on the record:** measured
-   **75.00% against the ≥85% §9.4 gate** — "Gates: FAIL — decision_accuracy
-   0.750 < 0.85" is printed in `docs/eval-report.md` and rendered unedited on
-   the public console's `/evals` page. The threshold was never lowered (prime
-   directive 9); B-006 stays OPEN. See "Standing red gate" below.
+4. **The eval decision-accuracy gate was RED through the build, and went
+   green on measured evidence 2026-08-28:** 65–80% across five full runs
+   (B-006), shipped red and unedited on the public `/evals` page; the
+   threshold was never lowered (prime directive 9). The day before freeze,
+   artifact-level failure recording root-caused a stale one-permit-type
+   enumeration in intake (plus an outcome-steering verifier critique); after
+   the fix the 12-case smoke subset measured **12/12 twice consecutively,
+   all gates green** (both runs + the red-era baseline archived under
+   `evals/archive/`). Scope: smoke subset only; the full 20-case set is not
+   yet re-measured post-fix. See "Standing red gate" below for the history.
 5. **Two cited status lines were stale until this pass flagged them (both
    corrected repo-side at the freeze, 2026-08-28):** ADR-005's status line
    still read "proposed — requires human ratification" although its
@@ -301,8 +306,9 @@ ratifying record (ADR / BLOCKERS id + date).
 ### Δ14 — §8: no Looker Studio dashboard
 - **Spec:** a Looker Studio dashboard over BigQuery, appearing in the video.
 - **Shipped:** never built. The console's `/evals` page renders
-  `docs/eval-report.md` unedited — failing gate visible ("Gates: FAIL —
-  decision_accuracy 0.750 < 0.85"). The README must not imply a dashboard
+  `docs/eval-report.md` unedited — whatever its gate status (it displayed
+  "Gates: FAIL — decision_accuracy 0.750 < 0.85" for most of the build; green
+  since the 2026-08-28 defect fix). The README must not imply a dashboard
   exists.
 - **Ratified:** B-015 item 7; ADR-007 §7 delta 7 / D5; ratified 2026-08-27.
 
@@ -610,8 +616,11 @@ product-loop section (human-directed).
   recorded human authorization + B-016, no ADR).
 - **Corrections to ratified ADRs: 5** (C1–C5), of which C4 is a ratified fix
   not yet implemented.
-- **Standing red gate: 1** (decision accuracy 75.00% vs ≥85%, B-006 OPEN —
-  a measurement, not a spec change).
+- **Standing red gate: 0 as of 2026-08-28** (decision accuracy was red at
+  75.00% vs ≥85% through the build — B-006; root-caused and fixed at the
+  freeze, then measured 12/12 twice consecutively on the smoke subset, all
+  gates green. A measurement history, not a spec change; full-set
+  re-measurement still owed).
 - **Owed at Phase 7: 2** — ablation charts export (Definition of Done) and
   the ADR-007 D12 registry preflight (C4).
 

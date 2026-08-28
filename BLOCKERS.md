@@ -238,7 +238,26 @@ Executed:
 Google's edge** (the registry service stays deployed; re-probe before
 Phase 6 managed-mode work).
 
-## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, by design honest)
+## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (ROOT CAUSE FOUND AND FIXED 2026-08-28; smoke gate GREEN ×2; full-set confirmation owed)
+
+**Addendum (2026-08-28, freeze eve) — the dominant driver was a DEFECT, not
+model capability.** Artifact-level failure recording (added between two
+measurement runs) exposed it: the intake agent's instruction still enumerated
+ONE permit type (`one of: garage_conversion`, never widened for
+home_occupation / accessory_structure), so off-enum cases free-formed a type
+string, missed the config lookup, the §7.3 legality step failed EVERY outcome,
+and its critique ("outcome X is not allowed") steered retries — measured
+flipping golden-004 from a correct request_info to a wrong approve. The
+over-asking headline failure mode of this blocker was substantially this
+mechanism corrupting retries, not pure decision reasoning. Fix (commit
+aff2d44): intake enumerates all three types with an out-of-scope escape hatch;
+format-tolerant lookup; non-steering "not configured" critique. **Measured
+after the fix: 12/12 twice consecutively on the 12-case smoke subset, all
+gates green** — including golden-012 (cannabis), which had never passed —
+with p95 halved and tokens at ⅓ (no wasted retries). Threshold never touched.
+Runs + the red-era baseline archived in `evals/archive/`. **Remaining before
+CLOSED:** a post-fix full 20-case run (eval-full, per-run OK) to confirm on
+the held-out 8 cases; until then the claim stays scoped to the smoke subset.
 
 **Symptom:** Five full PermitBench runs (2026-08-19, 20 cases each, live stack):
 80% → 70% (same config: run variance) → 80% (temp 0 + ordered decision rule) →
