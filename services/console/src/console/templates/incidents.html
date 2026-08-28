@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Incidents · CivicNexus{% endblock %}
 {% block content %}
-<h1>Incidents</h1>
-<p class="note">Screening and containment events raised by the pipeline — opened by the
-machine, resolved only by a named human.</p>
+<h1 class="page">Screening &amp; containment</h1>
+<p class="note" style="max-width:46rem">Every document, agent reply, letter draft, and memory
+write is screened inline. When a guardrail matches, the content is quarantined, the case is
+pulled from the pipeline, and an incident is opened — by the machine. Closing one is a
+human-only act.</p>
 {% if invalid_count %}
 <p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
 validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
@@ -24,7 +26,7 @@ validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
       <td class="note">{{ incident.ts.strftime('%Y-%m-%d %H:%M') }} UTC</td>
     </tr>
     {% else %}
-    <tr><td colspan="6" class="note">No incidents.</td></tr>
+    <tr><td colspan="6" class="note">No incidents — nothing screened has required containment.</td></tr>
     {% endfor %}
   </tbody>
 </table>

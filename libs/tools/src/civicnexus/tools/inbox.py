@@ -1,0 +1,89 @@
+"""Firestore-backed simulated-inbox queue (§6.2 "simulated inbox", ADR-007).
+
+One queue, two feeders, one consumer: applications arrive either as a real
+email spotted by ``scripts/inbox_watcher.py`` or as a clerk-console form
+submission, land here as raw email-shaped text, and are consumed by the
+watcher, which drives the intake → review pipeline. The inbox never sends
+mail — receiving is the only direction (fixture rules).
+
+Write-once rows keyed by ``submission_id``; processing is claimed by a status
+flip so a second watcher cannot double-drive a case.
+"""
+
+from datetime import UTC, datetime
+from typing import Any
+from uuid import uuid4
+
+from civicnexus.otel import get_logger
+
+_log = get_logger("inbox")
+
+STATUS_NEW = "NEW"
+STATUS_PROCESSING = "PROCESSING"
+STATUS_PROCESSED = "PROCESSED"
+STATUS_FAILED = "FAILED"
+
+
+class InboxStore:
+    """The only sanctioned reader/writer of ``inbox/`` documents."""
+
+    def __init__(self, db: Any, *, collection: str = "inbox") -> None:
+        self._db = db
+        self._collection = collection
+
+    def submit(self, raw: str, *, source: str, submitted_by: str) -> str:
+        """Queue one raw application (email-shaped text). Returns the id."""
+        if not raw.strip():
+            raise ValueError("an application submission cannot be empty")
+        submission_id = f"sub-{uuid4().hex[:12]}"
+        doc = self._db.collection(self._collection).document(submission_id)
+        doc.create(
+            {
+                "submission_id": submission_id,
+                "raw": raw,
+                "source": source,
+                "submitted_by": submitted_by,
+                "status": STATUS_NEW,
+                "submitted_at": datetime.now(UTC),
+                "case_id": "",
+            }
+        )
+        _log.info(
+            f"application submitted {submission_id}",
+            extra={
+                "audit": True,
+                "submission_id": submission_id,
+                "source": source,
+                "submitted_by": submitted_by,
+            },
+        )
+        return submission_id
+
+    def next_new(self) -> dict[str, Any] | None:
+        """The oldest NEW submission, or None. (Python-side sort; tiny queue.)"""
+        rows = [snapshot.to_dict() for snapshot in self._db.collection(self._collection).stream()]
+        new = [r for r in rows if r and r.get("status") == STATUS_NEW]
+        new.sort(key=lambda r: r.get("submitted_at") or datetime.now(UTC))
+        return new[0] if new else None
+
+    def claim(self, submission_id: str) -> None:
+        self._set_status(submission_id, STATUS_PROCESSING)
+
+    def finish(self, submission_id: str, *, case_id: str) -> None:
+        doc = self._db.collection(self._collection).document(submission_id)
+        doc.update({"status": STATUS_PROCESSED, "case_id": case_id})
+        _log.info(
+            f"application processed {submission_id}",
+            extra={"audit": True, "submission_id": submission_id, "case_id": case_id},
+        )
+
+    def fail(self, submission_id: str, *, reason: str) -> None:
+        doc = self._db.collection(self._collection).document(submission_id)
+        doc.update({"status": STATUS_FAILED, "failure": reason[:500]})
+        _log.warning(
+            f"application processing failed {submission_id}",
+            extra={"audit": True, "submission_id": submission_id},
+        )
+
+    def _set_status(self, submission_id: str, status: str) -> None:
+        self._db.collection(self._collection).document(submission_id).update({"status": status})

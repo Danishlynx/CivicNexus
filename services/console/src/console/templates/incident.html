@@ -1,11 +1,27 @@
 {% extends "base.html" %}
 {% block title %}{{ incident.incident_id }} · CivicNexus{% endblock %}
 {% block content %}
-<h1><code>{{ incident.incident_id }}</code>
+<p class="crumb"><a href="/incidents">Incidents</a> / <code>{{ incident.incident_id }}</code></p>
+<h1 class="page"><code>{{ incident.incident_id }}</code>
   <span class="badge {{ incident.status.value }}">{{ incident.status.value }}</span></h1>
-<p class="note">Metadata only, by design: the screened bytes stay in quarantine and are never
-served, previewed, or linked from this page (ADR-007 D8) — no download. The point is that the
-system caught and contained the content.</p>
+
+<div class="contain" aria-label="containment flow">
+  <span class="hop">Screened at <strong>{{ incident.screening_point.value if incident.screening_point else 'runtime' }}</strong></span>
+  <span class="arrow">→</span>
+  <span class="hop bad">Guardrail matched</span>
+  {% if incident.quarantine_uri %}
+  <span class="arrow">→</span>
+  <span class="hop bad">Bytes quarantined</span>
+  {% endif %}
+  <span class="arrow">→</span>
+  <span class="hop hold">Case pulled from the pipeline</span>
+  <span class="arrow">→</span>
+  <span class="hop">{{ 'Resolved by a named human' if incident.status.value == 'RESOLVED' else 'Awaiting human judgment' }}</span>
+</div>
+
+<p class="note" style="max-width:46rem">Metadata only, by design: the screened bytes stay in
+quarantine and are never served, previewed, or linked from this page (ADR-007 D8) — no
+download. The point is that the system caught and contained the content.</p>
 
 <div class="card">
   <dl class="meta">

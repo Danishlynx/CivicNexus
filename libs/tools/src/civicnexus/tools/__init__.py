@@ -30,6 +30,7 @@ from civicnexus.tools.case_store import (
     verify_approval_row,
 )
 from civicnexus.tools.events import EventPublisher
+from civicnexus.tools.inbox import InboxStore
 from civicnexus.tools.incidents import IncidentStore
 
 __all__ = [
@@ -42,6 +43,7 @@ __all__ = [
     "EventPublisher",
     "HumanActionRequiredError",
     "IllegalTransitionError",
+    "InboxStore",
     "IncidentStore",
     "TransitionError",
     "blocking_filters_for",

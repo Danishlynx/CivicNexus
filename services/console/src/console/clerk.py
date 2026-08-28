@@ -22,10 +22,16 @@ from typing import Any
 from civicnexus.contracts import CaseState
 from civicnexus.tools import ApprovalStore, CaseStore, IncidentStore, TransitionError
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from console.actions import clerk_actions
-from console.app import get_approval_store, get_case_store, get_incident_store
+from console.app import (
+    _templates,
+    get_approval_store,
+    get_case_store,
+    get_inbox_store,
+    get_incident_store,
+)
 
 clerk_router = APIRouter()
 
@@ -139,6 +145,42 @@ def act(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     return RedirectResponse(f"/cases/{case_id}", status_code=303)
+
+
+@clerk_router.get("/cases/new", response_class=HTMLResponse)
+def new_application_form(request: Request) -> HTMLResponse:
+    """The simulated inbox as a form (§6.2): the same email-shaped text the
+    real inbox watcher consumes, composed from structured fields."""
+    return _templates.TemplateResponse(request, "new_case.html", {"mode": request.app.state.mode})
+
+
+@clerk_router.post("/cases/new")
+def submit_application(
+    request: Request,
+    applicant_name: str = Form(...),
+    applicant_email: str = Form(...),
+    permit_type: str = Form(...),
+    property_address: str = Form(""),
+    description: str = Form(...),
+    approver: str = Form(""),
+    inbox: Any = Depends(get_inbox_store),
+) -> RedirectResponse:
+    """Queue one application into the simulated inbox. The watcher (the
+    long-running background consumer) drives intake -> review from there —
+    the console never invokes an engine (D13)."""
+    named = _named_human(request, approver)
+    if not named:
+        raise HTTPException(status_code=400, detail="a named human submitter is required")
+    raw = (
+        f"From: {applicant_name} <{applicant_email}>\n"
+        f"To: permits@civicnexus-demo.test\n"
+        f"Subject: permit application - {permit_type}\n\n"
+        f"{description}\n"
+    )
+    if property_address.strip():
+        raw += f"\nProperty address: {property_address.strip()}\n"
+    submission_id = inbox.submit(raw, source="console_form", submitted_by=named)
+    return RedirectResponse(f"/?submitted={submission_id}", status_code=303)
 
 
 @clerk_router.post("/incidents/{incident_id}/resolve")

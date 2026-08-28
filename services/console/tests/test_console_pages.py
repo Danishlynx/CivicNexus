@@ -367,6 +367,74 @@ class TestClerkActions:
             app.dependency_overrides.clear()
 
 
+class FakeInboxStore:
+    def __init__(self) -> None:
+        self.submissions: list[dict[str, str]] = []
+
+    def submit(self, raw: str, *, source: str, submitted_by: str) -> str:
+        self.submissions.append({"raw": raw, "source": source, "submitted_by": submitted_by})
+        return f"sub-{len(self.submissions):012d}"
+
+
+class TestNewApplication:
+    def _wire_inbox(self, app: FastAPI) -> tuple[TestClient, FakeInboxStore]:
+        from console.app import get_inbox_store
+
+        inbox = FakeInboxStore()
+        app.dependency_overrides[get_inbox_store] = lambda: inbox
+        return _wire(app, FakeCaseStore({})), inbox
+
+    def test_form_renders_in_clerk_mode(self) -> None:
+        app = create_app("clerk")
+        client, _ = self._wire_inbox(app)
+        try:
+            html = client.get("/cases/new").text
+            assert "Submit a permit application" in html
+            assert "simulated inbox" in html
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_submission_queues_email_shaped_raw(self) -> None:
+        app = create_app("clerk")
+        client, inbox = self._wire_inbox(app)
+        try:
+            response = client.post(
+                "/cases/new",
+                data={
+                    "applicant_name": "Synthetic Rosa",
+                    "applicant_email": "rosa@example.test",
+                    "permit_type": "garage_conversion",
+                    "property_address": "1427 Alder Court",
+                    "description": "I want to convert my garage into a home office.",
+                },
+                headers=_bearer("clerk@city.test"),
+            )
+            assert response.status_code == 303
+            assert response.headers["location"].startswith("/?submitted=sub-")
+            [submission] = inbox.submissions
+            assert submission["source"] == "console_form"
+            assert submission["submitted_by"] == "clerk@city.test"
+            raw = submission["raw"]
+            assert raw.startswith("From: Synthetic Rosa <rosa@example.test>")
+            assert "Subject: permit application - garage_conversion" in raw
+            assert "home office" in raw
+            assert "1427 Alder Court" in raw
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_reader_mode_has_no_form_routes(self) -> None:
+        app = create_app("reader")
+        client = _wire(app, FakeCaseStore({}))
+        try:
+            # /cases/new falls through to the GET-only case-id route: GET 404s
+            # (no such case), POST 405s (no POST handler exists at all) - the
+            # public surface cannot render or accept the application form.
+            assert client.get("/cases/new").status_code == 404
+            assert client.post("/cases/new", data={"applicant_name": "x"}).status_code == 405
+        finally:
+            app.dependency_overrides.clear()
+
+
 class TestIncidents:
     def test_list_and_detail_metadata_only(self) -> None:
         app = create_app("reader")

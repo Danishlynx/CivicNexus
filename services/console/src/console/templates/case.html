@@ -1,23 +1,44 @@
 {% extends "base.html" %}
 {% block title %}{{ case.case_id }} · CivicNexus{% endblock %}
+{% block bodyattrs %}data-live="case:{{ case.case_id }}"{% endblock %}
 {% block content %}
-<h1><code>{{ case.case_id }}</code>
+<p class="crumb"><a href="/">Queue</a> / <code>{{ case.case_id }}</code></p>
+<h1 class="page"><code>{{ case.case_id }}</code>
   <span class="badge {{ case.state.value }}">{{ case.state.value }}</span></h1>
+<p class="live-dot">Live — this record updates as the fleet works</p>
+
+{% set stage_map = {'RECEIVED': 0, 'TRIAGED': 1, 'INCOMPLETE_AWAITING_APPLICANT': 1,
+   'INFO_REQUESTED': 1, 'IN_REVIEW': 2, 'VERIFICATION_FAILED': 2, 'PAUSED_BUDGET': 2,
+   'PENDING_HUMAN': 3, 'APPROVED': 4, 'ISSUED': 4, 'DENIED': 4, 'CLOSED': 5} %}
+{% set here = stage_map.get(case.state.value) %}
+{% if here is not none %}
+<div class="stepper" aria-label="pipeline position">
+  {% for label in ['Received', 'Triage', 'Fleet review', 'Human gate', 'Resolution', 'Closed'] %}
+  <div class="step {{ 'here' if loop.index0 == here else ('done' if loop.index0 < here) }}">
+    <div class="l">{{ label }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="govnote" role="note">This case is <strong>&nbsp;quarantined&nbsp;</strong> — screening
+guardrails removed it from the pipeline, and only a named human may re-admit or discard it.</div>
+{% endif %}
 
 <div class="card">
   <dl class="meta">
     <dt>Permit type</dt><dd><strong>{{ case.permit_type }}</strong></dd>
     <dt>Applicant</dt><dd>{{ case.applicant.name }} &lt;{{ case.applicant.email }}&gt;</dd>
-    {% if trace_url %}<dt>Telemetry</dt><dd><a href="{{ trace_url }}">Open trace in Cloud Trace</a></dd>{% endif %}
+    {% if trace_url %}<dt>Telemetry</dt><dd><a href="{{ trace_url }}">Open the reasoning trace in Cloud Trace</a></dd>{% endif %}
   </dl>
 </div>
 
-<h2 class="section">Clerk actions</h2>
+<h2 class="section">The human gate</h2>
 <div class="card">
 {% if fleet_owns %}
-  <p class="note" style="margin:0">No clerk action in this state; the fleet owns this case.</p>
+  <p class="note" style="margin:0">No clerk action in this state; the fleet owns this case.
+  It will surface here when human judgment is required.</p>
 {% elif case.state.value == 'CLOSED' %}
-  <p class="note" style="margin:0">Case closed — no further actions.</p>
+  <p class="note" style="margin:0">Case closed — the record above is final.</p>
 {% elif actions %}
   {% if mode == 'clerk' %}
     <div class="actions">
@@ -30,8 +51,9 @@
     {% endfor %}
     </div>
     {% if actions | selectattr('needs_approval_row') | list %}
-    <p class="note" style="margin:0.6rem 0 0">Actions marked for issue/deny mint an approvals/ row
-    naming you, the action, and the target state before the transition runs.</p>
+    <p class="note" style="margin:0.65rem 0 0">Issue and deny mint a row in <code>approvals/</code>
+    naming you, the action, and the target state — before the transition runs, inside the single
+    writer. That row is the §4 guard made visible.</p>
     {% endif %}
   {% else %}
     <p class="note" style="margin-top:0">Read-only public view: these controls are disabled. Write routes are not
@@ -46,21 +68,27 @@
 {% endif %}
 </div>
 
-<h2 class="section">Determinations ({{ case.determinations | length }})</h2>
+<h2 class="section">Fleet determinations ({{ case.determinations | length }})</h2>
 {% for det in case.determinations %}
-<div class="card">
+<div class="card det">
   <div class="det-head">
+    <span class="outcome-chip {{ det.outcome.value }}">{{ det.outcome.value | replace('_', ' ') }}</span>
     <span class="agent-chip">{{ det.agent_id }}@{{ det.agent_version }}</span>
-    <span class="outcome {{ det.outcome.value }}">{{ det.outcome.value }}</span>
     <span class="meter">
       <span class="meter-label">confidence {{ '%.2f' | format(det.confidence) }}</span>
       <span class="meter-track"><span class="meter-fill" style="width: {{ (det.confidence * 100) | round }}%"></span></span>
     </span>
   </div>
-  <p style="margin:0.3rem 0 0.5rem">{{ det.rationale }}</p>
+  <p style="margin:0.3rem 0 0">{{ det.rationale }}</p>
   {% for citation in det.citations %}
   <blockquote class="cite">
-    <code>§{{ citation.chunk_id }}</code>: “{{ citation.quote }}”
+    {{ citation.quote }}
+    <span class="cite-meta">
+      <span class="chunk">§{{ citation.chunk_id }}</span>
+      {% if det.verifier_report and det.verifier_report.get('passed') %}
+      <span class="verified-tag">✓ verbatim, machine-verified against the municipal code</span>
+      {% endif %}
+    </span>
   </blockquote>
   {% endfor %}
   {% if det.verifier_report is not none %}
@@ -71,11 +99,12 @@
   {% endif %}
 </div>
 {% else %}
-<div class="card"><p class="note" style="margin:0">No determinations yet.</p></div>
+<div class="card"><p class="note" style="margin:0">No determinations yet — the fleet has not
+completed review of this case.</p></div>
 {% endfor %}
 
 {% if case_incidents %}
-<h2 class="section">Incidents</h2>
+<h2 class="section">Screening incidents</h2>
 <div class="card">
   <ul style="margin:0; padding-left:1.2rem">
     {% for incident in case_incidents %}
@@ -86,10 +115,10 @@
 </div>
 {% endif %}
 
-<h2 class="section">Activity</h2>
+<h2 class="section">Case record</h2>
 <div class="card">
-  <p class="note" style="margin:0 0 0.7rem">Derived from the case record — not an event-stream replay
-  (the §5 topics have no persistent subscriber).</p>
+  <p class="note" style="margin:0 0 0.75rem">Derived from the case record — not an event-stream
+  replay (the §5 topics have no persistent subscriber).</p>
   <ul class="timeline">
     {% for ts, label in feed %}
     <li><span class="ts">{{ ts.strftime('%Y-%m-%d %H:%M:%S') }} UTC</span>{{ label }}</li>
@@ -97,24 +126,24 @@
   </ul>
 </div>
 
-<h2 class="section">Budget &amp; timers</h2>
 <div class="card">
-  <p class="note" style="margin:0">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
-  · ${{ '%.4f' | format(case.budget.cost_usd) }}</p>
-  {% if case.timers %}
-  <ul style="margin:0.5rem 0 0; padding-left:1.2rem">
-    {% for timer in case.timers %}
-    <li class="note"><code>{{ timer.timer_id }}</code> fires
-        {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+  <dl class="meta">
+    <dt>Budget</dt>
+    <dd class="note">hops {{ case.budget.hops_used }} · tokens {{ case.budget.tokens_used }}
+        · ${{ '%.4f' | format(case.budget.cost_usd) }}</dd>
+    {% if case.timers %}
+    <dt>Timers</dt>
+    <dd>
+      {% for timer in case.timers %}
+      <span class="note"><code>{{ timer.timer_id }}</code> fires
+      {{ timer.fires_at.strftime('%Y-%m-%d %H:%M') }} UTC — {{ timer.reason }}</span><br>
+      {% endfor %}
+    </dd>
+    {% endif %}
+    {% if case.docs %}
+    <dt>Documents</dt>
+    <dd>{% for doc in case.docs %}<code>{{ doc }}</code>{{ ' · ' if not loop.last }}{% endfor %}</dd>
+    {% endif %}
+  </dl>
 </div>
-
-{% if case.docs %}
-<h2 class="section">Documents</h2>
-<div class="card">
-  <ul style="margin:0; padding-left:1.2rem">{% for doc in case.docs %}<li><code>{{ doc }}</code></li>{% endfor %}</ul>
-</div>
-{% endif %}
 {% endblock %}

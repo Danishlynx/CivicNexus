@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}New application · CivicNexus{% endblock %}
+{% block content %}
+<p class="crumb"><a href="/">Queue</a> / New application</p>
+<h1 class="page">Submit a permit application</h1>
+<p class="note" style="max-width:46rem">This form is the simulated inbox (§6.2): it composes the
+same email-shaped application the real inbox receives. The intake agent will parse it, open a
+case, and the fleet takes it from there — watch it happen on the queue, which updates itself.</p>
+
+<div class="card" style="max-width:44rem">
+  <form method="post" action="/cases/new">
+    <div class="field">
+      <label for="applicant_name">Applicant name</label>
+      <input id="applicant_name" name="applicant_name" required placeholder="Synthetic Rosa">
+      <div class="hint">Synthetic data only — fixture rules apply.</div>
+    </div>
+    <div class="field">
+      <label for="applicant_email">Applicant email</label>
+      <input id="applicant_email" name="applicant_email" type="email" required placeholder="rosa@example.test">
+    </div>
+    <div class="field">
+      <label for="permit_type">Permit type</label>
+      <input id="permit_type" name="permit_type" required placeholder="garage_conversion">
+    </div>
+    <div class="field">
+      <label for="property_address">Property address</label>
+      <input id="property_address" name="property_address" placeholder="1418 Alder Court (synthetic)">
+    </div>
+    <div class="field">
+      <label for="description">Application, in the applicant's words</label>
+      <textarea id="description" name="description" required
+        placeholder="I want to convert my garage into a home office I use myself…"></textarea>
+      <div class="hint">Written like the email an applicant would send — the intake agent parses
+      messy text, so full sentences are fine.</div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn btn-approve">Queue for intake</button>
+      <span class="note">lands in the simulated inbox; the background watcher drives the fleet</span>
+    </div>
+  </form>
+</div>
+{% endblock %}

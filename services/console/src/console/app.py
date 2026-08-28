@@ -62,6 +62,7 @@ class RefusingPublisher:
 _case_store: CaseStore | None = None
 _incident_store: IncidentStore | None = None
 _approval_store: ApprovalStore | None = None
+_inbox_store: Any = None
 
 
 def _db() -> Any:
@@ -97,6 +98,15 @@ def get_approval_store() -> ApprovalStore:
     if _approval_store is None:
         _approval_store = ApprovalStore(_db())
     return _approval_store
+
+
+def get_inbox_store() -> Any:
+    from civicnexus.tools import InboxStore
+
+    global _inbox_store
+    if _inbox_store is None:
+        _inbox_store = InboxStore(_db())
+    return _inbox_store
 
 
 read_router = APIRouter()
@@ -259,13 +269,15 @@ def create_app(mode: str | None = None) -> FastAPI:
     resolved = resolve_mode(mode if mode is not None else os.environ.get("CONSOLE_MODE"))
     application = FastAPI(title="civicnexus-console", version="0.1.0")
     application.state.mode = resolved
-    application.include_router(read_router)
     if resolved == _CLERK:
         # Imported ONLY here: in reader mode the clerk module (the sole
         # holder of identity decoding) is never even imported (D2).
+        # Mounted BEFORE the read routes so the literal /cases/new is not
+        # swallowed by the /cases/{case_id} path parameter.
         from console.clerk import clerk_router
 
         application.include_router(clerk_router)
+    application.include_router(read_router)
     return application
 
 

@@ -20,7 +20,7 @@
 variable "console_image" {
   description = "Full image URI for the console service (built by Cloud Build before apply)."
   type        = string
-  default     = "us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/console:v0.1.1"
+  default     = "us-central1-docker.pkg.dev/civicnexus-hack26/civicnexus/console:v0.1.2"
 }
 
 resource "google_service_account" "console_reader" {

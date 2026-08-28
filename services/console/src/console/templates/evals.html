@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Evals · CivicNexus{% endblock %}
 {% block content %}
-<h1>Eval report</h1>
-<p class="note">Rendered unedited from <code>docs/eval-report.md</code> — including the
-failing decision-accuracy gate, which stays red until the system earns it (B-006).
-An honest number beats a green dashboard.</p>
+<h1 class="page">Eval report</h1>
+<p class="note" style="max-width:46rem">Rendered unedited from <code>docs/eval-report.md</code> —
+including the failing decision-accuracy gate, which stays red until the system earns it (B-006).
+An honest number beats a green dashboard: the same harness that produced this report caught a
+real regression before it shipped.</p>
 <pre class="report">{{ report }}</pre>
 {% endblock %}

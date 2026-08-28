@@ -1,49 +1,108 @@
 {% extends "base.html" %}
 {% block title %}Case queue · CivicNexus{% endblock %}
-{% block content %}
-<h1>Case queue</h1>
+{% block bodyattrs %}data-live="queue"{% endblock %}
 
-{% set pending = cases | selectattr('state.value', 'equalto', 'PENDING_HUMAN') | list | length %}
-{% set reviewing = cases | selectattr('state.value', 'equalto', 'IN_REVIEW') | list | length %}
-{% set quarantined = cases | selectattr('state.value', 'equalto', 'QUARANTINED') | list | length %}
-<div class="stats">
-  <div class="stat"><div class="v">{{ cases | length }}</div><div class="l">Cases on record</div></div>
-  <div class="stat"><div class="v">{{ pending }}</div><div class="l">Awaiting human review</div></div>
-  <div class="stat"><div class="v">{{ reviewing }}</div><div class="l">In fleet review</div></div>
-  <div class="stat"><div class="v">{{ quarantined }}</div><div class="l">Quarantined</div></div>
+{% block hero %}
+{% set sv = cases | map(attribute='state.value') | list %}
+{% set n_gate = sv.count('PENDING_HUMAN') %}
+<section class="masthead">
+  <div class="masthead-inner">
+    <h1>Permit casework, reviewed by a governed AI fleet.<br>
+        <em>Humans hold the only pen.</em></h1>
+    <p class="lede">Applications arrive by email. Specialist agents draft determinations that
+    cite municipal code <strong>verbatim</strong>; a verifier machine-checks every quote;
+    screening guardrails quarantine hostile content. Approving, issuing, or closing a case
+    takes a <strong>named human</strong> — recorded in an audit row.</p>
+    <div class="pipeline" aria-label="cases by pipeline stage">
+      <div class="stage"><div class="n" data-count="{{ sv.count('RECEIVED') }}">{{ sv.count('RECEIVED') }}</div><div class="l">Received</div></div>
+      <div class="stage"><div class="n" data-count="{{ sv.count('TRIAGED') + sv.count('INCOMPLETE_AWAITING_APPLICANT') + sv.count('INFO_REQUESTED') }}">{{ sv.count('TRIAGED') + sv.count('INCOMPLETE_AWAITING_APPLICANT') + sv.count('INFO_REQUESTED') }}</div><div class="l">Triage</div></div>
+      <div class="stage"><div class="n" data-count="{{ sv.count('IN_REVIEW') + sv.count('VERIFICATION_FAILED') + sv.count('PAUSED_BUDGET') }}">{{ sv.count('IN_REVIEW') + sv.count('VERIFICATION_FAILED') + sv.count('PAUSED_BUDGET') }}</div><div class="l">Fleet review</div></div>
+      <div class="stage gate {{ 'live' if n_gate }}"><div class="n" data-count="{{ n_gate }}">{{ n_gate }}</div><div class="l">Human gate</div></div>
+      <div class="stage"><div class="n" data-count="{{ sv.count('APPROVED') + sv.count('ISSUED') + sv.count('DENIED') }}">{{ sv.count('APPROVED') + sv.count('ISSUED') + sv.count('DENIED') }}</div><div class="l">Resolution</div></div>
+      <div class="stage quar"><div class="n" data-count="{{ sv.count('QUARANTINED') }}">{{ sv.count('QUARANTINED') }}</div><div class="l">Quarantined</div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% macro case_row(case) %}
+    <tr>
+      <td>
+        <a href="/cases/{{ case.case_id }}"><code>{{ case.case_id }}</code></a>
+        <span class="cell-sub">{{ case.permit_type }}</span>
+      </td>
+      <td>{{ case.applicant.name }}</td>
+      <td><span class="badge {{ case.state.value }}">{{ case.state.value }}</span></td>
+      <td>
+        {% if case.determinations %}
+          {% set last = case.determinations | last %}
+          <strong>{{ last.outcome.value | replace('_', ' ') }}</strong>
+          {% if last.citations %}
+          <span class="cell-sub">cites {% for c in last.citations %}§{{ c.chunk_id }}{{ ', ' if not loop.last }}{% endfor %}</span>
+          {% endif %}
+        {% else %}
+          <span class="note">—</span>
+        {% endif %}
+      </td>
+      <td class="note">{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+    </tr>
+{% endmacro %}
+
+{% macro case_table(rows) %}
+<div class="card flush">
+<table>
+  <thead>
+    <tr>
+      <th>Case</th>
+      <th>Applicant</th>
+      <th>State</th>
+      <th>Latest determination</th>
+      <th>Updated</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for case in rows %}{{ case_row(case) }}{% endfor %}
+  </tbody>
+</table>
 </div>
+{% endmacro %}
+
+{% block content %}
+{% if request.query_params.get('submitted') %}
+<div class="toast">Application queued as <code>{{ request.query_params.get('submitted') }}</code> —
+the intake agent will open a case shortly; this page updates itself.</div>
+{% endif %}
+
+<p class="live-dot">Live — this page updates as the fleet works</p>
 
 {% if invalid_count %}
 <p class="note">{{ invalid_count }} document{{ 's' if invalid_count != 1 else '' }} failed
 validation and {{ 'are' if invalid_count != 1 else 'is' }} not shown.</p>
 {% endif %}
 
-<div class="card flush">
-<table>
-  <thead>
-    <tr>
-      <th>Case</th>
-      <th>Permit type</th>
-      <th>Applicant</th>
-      <th>State</th>
-      <th>Determinations</th>
-      <th>Updated</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for case in cases %}
-    <tr>
-      <td><a href="/cases/{{ case.case_id }}"><code>{{ case.case_id }}</code></a></td>
-      <td>{{ case.permit_type }}</td>
-      <td>{{ case.applicant.name }}</td>
-      <td><span class="badge {{ case.state.value }}">{{ case.state.value }}</span></td>
-      <td>{{ case.determinations | length }}</td>
-      <td class="note">{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="6" class="note">No cases.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
+{% if not cases %}
+<div class="card"><p class="note" style="margin:0">No cases.</p></div>
+{% else %}
+{% set human_states = ['PENDING_HUMAN', 'QUARANTINED', 'APPROVED', 'ISSUED', 'DENIED'] %}
+{% set human_cases = cases | selectattr('state.value', 'in', human_states) | list %}
+{% set fleet_cases = cases | rejectattr('state.value', 'in', human_states + ['CLOSED']) | list %}
+{% set closed_cases = cases | selectattr('state.value', 'equalto', 'CLOSED') | list %}
+
+{% if human_cases %}
+<h2 class="section">Awaiting human judgment
+  <span class="sub">— the fleet has done its work; a named clerk holds the pen</span></h2>
+{{ case_table(human_cases) }}
+{% endif %}
+
+{% if fleet_cases %}
+<h2 class="section">In the fleet's hands
+  <span class="sub">— intake, triage, and cited review run autonomously</span></h2>
+{{ case_table(fleet_cases) }}
+{% endif %}
+
+{% if closed_cases %}
+<h2 class="section">Closed</h2>
+{{ case_table(closed_cases) }}
+{% endif %}
+{% endif %}
 {% endblock %}

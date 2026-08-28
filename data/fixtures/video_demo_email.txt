@@ -1,0 +1,17 @@
+From: Synthetic Rosa <rosa.demo@example.test>
+To: permits@civicnexus-demo.test
+Subject: Permit application - home office in my garage
+
+Hello,
+
+I would like to convert my attached garage into a home office for my
+freelance bookkeeping work. I live at 1427 Alder Court (synthetic address)
+and I am the only person who will use the office - no employees, no
+customers visiting the house, and no signage. The office would take up one
+room of the garage, about a quarter of the floor area, and I work normal
+weekday hours on a laptop, so no noise or equipment beyond a desk.
+
+I have attached the floor plan sketch showing the room layout.
+
+Thank you,
+Rosa
