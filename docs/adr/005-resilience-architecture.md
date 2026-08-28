@@ -1,8 +1,13 @@
 # ADR-005: Resilience architecture (pre-freeze hardening)
 
-- **Status:** proposed — requires human ratification. Items marked **ASK-FIRST**
-  need explicit per-item approval under the Working Agreement (IAM, billed
-  infra, eval-harness changes, anything touching the judge).
+- **Status:** RATIFIED in substance 2026-08-26 (the telemetry-IAM grants were
+  asked and human-approved as "the ADR-005 ratification ask" — see the IAM
+  evidence log in PROGRESS.md — and the Phase 3 gate passed "post-ADR-005
+  hardening"). Status line updated at freeze 2026-08-28; it had never been
+  flipped from "proposed" (flagged by the freeze-docs verification pass).
+  Items marked **ASK-FIRST** needed explicit per-item approval under the
+  Working Agreement (IAM, billed infra, eval-harness changes, anything
+  touching the judge), and received it as recorded.
 - **Date:** 2026-08-26
 - **Deciders:** proposed by Claude (build agent) from the verified flaw-map
   review (three independent code/platform/ADK research passes, 2026-08-26);

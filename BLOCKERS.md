@@ -796,8 +796,11 @@ ARCHITECTURE.md wins conflicts unless the human rules otherwise:
    hashing, reroute/escalate, and N-incidents aggregation deferred to Phase 6+
    (embedding requires a caseflow redeploy — ADR-005 conflict).
 
-**Status: OPEN until the human ratifies ADR-006 asks 1–5. Nothing billable
-runs before ratification + the B-010 recovery session (ADR-006 D16).**
+**Status: RESOLVED — the human ratified ADR-006 asks 1–5 on 2026-08-26 (see
+ADR-006's status/ratification record); the deltas above are thereby ratified
+deviations. This line was still reading OPEN at freeze and was closed
+2026-08-28 (flagged by the freeze-docs verification pass), so citations into
+B-011 no longer land on a stale OPEN.**
 
 ## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply - RESOLVED 2026-08-26 (state recovered, DLQ grant applied); GCS migration still OPEN
 
