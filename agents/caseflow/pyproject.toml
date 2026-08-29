@@ -5,7 +5,7 @@ description = "Phase 1 vertical-slice fleet: coordinator + intake + zoning in on
 requires-python = ">=3.12"
 # The deployed runtime installs src/caseflow_agent/requirements.txt; these deps
 # are for local development and tests only.
-dependencies = ["google-adk>=2.7,<3", "civicnexus-contracts"]
+dependencies = ["google-adk>=2.7,<3", "civicnexus-contracts", "civicnexus-decision"]
 
 [build-system]
 requires = ["hatchling"]
@@ -16,3 +16,4 @@ packages = ["src/caseflow_agent"]
 
 [tool.uv.sources]
 civicnexus-contracts = { workspace = true }
+civicnexus-decision = { workspace = true }

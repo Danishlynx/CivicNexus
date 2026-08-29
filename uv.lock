@@ -27,6 +27,7 @@ members = [
     "civicnexus-clock",
     "civicnexus-console",
     "civicnexus-contracts",
+    "civicnexus-decision",
     "civicnexus-otel",
     "civicnexus-registry",
     "civicnexus-tools",
@@ -528,6 +529,7 @@ dependencies = [
     { name = "civicnexus-clock" },
     { name = "civicnexus-console" },
     { name = "civicnexus-contracts" },
+    { name = "civicnexus-decision" },
     { name = "civicnexus-otel" },
     { name = "civicnexus-registry" },
     { name = "civicnexus-tools" },
@@ -561,6 +563,7 @@ requires-dist = [
     { name = "civicnexus-clock", editable = "libs/clock" },
     { name = "civicnexus-console", editable = "services/console" },
     { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "civicnexus-decision", editable = "libs/decision" },
     { name = "civicnexus-otel", editable = "libs/otel" },
     { name = "civicnexus-registry", editable = "services/registry" },
     { name = "civicnexus-tools", editable = "libs/tools" },
@@ -590,12 +593,14 @@ version = "0.2.0"
 source = { editable = "agents/caseflow" }
 dependencies = [
     { name = "civicnexus-contracts" },
+    { name = "civicnexus-decision" },
     { name = "google-adk" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "civicnexus-contracts", editable = "libs/contracts" },
+    { name = "civicnexus-decision", editable = "libs/decision" },
     { name = "google-adk", specifier = ">=2.7,<3" },
 ]
 
@@ -701,6 +706,17 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pyyaml", specifier = ">=6.0" },
 ]
+
+[[package]]
+name = "civicnexus-decision"
+version = "0.1.0"
+source = { editable = "libs/decision" }
+dependencies = [
+    { name = "civicnexus-contracts" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "civicnexus-contracts", editable = "libs/contracts" }]
 
 [[package]]
 name = "civicnexus-otel"

@@ -19,7 +19,14 @@ from pathlib import Path
 from typing import Any
 
 from civicnexus.contracts import Application, DeterminationOutcome, ReviewFinding
-from civicnexus.contracts.permit_types import load_permit_types, resolve_permit_type
+from civicnexus.contracts.permit_types import (
+    PermitTypeConfig,
+    load_permit_types,
+    resolve_permit_type,
+)
+from civicnexus.decision import decide
+from civicnexus.decision.decide import fact_sheet_from_reply, to_review_finding
+from civicnexus.decision.rules import checklist_text
 from civicnexus.tools import check_grounding, query_json_with_events, sum_usage
 from civicnexus.verifier import verify_finding
 
@@ -33,6 +40,34 @@ DEPLOY_STATE = REPO_ROOT / ".deploy" / "caseflow_agent.json"
 
 _MAX_ATTEMPTS = 4
 _RETRYABLE = ("RESOURCE_EXHAUSTED", "429", "503", "UNAVAILABLE")
+
+
+def decision_mode() -> str:
+    """``"code"`` runs the ADR-008 rule layer; ``"model"`` (default) does not."""
+    return os.environ.get("DECISION_MODE", "model")
+
+
+def _review_message(application: Application, critique: str = "") -> str:
+    """The review request, shaped for whichever decision mode is active."""
+    payload: dict[str, Any] = {"task": "review", "application": application.model_dump()}
+    if decision_mode() == "code":
+        # The element keys live in the rule registry, which the deployed agent
+        # bundle cannot import — so the driver ships the checklist with the
+        # request (ADR-008 §5).
+        payload["element_checklist"] = checklist_text()
+    if critique:
+        payload["verifier_critique"] = critique
+    return json.dumps(payload)
+
+
+def _finding_from_reply(
+    parsed: dict[str, Any], application: Application, permit_cfg: PermitTypeConfig | None
+) -> ReviewFinding:
+    """The specialist's reply as a §4 finding — decided by the model or by code."""
+    if decision_mode() != "code":
+        return ReviewFinding.model_validate(parsed)
+    sheet = fact_sheet_from_reply(parsed, application.permit_type)
+    return to_review_finding(decide(sheet, permit_cfg, corpus_dir=CORPUS_DIR))
 
 
 def _query_with_backoff(remote: Any, message: str) -> tuple[dict[str, Any], list[Any]]:
@@ -82,15 +117,17 @@ def _run_one(remote: Any, case: EvalCase, *, no_verifier: bool = False) -> CaseR
                 tokens_out=tokens_out,
             )
 
-        review_msg = json.dumps({"task": "review", "application": application.model_dump()})
-        parsed, events = _query_with_backoff(remote, review_msg)
-        t_in, t_out = sum_usage(events)
-        tokens_in, tokens_out = tokens_in + t_in, tokens_out + t_out
-        finding = ReviewFinding.model_validate(parsed)
-
-        # §7.3 gate: verify; one retry with the critique attached on failure.
+        # Resolved before the review because the code decision layer needs it;
+        # nothing about the model path changes by knowing it a few lines early.
         permit_cfg = resolve_permit_type(PERMIT_TYPES, application.permit_type)
         allowed = permit_cfg.allowed_outcomes if permit_cfg else []
+
+        parsed, events = _query_with_backoff(remote, _review_message(application))
+        t_in, t_out = sum_usage(events)
+        tokens_in, tokens_out = tokens_in + t_in, tokens_out + t_out
+        finding = _finding_from_reply(parsed, application, permit_cfg)
+
+        # §7.3 gate: verify; one retry with the critique attached on failure.
         report = verify_finding(
             finding,
             application=application.model_dump(),
@@ -106,18 +143,12 @@ def _run_one(remote: Any, case: EvalCase, *, no_verifier: bool = False) -> CaseR
         # corrective power is, which is the thing the ablation measures.
         if not report.passed and not no_verifier:
             retried = True
-            retry_msg = json.dumps(
-                {
-                    "task": "review",
-                    "application": application.model_dump(),
-                    "verifier_critique": report.critique or "; ".join(report.failures),
-                }
-            )
+            retry_msg = _review_message(application, report.critique or "; ".join(report.failures))
             try:
                 parsed, events = _query_with_backoff(remote, retry_msg)
                 t_in, t_out = sum_usage(events)
                 tokens_in, tokens_out = tokens_in + t_in, tokens_out + t_out
-                retry_finding = ReviewFinding.model_validate(parsed)
+                retry_finding = _finding_from_reply(parsed, application, permit_cfg)
             except Exception as exc:
                 # §7.3: a failed retry is a second failure — the FIRST finding
                 # proceeds to the human with its report attached; never crash

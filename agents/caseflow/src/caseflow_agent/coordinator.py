@@ -13,6 +13,25 @@ from google.genai import types as genai_types
 from caseflow_agent.intake import intake_agent
 from caseflow_agent.registry_toolset import RegistryToolset
 from caseflow_agent.zoning import zoning_agent
+from caseflow_agent.zoning_extract import zoning_extract_agent
+
+
+def select_zoning_specialist(mode: str) -> Agent:
+    """The zoning specialist for a decision mode (ADR-008, proposed).
+
+    ``code`` swaps in an agent that extracts facts and reaches no conclusion;
+    the driver then applies the written rules in ``civicnexus.decision``.
+    Anything else — including the default — keeps today's deciding agent.
+
+    Both agents are named "zoning" and fill the same routing slot, so the
+    coordinator's instruction is identical either way and the default path is
+    byte-identical to what it was before the flag existed.
+    """
+    return zoning_extract_agent if mode == "code" else zoning_agent
+
+
+DECISION_MODE = os.environ.get("DECISION_MODE", "model")
+_zoning_specialist = select_zoning_specialist(DECISION_MODE)
 
 coordinator = Agent(
     name="coordinator",
@@ -39,6 +58,6 @@ coordinator = Agent(
         "Return ONLY JSON - no commentary, no code fences. If the task field "
         'is missing or unknown, reply with {"error": "unknown task"}.'
     ),
-    sub_agents=[intake_agent, zoning_agent],
+    sub_agents=[intake_agent, _zoning_specialist],
     tools=[RegistryToolset()],
 )
