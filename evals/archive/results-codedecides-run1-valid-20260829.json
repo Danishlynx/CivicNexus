@@ -1,0 +1,748 @@
+{
+  "run_at": "2026-08-29T13:20:19.068839+00:00",
+  "tag": null,
+  "config": {
+    "no_verifier": false
+  },
+  "engine": "projects/civicnexus-hack26/locations/us-central1/reasoningEngines/2118760555991793664",
+  "cases": [
+    {
+      "case_id": "golden-001-maria-bakery-compliant-approve",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.030",
+        "17.44.030",
+        "17.44.030",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.140",
+        "17.44.190"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The proposed determination is unsupported because none of the cited provisions (which govern accessory dwelling units, bed and breakfasts, day cares, cannabis cultivation, recycling facilities, and swap meets) are applicable to the applicant's proposed home occupation bakery."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer cited provisions for bed and breakfasts, large family day cares, cannabis cultivation, recycling facilities, and indoor swap meets, none of which apply to the applicant's request for a home occupation permit to operate a home bakery."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 237.56299999999464,
+      "tokens_in": 89590,
+      "tokens_out": 17145
+    },
+    {
+      "case_id": "golden-002-maria-bakery-nonresident-helper-deny",
+      "tags": [
+        "smoke",
+        "borderline"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 139.56200000000536,
+      "tokens_in": 45627,
+      "tokens_out": 9664
+    },
+    {
+      "case_id": "golden-003-home-occupation-illuminated-sign-deny",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.030",
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 113.0,
+      "tokens_in": 35608,
+      "tokens_out": 9209
+    },
+    {
+      "case_id": "golden-004-home-occupation-rooms-unclear-request-info",
+      "tags": [
+        "smoke",
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: the rules produced no citable provision",
+      "latency_s": 54.17200000002049,
+      "tokens_in": 23719,
+      "tokens_out": 1854
+    },
+    {
+      "case_id": "golden-005-furniture-shop-outside-lumber-deny",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 101.04699999999139,
+      "tokens_in": 45239,
+      "tokens_out": 9001
+    },
+    {
+      "case_id": "golden-006-garage-adu-oversized-addition-two-foot-setback-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.005"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.005"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 74.96899999998277,
+      "tokens_in": 33662,
+      "tokens_out": 1979
+    },
+    {
+      "case_id": "golden-007-detached-backyard-adu-640sf-within-limits-approve",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.005"
+      ],
+      "observed_citations": [
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The reviewer cited provisions regarding satellite receiving antennae, but the application is for a detached backyard cottage (accessory structure) and contains no mention of any satellite antenna. Therefore, the cited provisions are completely irrelevant to this application."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer applied Monrovia Municipal Code \u00a7 17.44.150, which governs satellite receiving antennae, but the applicant's project is to build a detached backyard cottage (accessory structure) with no mention of any antenna. These cited provisions are completely irrelevant to the application facts."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 136.93700000000536,
+      "tokens_in": 80125,
+      "tokens_out": 10859
+    },
+    {
+      "case_id": "golden-008-bed-breakfast-two-rooms-floor-area-unstated-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.030"
+      ],
+      "observed_citations": [
+        "17.44.030",
+        "17.44.030",
+        "17.44.030",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [
+        "entailment: The reviewer incorrectly applied and requested information under \u00a7 17.44.060 (large family day care) and \u00a7 17.44.104 (cannabis cultivation), which are completely irrelevant to this bed and breakfast application. Information should only be requested regarding the bed and breakfast standards under \u00a7 17.44.030, such as the building's floor area and existing parking."
+      ],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 283.0940000000119,
+      "tokens_in": 90881,
+      "tokens_out": 16136
+    },
+    {
+      "case_id": "golden-009-gas-tank-residential-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.080"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.190",
+        "17.44.200",
+        "17.44.200",
+        "17.44.200",
+        "17.44.200"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The reviewer cited provisions regarding accessory dwelling units (17.44.005), satellite antennae (17.44.150), indoor swap meets (17.44.190), and temporary storage for public projects (17.44.200), none of which are applicable to a permanent 300-gallon above-ground gasoline storage tank for personal use."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer cited provisions regarding accessory dwelling units (17.44.005), satellite antennae (17.44.150), indoor swap meets (17.44.190), and temporary storage for public projects (17.44.200), none of which are applicable to a permanent 300-gallon above-ground gasoline storage tank for personal use."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 175.56299999999464,
+      "tokens_in": 69278,
+      "tokens_out": 11675
+    },
+    {
+      "case_id": "golden-010-game-court-interior-lot-setbacks-approve",
+      "tags": [
+        "clean"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.070"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.070",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The reviewer's rationale is entirely incorrect because it applies standards for a large family day care home (17.44.060) and indoor swap meets (17.44.190) to a game court application. While request_info is the correct determination because the zoning designation is missing under 17.44.070, the reviewer's specific reasons regarding day care facilities are completely irrelevant."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer incorrectly applied regulations for ADUs (\u00a7 17.44.005), large family day cares (\u00a7 17.44.060), and satellite antennae (\u00a7 17.44.150) to a basketball court. The only relevant missing information under \u00a7 17.44.070 is the property's zoning designation to determine if the game court is permitted by right or requires a conditional use permit."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 194.67199999999139,
+      "tokens_in": 75463,
+      "tokens_out": 12415
+    },
+    {
+      "case_id": "golden-011-large-daycare-nearby-facility-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.060"
+      ],
+      "observed_citations": [
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.030",
+        "17.44.030",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 125.17199999999139,
+      "tokens_in": 43244,
+      "tokens_out": 7604
+    },
+    {
+      "case_id": "golden-012-cannabis-twelve-plants-shed-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.104"
+      ],
+      "observed_citations": [
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The reviewer incorrectly applied \u00a7 17.44.150 regarding satellite receiving antennae, which is completely irrelevant to this application for a garden shed used for cannabis cultivation."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer incorrectly applied Section 17.44.150 regarding satellite receiving antennae to a garden shed application. While requesting information under Section 17.44.104(F) for indoor cannabis cultivation is appropriate, the antenna requirements are completely irrelevant."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 219.03100000001723,
+      "tokens_in": 69561,
+      "tokens_out": 15729
+    },
+    {
+      "case_id": "golden-013-cannabis-four-plants-shed-approve",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.104"
+      ],
+      "observed_citations": [
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The reviewer incorrectly applied Monrovia Municipal Code \u00a7 17.44.150, which governs satellite receiving antennae, to an application that is for a standard accessory structure (a garden shed) with no antenna proposed."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer incorrectly applied Monrovia Municipal Code \u00a7 17.44.150, which governs satellite receiving antennae, to an application that is for a standard accessory structure (a garden shed) with no antenna proposed."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 215.64099999997416,
+      "tokens_in": 90270,
+      "tokens_out": 17084
+    },
+    {
+      "case_id": "golden-014-home-bakery-predawn-hours-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.103"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.030",
+        "17.44.030",
+        "17.44.030",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.060",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.104",
+        "17.44.190"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The reviewer cited provisions for accessory dwelling units, bed and breakfasts, large family day cares, and cannabis cultivation, none of which are applicable to the applicant's home occupation permit for a home baking business."
+      ],
+      "verifier_final_failures": [
+        "entailment: The reviewer incorrectly applies provisions for accessory dwelling units, bed and breakfasts, day cares, cannabis cultivation, and indoor swap meets to a home occupation permit for a baking business, making the requested information entirely irrelevant."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 267.0940000000119,
+      "tokens_in": 89598,
+      "tokens_out": 15648
+    },
+    {
+      "case_id": "golden-015-satellite-dish-under-threshold-approve",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.150"
+      ],
+      "observed_citations": [
+        "17.44.120",
+        "17.44.120",
+        "17.44.120",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "permit type is not configured for this office - no outcome can be verified as legal; an out-of-scope request escalates to a human"
+      ],
+      "verifier_final_failures": [
+        "permit type is not configured for this office - no outcome can be verified as legal; an out-of-scope request escalates to a human"
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 157.59299999999348,
+      "tokens_in": 78021,
+      "tokens_out": 12685
+    },
+    {
+      "case_id": "golden-016-home-recycling-dropoff-driveway-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "deny",
+      "required_citations": [
+        "17.44.140",
+        "17.44.100"
+      ],
+      "observed_citations": [
+        "17.44.100",
+        "17.44.100",
+        "17.44.100",
+        "17.44.140"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 149.71900000001187,
+      "tokens_in": 44356,
+      "tokens_out": 9404
+    },
+    {
+      "case_id": "golden-017-ham-antenna-height-omitted-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.120"
+      ],
+      "observed_citations": [
+        "17.44.120",
+        "17.44.120",
+        "17.44.120",
+        "17.44.120",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 94.95300000000861,
+      "tokens_in": 39580,
+      "tokens_out": 6379
+    },
+    {
+      "case_id": "golden-018-garage-indoor-swap-meet-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.190"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.140",
+        "17.44.190"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": false,
+      "verifier_retried": true,
+      "verifier_final_passed": false,
+      "verifier_first_failures": [
+        "entailment: The request_info determination is incorrect because the application is already subject to denial under \u00a7 17.44.190(C)(2) for proposing portable restrooms in the driveway instead of inside the building. Furthermore, the reviewer cited irrelevant provisions regarding accessory dwelling units (\u00a7 17.44.005) and recycling facilities (\u00a7 17.44.140) which do not apply to an indoor swap meet."
+      ],
+      "verifier_final_failures": [
+        "entailment: The request_info determination is incorrect because the application is already subject to denial under \u00a7 17.44.190(C)(2) for proposing portable restrooms in the driveway instead of inside the building. Furthermore, the reviewer cited irrelevant provisions regarding accessory dwelling units (\u00a7 17.44.005) and recycling facilities (\u00a7 17.44.140) which do not apply to an indoor swap meet."
+      ],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 144.875,
+      "tokens_in": 85503,
+      "tokens_out": 10724
+    },
+    {
+      "case_id": "golden-019-wind-turbine-lot-size-request-info",
+      "tags": [
+        "clean"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": "request_info",
+      "required_citations": [
+        "17.44.215"
+      ],
+      "observed_citations": [
+        "17.44.005",
+        "17.44.120",
+        "17.44.120",
+        "17.44.120",
+        "17.44.120",
+        "17.44.120",
+        "17.44.140",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.150",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215",
+        "17.44.215"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 120.39099999997416,
+      "tokens_in": 44317,
+      "tokens_out": 7928
+    },
+    {
+      "case_id": "golden-020-public-project-staging-storage-approve",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": "approve",
+      "required_citations": [
+        "17.44.200"
+      ],
+      "observed_citations": [
+        "17.44.200",
+        "17.44.200",
+        "17.44.200",
+        "17.44.200"
+      ],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": true,
+      "verifier_retried": false,
+      "verifier_final_passed": true,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": null,
+      "latency_s": 82.17200000002049,
+      "tokens_in": 44447,
+      "tokens_out": 6666
+    }
+  ],
+  "metrics": {
+    "cases": 20,
+    "errors": 1,
+    "decision_accuracy": 0.55,
+    "citation_precision": 0.38916666666666666,
+    "citation_recall": 0.65,
+    "groundedness_first_pass": 0.95,
+    "verifier_first_pass": 0.47368421052631576,
+    "leak_rate": 0.0,
+    "latency_p50_s": 144.875,
+    "latency_p95_s": 267.0940000000119,
+    "tokens_total": 1427877,
+    "gates_passed": false,
+    "gate_failures": [
+      "decision_accuracy 0.550 < 0.85"
+    ]
+  }
+}

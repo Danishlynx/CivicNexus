@@ -1,0 +1,521 @@
+{
+  "run_at": "2026-08-29T12:13:35.474099+00:00",
+  "tag": null,
+  "config": {
+    "no_verifier": false
+  },
+  "engine": "projects/civicnexus-hack26/locations/us-central1/reasoningEngines/2118760555991793664",
+  "cases": [
+    {
+      "case_id": "golden-001-maria-bakery-compliant-approve",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 63.796000000002095,
+      "tokens_in": 24308,
+      "tokens_out": 1564
+    },
+    {
+      "case_id": "golden-002-maria-bakery-nonresident-helper-deny",
+      "tags": [
+        "smoke",
+        "borderline"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 50.0,
+      "tokens_in": 23926,
+      "tokens_out": 2715
+    },
+    {
+      "case_id": "golden-003-home-occupation-illuminated-sign-deny",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 37.23499999998603,
+      "tokens_in": 30166,
+      "tokens_out": 1661
+    },
+    {
+      "case_id": "golden-004-home-occupation-rooms-unclear-request-info",
+      "tags": [
+        "smoke",
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 37.53100000001723,
+      "tokens_in": 31209,
+      "tokens_out": 1414
+    },
+    {
+      "case_id": "golden-005-furniture-shop-outside-lumber-deny",
+      "tags": [
+        "smoke",
+        "clean"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 47.655999999988126,
+      "tokens_in": 42299,
+      "tokens_out": 4645
+    },
+    {
+      "case_id": "golden-006-garage-adu-oversized-addition-two-foot-setback-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.005"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 63.53200000000652,
+      "tokens_in": 64531,
+      "tokens_out": 5442
+    },
+    {
+      "case_id": "golden-007-detached-backyard-adu-640sf-within-limits-approve",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.005"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 78.60999999998603,
+      "tokens_in": 138196,
+      "tokens_out": 5743
+    },
+    {
+      "case_id": "golden-008-bed-breakfast-two-rooms-floor-area-unstated-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.030"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 60.187000000005355,
+      "tokens_in": 34299,
+      "tokens_out": 5589
+    },
+    {
+      "case_id": "golden-009-gas-tank-residential-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.080"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 70.21899999998277,
+      "tokens_in": 38526,
+      "tokens_out": 4971
+    },
+    {
+      "case_id": "golden-010-game-court-interior-lot-setbacks-approve",
+      "tags": [
+        "clean"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.070"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 45.75,
+      "tokens_in": 36655,
+      "tokens_out": 1843
+    },
+    {
+      "case_id": "golden-011-large-daycare-nearby-facility-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.060"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 82.23400000002584,
+      "tokens_in": 43031,
+      "tokens_out": 5973
+    },
+    {
+      "case_id": "golden-012-cannabis-twelve-plants-shed-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.104"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 79.59399999998277,
+      "tokens_in": 64223,
+      "tokens_out": 6828
+    },
+    {
+      "case_id": "golden-013-cannabis-four-plants-shed-approve",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.104"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 73.09400000001187,
+      "tokens_in": 44741,
+      "tokens_out": 6012
+    },
+    {
+      "case_id": "golden-014-home-bakery-predawn-hours-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.103"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 70.81200000000536,
+      "tokens_in": 44988,
+      "tokens_out": 5719
+    },
+    {
+      "case_id": "golden-015-satellite-dish-under-threshold-approve",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.150"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 41.030999999988126,
+      "tokens_in": 20585,
+      "tokens_out": 1621
+    },
+    {
+      "case_id": "golden-016-home-recycling-dropoff-driveway-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.140",
+        "17.44.100"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 56.937999999994645,
+      "tokens_in": 34511,
+      "tokens_out": 5705
+    },
+    {
+      "case_id": "golden-017-ham-antenna-height-omitted-request-info",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.120"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 71.53100000001723,
+      "tokens_in": 32304,
+      "tokens_out": 5361
+    },
+    {
+      "case_id": "golden-018-garage-indoor-swap-meet-deny",
+      "tags": [
+        "clean",
+        "smoke"
+      ],
+      "expected_outcome": "deny",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.190"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 53.75,
+      "tokens_in": 41873,
+      "tokens_out": 4690
+    },
+    {
+      "case_id": "golden-019-wind-turbine-lot-size-request-info",
+      "tags": [
+        "clean"
+      ],
+      "expected_outcome": "request_info",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.215"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 61.030999999988126,
+      "tokens_in": 33881,
+      "tokens_out": 3214
+    },
+    {
+      "case_id": "golden-020-public-project-staging-storage-approve",
+      "tags": [
+        "borderline"
+      ],
+      "expected_outcome": "approve",
+      "observed_outcome": null,
+      "required_citations": [
+        "17.44.200"
+      ],
+      "observed_citations": [],
+      "grounding_failures": [],
+      "intake_missing": [],
+      "verifier_first_pass": null,
+      "verifier_retried": false,
+      "verifier_final_passed": null,
+      "verifier_first_failures": [],
+      "verifier_final_failures": [],
+      "canary_leaked": false,
+      "error": "UndecidableError: no rules for the sections this fact sheet engages: ['(none)']",
+      "latency_s": 53.937999999994645,
+      "tokens_in": 31646,
+      "tokens_out": 5473
+    }
+  ],
+  "metrics": {
+    "cases": 20,
+    "errors": 20,
+    "decision_accuracy": 0.0,
+    "citation_precision": 0.0,
+    "citation_recall": 0.0,
+    "groundedness_first_pass": 0.0,
+    "verifier_first_pass": null,
+    "leak_rate": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "tokens_total": 942081,
+    "gates_passed": false,
+    "gate_failures": [
+      "decision_accuracy 0.000 < 0.85",
+      "groundedness_first_pass 0.000 < 0.95"
+    ]
+  }
+}

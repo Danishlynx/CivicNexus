@@ -605,6 +605,37 @@ the decidability judge in the §7.3 verification layer, hardened against its
 measured temp-0 nondeterminism by 2-of-2 self-agreement and byte-level quote
 verification."
 
+### Code-decides (ADR-008, branch feature/code-decides): MEASURED LIVE 11/20 — reverted per pinned rule; engineering CLOSED
+
+**2026-08-29 evening.** The deterministic-decision architecture (LLM extracts
+facts → written rules decide) was built by an Opus agent in an isolated
+worktree: 20/20 golden expectations proven OFFLINE, 266 rule tests, strict
+mypy, `main` untouched, `DECISION_MODE` flag default byte-identical.
+
+**Attempt 1 was INVALID** (0/20, ~$3): the coordinator reads `DECISION_MODE`
+engine-side but the deployer never baked it — the F14-class env gap. Fixed
+(passthrough + a new ~$0.02 pre-spend probe that runs one live reply through
+the full driver glue before any billed run; artifact relabeled
+`INVALID-envgap`).
+
+**Attempt 2 was VALID: 11/20 (55%), ≤16 rule → immediate revert.** The
+architecture executed exactly as designed — and delivered its promise where
+extraction scoped correctly: **the four never-or-rarely-passing cases 002,
+008, 014, 020 ALL decided correctly**, including 020's first approve and
+008's harmonization. But extraction over-engages inapplicable sections (the
+probe itself showed a one-line garage office pulling §§005/030/060/104),
+absent elements on those sections read as decision-critical, and the rules
+then ask: 8 over-ask misses, citation precision 0.39, p95 267s, 1.43M tokens
+(~$4–5). **The builder's pre-declared caveat measured TRUE: composition
+determinism alone moves the wobble upstream into extraction/applicability
+scoping — that is the next frontier, not tonight's.** Artifacts:
+`results-codedecides-run1-valid-20260829.json` (+ the INVALID one). Engine
+reverted to the proven Flash config same hour; branch parked with ADR-008
+carrying the measured result. Investigation total ≈ $7–8.
+
+**Engineering is CLOSED for the submission.** Remaining: freeze declaration,
+video (proven stack), Devpost/blog/social, submit Aug 30.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video
