@@ -1,7 +1,7 @@
 # PROGRESS
 
-**Current phase: 5 — Armor + drills (opened 2026-08-26). Phases 0–4 COMPLETE, all gates passed.**
-Last updated: 2026-08-27. **Phase 5 GATE PASSED; Phase 6 (Console + freeze) OPEN.** Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
+**Current phase: 7 — Ship. Phases 0–6 COMPLETE, all gates passed; Phase 6 EXIT COMPLETE 2026-08-28 (both halves — machine and the human clerk walk).**
+Last updated: 2026-08-29. **Engineering is CLOSED (2026-08-29, after the above-85 push and the code-decides measurement, both recorded below); ship work is IN PROGRESS** — freeze declaration, video, Devpost/blog/social, submit Aug 30. The §9.4 decision-accuracy gate ships red and visible (B-006, OPEN). Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
@@ -14,7 +14,7 @@ Last updated: 2026-08-27. **Phase 5 GATE PASSED; Phase 6 (Console + freeze) OPEN
 | 4 Durability | **COMPLETE (gate passed 2026-08-26)** — demo-timewarp PASS first attempt; recorded evidence accepted at the gate, live watch deferred to video rehearsal |
 | 5 Armor + drills | **COMPLETE (gate passed 2026-08-27, human: "i accept 14/15").** `make verify-phase-5` PASS; demo-injection PASS; timewarp re-proof PASS; both §9.5 ablations measured. Gate item defaults recorded: (1) injection block ratified at **14/15** with the characterised holdout NOT tuned away (B-014); (2) demo-injection scoped to points 1/2/4 with point 3 deferred to the Phase 6 console caller per D14's pre-agreed fallback. Phase 6 (Console + freeze) OPEN |
 | 6 Console + freeze | **EXIT COMPLETE 2026-08-28 (both halves)** — machine: verify-phase-6 all 18 assertions green ×4 deployed revisions; human: the clerk drove `case-f319c7ccab71` (a real fleet-reviewed case from the email-loop rehearsal) PENDING_HUMAN→APPROVED→ISSUED→CLOSED in a browser via the IAM proxy, leaving `approvals/apr-ea2cfd823116` naming danishlynx@gmail.com / issue / ISSUED at 09:27:51Z; case verified CLOSED. Freeze declaration + freeze docs remain (Aug 29) |
-| 7 Ship | not started |
+| 7 Ship | **IN PROGRESS (opened 2026-08-29)** — engineering CLOSED same day (above-85 push measured and closed under its pre-committed rule; code-decides measured 11/20 and reverted). Remaining: freeze declaration, video on the proven stack, Devpost/blog/social, submit Aug 30 |
 
 ## Phase 6 (2026-08-27): ADR-007 RATIFIED, build open
 
@@ -605,6 +605,58 @@ the decidability judge in the §7.3 verification layer, hardened against its
 measured temp-0 nondeterminism by 2-of-2 self-agreement and byte-level quote
 verification."
 
+### Above-85 run 1 OUTCOME (recorded 2026-08-29 per the pre-committed honesty rule — late, flagged by audit)
+
+**The process miss goes first, because it is the point of the rule.** The
+rules three paragraphs above bind the *recording*, not just the claim, and
+that recording was OWED the moment run 1 returned. It did not get written.
+It exists only because a completeness audit went looking for it later the
+same day. What held: no ≥85% claim was ever made anywhere, and the artifact
+was archived and tracked at run time. What failed: for several hours the
+record showed pre-committed rules with no outcome beside them — which is
+indistinguishable, to a reader, from a result being sat on. Stated plainly
+rather than backfilled quietly.
+
+**Measured: 14/20 — decision accuracy 0.700, gate FAIL.** One full 20-case
+run on the fixed configuration (intake redeploy, Flash at decision, Gemma at
+decidability). Artifact `evals/archive/results-above85-run1-20260829.json`
+(run at 2026-08-29T10:42:13Z, 20 cases, engine `2118760555991793664`,
+0 errors), now tracked in git — precisely: staged in the index, not yet
+inside a commit as this is written. From the same artifact: citation precision 0.90,
+citation recall 0.95, groundedness first-pass 1.00, verifier first-pass
+0.95, canary leaks 0, p50/p95 62s/312s, 819,614 tokens.
+
+**Hard guard: clean, and inert — those are different things.** The step-6
+decidability check fired **0 times** across all 20 cases (no decidability
+entry appears in any case's first-pass or final verifier-failure list), so
+the stop condition — a firing on an expected-`request_info` case
+(004/008/011/014/017/019) — was never approached. The honest reading is that
+the guard is clean because the check never engaged, not because it engaged
+and judged well. One run says the gate is conservative; nothing yet says it
+is useful.
+
+**One fix has a measured hit; the misses are the familiar variance.**
+`golden-020` **passed, first pass, no retry** — that is the exact case the
+permit-taxonomy completion targeted, and it had never passed before. The six
+misses were 002, 008, 010, 012, 014, 015, and **five of the six carried no
+verifier retry at all** (only 015 retried, on the "permit type is not
+configured for this office" legality failure). A miss with no retry is
+first-pass decision variance, not the corrective loop failing. Note also
+that 002, 012 and 015 are smoke-subset cases that had measured 12/12 three
+consecutive times — the smoke subset scored 9/12 in this run. That is
+B-006's documented run-to-run spread (five runs at 65–80%, i.e. 13–16 of 20)
+landing on a different set of cases, which is precisely the thing the
+pre-committed two-run design existed to see through.
+
+**The rule fired, and the ≥85% claim died with run 1.** 14 ≤ 16, so the
+"both ≤16" branch applies as written: the three fixes stay in the tree as
+correctness evidence, **no ≥85% claim is made**, and the gate stays visibly
+red at `/evals`. No threshold was touched. **Run 2 never happened** — the
+human directed the code-decides pivot (next section) in the same working
+block and that measurement superseded it, so the two-run design completed
+with one run. The honest statement is therefore "one run at 14/20", never a
+two-run result, and never the better of two.
+
 ### Code-decides (ADR-008, branch feature/code-decides): MEASURED LIVE 11/20 — reverted per pinned rule; engineering CLOSED
 
 **2026-08-29 evening.** The deterministic-decision architecture (LLM extracts
@@ -631,7 +683,8 @@ determinism alone moves the wobble upstream into extraction/applicability
 scoping — that is the next frontier, not tonight's.** Artifacts:
 `results-codedecides-run1-valid-20260829.json` (+ the INVALID one). Engine
 reverted to the proven Flash config same hour; branch parked with ADR-008
-carrying the measured result. Investigation total ≈ $7–8.
+(`docs/adr/008-code-decides.md`, copied onto main 2026-08-29) carrying the
+measured result. Investigation total ≈ $7–8.
 
 **Engineering is CLOSED for the submission.** Remaining: freeze declaration,
 video (proven stack), Devpost/blog/social, submit Aug 30.

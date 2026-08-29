@@ -294,6 +294,38 @@ Hard guard: if step 6 fires on any case whose EXPECTED outcome is
 `request_info` (004/008/011/014/017/019) in either run, stop and investigate
 before shipping. Estimate ~$2–4; requires the human's explicit "ok run".
 
+**Addendum 5 (2026-08-29) — above-85 run 1 measured 14/20; the rule fired;
+B-006 stays OPEN. Plus a config-drift disclosure that travels with the
+baseline.** Run 1 on the fixed configuration measured **14/20 (0.700), gate
+FAIL** — artifact `evals/archive/results-above85-run1-20260829.json`
+(2026-08-29T10:42:13Z, 0 errors, citation P/R 0.90/0.95, groundedness 1.00,
+leaks 0). The step-6 decidability check fired **0 times** in all 20 cases, so
+the hard guard is clean but the check is also unexercised — conservative, not
+yet shown useful. `golden-020` passed first-pass (the taxonomy fix hitting
+its target case); the six misses (002/008/010/012/014/015) were **five of six
+with no verifier retry**, i.e. first-pass decision variance rather than the
+corrective loop failing. Per the pre-committed "both ≤16" branch: **no ≥85%
+claim**, gate stays red, fixes stay as correctness evidence. Run 2 was
+superseded by the human-directed code-decides pivot, so this is one run, never
+quoted as two. Recording this outcome was owed at run time and only landed
+after a completeness audit — a process miss, noted as one.
+
+**Config drift against the recorded baseline — disclose wherever 15/20 is
+quoted.** `main` now carries three changes that POSTDATE the 2026-08-28
+15/20 baseline run: (1) the verifier's step-6 decidability check (Gemma 4 as
+judge — 0 firings in the single run that exercised it); (2) permit-taxonomy
+completion in `config/permit_types.yaml` (measured fixing its target case,
+golden-020); (3) the golden-014 fixture instrument repair (expectation
+untouched, source template fixed, diff in git under commit `f82871a`). The
+one full run that included all three measured **14/20**, one case below the
+baseline and well inside this blocker's own documented run-to-run spread
+(the five 2026-08-19 runs span 65–80%, i.e. 13–16 of 20) — so the drift is
+not evidence that the baseline moved, and one run cannot separate the changes
+from the noise either way. Both artifacts are archived
+(`results-full-20260828.json`, `results-above85-run1-20260829.json`). **The
+recorded baseline remains the 2026-08-28 15/20 full run**, and this note
+travels beside it.
+
 **Addendum (2026-08-28, freeze eve) — the dominant driver was a DEFECT, not
 model capability.** Artifact-level failure recording (added between two
 measurement runs) exposed it: the intake agent's instruction still enumerated

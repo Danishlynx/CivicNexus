@@ -207,7 +207,8 @@ project with billing enabled; `gcloud auth application-default login` done.
 
 7. **Verify:** `make test` (lint, strict mypy, unit + contract tests),
    `make smoke`, then the phase verifiers (`make verify-phase-N`). The current
-   tree measures **310 passed, 14 skipped, coverage 89.65%** on `make test`.
+   tree measures **331 passed, 14 skipped, coverage 90.23%** on `make test`
+   (the gate recorded at commit `f82871a`).
 
 ## Evaluation results
 
@@ -215,6 +216,12 @@ PermitBench: 20 verified golden cases plus a 25-artifact adversarial drill
 corpus (~45 artifacts total, per ADR-006 D7 — the spec's ~80 was cut rather
 than padded with unverified cases). The headline table below is from
 `docs/eval-report.md` (full 20-case run, 2026-08-28, live deployed stack).
+
+Charts, hand-authored as self-contained SVGs with every value traced to an
+archived run (nothing re-measured, nothing averaged):
+[accuracy by configuration](docs/charts/accuracy-by-config.svg) ·
+[ablation 1 — verifier](docs/charts/ablation-verifier.svg) ·
+[ablation 2 — Model Armor](docs/charts/ablation-armor.svg).
 
 | Metric | Value | Gate |
 |---|---|---|
@@ -226,6 +233,19 @@ than padded with unverified cases). The headline table below is from
 | Canary leak rate | 0.00% | = 0 — pass |
 | Latency p50 / p95 | 66s / 84s | — |
 | Tokens (run total) | 529,470 | — |
+
+**Configuration note (2026-08-29).** The table above is the 2026-08-28 full
+run and remains the recorded baseline. `main` has since taken three changes
+that postdate it: the verifier's **step-6 decidability check** (Gemma 4 as
+judge — zero firings in the single run that exercised it), **permit-taxonomy
+completion** in `config/permit_types.yaml` (measured fixing its target case,
+golden-020), and the **golden-014 fixture instrument repair**. The one full
+run carrying all three measured **14/20 (70%)** — one case below the
+baseline, well inside B-006's documented run-to-run spread (five runs at
+65–80%, i.e. 13–16 of 20), and by itself not enough to attribute the
+difference to the changes rather than to that spread. Both artifacts are archived in `evals/archive/`
+(`results-full-20260828.json`, `results-above85-run1-20260829.json`). The
+number quoted above is the 2026-08-28 run, and this note travels with it.
 
 **The full-set gate is red, ships red, and the number is better understood
 than it looks — the story is the project's clearest honesty exhibit.** Through
@@ -255,13 +275,18 @@ produces), with groundedness dropping below its gate (0.90) and ~50% higher
 latency. Measured conclusion: **model tier is not the constraint.** Across
 the two models, 17 of 20 cases passed under at least one config; the residual
 three decompose into one borderline-calibration case, one self-contradicting
-test fixture (recorded as an instrument defect, deliberately not edited), and
-one permit-taxonomy config gap. Both artifacts are archived; the shipped
-config remains Flash.
+test fixture (recorded as an instrument defect and left untouched *through
+this ablation*, then **repaired on 2026-08-29** as a dated instrument repair
+— only the contradicting sentence in the source template moved, the
+expectation is unchanged, the diff is in git under commit `f82871a`, and a
+provenance comment sits beside the fixture in
+`evals/permitbench/templates.json`), and one permit-taxonomy config gap. Both
+artifacts are archived; the shipped config remains Flash.
 
 ### Ablation 1 — groundedness verifier OFF vs ON
 
-Single run per arm (from `docs/ablations.md`; both arms archived and labelled):
+Single run per arm (from `docs/ablations.md`; both arms archived and labelled).
+Chart: [`docs/charts/ablation-verifier.svg`](docs/charts/ablation-verifier.svg).
 
 | Metric | Verifier ON | Verifier OFF |
 |---|---|---|
@@ -283,7 +308,8 @@ made either way.
 
 These are synthetic screening-drill fixtures that exist solely to validate
 CivicNexus's own guardrails (ADR-006); they target nothing external and never
-leave the drill path. From `docs/ablations.md`:
+leave the drill path. From `docs/ablations.md`; chart:
+[`docs/charts/ablation-armor.svg`](docs/charts/ablation-armor.svg).
 
 | | Model Armor ON | Model Armor OFF |
 |---|---|---|
@@ -301,6 +327,27 @@ quoted against the 15-fixture denominator), and there is **no no-injection
 control arm** — "7 of 8 approved" is a strong indicator that the embedded
 instructions worked, not proof of obedience, since some of those synthetic
 applications might have been approved on their merits.
+
+### Gemma in the verification layer
+
+**Gemma 4 (26B, Vertex AI managed API) is integrated as the decidability
+judge in the §7.3 verification layer, hardened against its measured temp-0
+nondeterminism by 2-of-2 self-agreement and byte-level quote verification.**
+Step 6 targets the over-ask class: a `request_info` finding that clears steps
+1–5 must then survive a judge that names the fact already deciding the case,
+after which code verifies that quote byte-for-byte against the application
+JSON and against a provision the reviewer actually cited. Model diversity is
+the point — the Flash entailment judge measurably co-signed this failure
+class. The hardening is not decoration either: live probes against this
+project measured two real properties of that surface, temp-0 nondeterminism
+(five identical calls flipped the verdict 1 in 5) and `response_schema`
+accepted but not enforced (`.parsed` always `None`).
+
+**Stated honestly: in its one full-run measurement it fired zero times** (20
+cases, 2026-08-29, artifact archived) — that run scored 14/20, one case
+under the baseline and inside B-006's variance. So it ships as a conservative
+defense-in-depth gate, not as an accuracy claim: a gate that never fires
+costs nothing and proves nothing, and both halves of that are true.
 
 ## Screening drills: the injection-block number, with its provenance
 
@@ -381,6 +428,8 @@ results.
   12/12 three consecutive times, but the 8 held-out cases measure 3/8 with
   the classic split — over-asking on 010/013/020, over-deciding on 008/014.
   The gate ships red and visible at `/evals`; the threshold was never touched.
+  The configuration note under the eval table travels with this number: three
+  changes postdate that run, and the one run carrying them measured 14/20.
 - **Outcome variance (B-006 family; first recorded at the Phase 1 gate):**
   identical facts can yield deny vs request_info across runs — both defensible
   readings of the statute, but the variance is real and characterized, not
@@ -468,6 +517,14 @@ Key make targets (each prints PASS/FAIL): `make test`, `make smoke`,
 
 <!-- SOURCES — claim → file:line/section mapping (draft audit trail; strip before shipping or keep, it is invisible in rendered Markdown)
 
+LINE-NUMBER CAVEAT (added 2026-08-29, honest): the PROGRESS.md line numbers below are DRIFTED and should be
+treated as approximate pointers, not addresses. Spot-checked on 2026-08-29: several (e.g. 619, 654, 695, 727,
+733, 829) already did not land on the content they claim before today's edits, and the "Above-85 run 1 OUTCOME"
+section inserted today shifts everything after PROGRESS.md's "Above-85 push" heading by a further +51 lines.
+Nothing was re-verified line by line in this pass — the SECTION NAMES quoted alongside each entry are the
+reliable locator. Entries added or corrected today (test counts, configuration note, golden-014 repair, Gemma,
+charts) cite sections and artifacts rather than PROGRESS line numbers for exactly this reason.
+
 URLS
 - Public reader + clerk URLs: PROGRESS.md:114-117.
 - Reader single role [datastore.viewer] + verifier scope caveat (project-level direct bindings only): PROGRESS.md:104-106,158 (verify-phase-6 assertion + D13 scope note), ADR-007 D13 table + "one-sentence version" (docs/adr/007-console.md:333-349).
@@ -512,7 +569,7 @@ SPIN-UP
 - First clean-project apply expected to fail on the two Cloud Run services (non-empty image defaults point at civicnexus-hack26's private Artifact Registry; the AR repo is itself Terraform-managed, so images cannot be pre-built): infra/terraform/console_service.tf:17-24 (console:v0.1.4), infra/terraform/registry_service.tf:5-20 (registry:v0.1.0 default + AR repo resource); Makefile:16-17 (bootstrap = full-module apply); A8 rationale in both .tf comments.
 - Image override lines: terraform.tfvars.example:13-21; PROGRESS.md:101-103.
 - Deploy-agent procedure: docs/RUNBOOK.md "Deploy an agent (hermetic)".
-- make test 310 passed, 14 skipped, coverage 89.65%: PROGRESS.md:260-262.
+- make test 331 passed, 14 skipped, coverage 90.23%: recorded gate line in the commit message of f82871a ("Gate: 331 passed / 14 skipped, coverage 90.23%, mypy strict"). Supersedes the earlier 310/89.65% figure (PROGRESS.md:260-262), which predates the step-6 + taxonomy + fixture work.
 
 EVALS
 - Headline table values (75.00 (15/20) / 87.50 / 95.00 / 100.00 / 90.00 / 0.00 / 66s/84s / 529,470; Gates: FAIL; 20 cases, run 2026-08-28): docs/eval-report.md:1-20 (full run). Smoke-subset 12/12 ×3 + fix narrative: PROGRESS.md "Accuracy levers" section; all runs archived under evals/archive/ (lever runs 1-2, shipfix runs 3-4, full run, red-era baseline).
@@ -522,6 +579,10 @@ EVALS
 - Ablation 1 numbers (75.0/75.0, 100.0/91.7, 91.7/87.5, 7 caught, 0 of 7 corrected, 655,564 vs 258,703, 2.5x): docs/ablations.md:26-40; PROGRESS.md:458-476.
 - Small-sample caveat on accuracy delta: PROGRESS.md:489-494.
 - Ablation 2 (9/9 blocked ON; 7 of 8 scoreable APPROVE OFF; adv-013 503 unscoreable; adv-015 request_info; 6 PDF fixtures excluded; canary 0; text-carriers-only scope; no no-injection control): PROGRESS.md:509-542; docs/ablations.md:42-58.
+- Configuration note under the headline table (three post-baseline changes; the one run carrying all three = 14/20; run-to-run spread 65–80% = 13–16 of 20 per B-006's five-run symptom; both artifacts archived; baseline unchanged): BLOCKERS.md B-006 addendum 5; PROGRESS.md "Above-85 run 1 OUTCOME" section; artifacts evals/archive/results-full-20260828.json and results-above85-run1-20260829.json (the 14/20 read directly from the latter's metrics block: decision_accuracy 0.7, 20 cases, 0 errors).
+- golden-014 repaired 2026-08-29, expectation untouched (correcting the earlier "deliberately not edited" clause): commit f82871a diff on evals/permitbench/templates.json (scenario_email sentence only; expected_outcome / required_citations / must_request / tags unchanged) + the `_instrument_repair` provenance field beside the fixture; PROGRESS.md "Above-85 push" fix 3; BLOCKERS.md B-006 addendum 4.
+- Gemma in the verification layer (26B, Vertex managed API, step 6, 2-of-2 self-agreement + byte-verified quotes, 1-in-5 temp-0 verdict flip, response_schema not enforced): wording pre-committed in PROGRESS.md "Gemma bonus claim, wording pre-committed"; mechanism + probe results in the same "Above-85 push" section and commit f82871a's message; **zero firings** measured across the 20 cases of evals/archive/results-above85-run1-20260829.json (no decidability entry in any case's verifier_first_failures / verifier_final_failures) — PROGRESS.md "Above-85 run 1 OUTCOME".
+- Ablation charts (docs/charts/*.svg): hand-authored 2026-08-29 from docs/ablations.md, docs/eval-report.md, BLOCKERS.md B-006 and the named archive artifacts; per-chart source lists in docs/ablations.md "Charts". No plotting library ran and no value in them is re-measured — matplotlib is still absent, which is why evals/compare.py itself writes no charts.
 
 INJECTION REPORTING (B-014 rule)
 - Reporting rule binding: BLOCKERS.md:457-459 (B-014 final) + docs/ablations.md:62.

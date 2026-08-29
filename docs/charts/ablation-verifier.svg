@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">Ablation 1 — groundedness verifier OFF vs ON</title>
+  <desc id="d">Two panels, one measure each, no shared axis. Citation fidelity: groundedness first pass 100.0 percent with the verifier on versus 91.7 percent off; citation precision 91.7 percent on versus 87.5 percent off. Token cost: 655,564 tokens on versus 258,703 off, about 2.5 times. Single run per arm, 12 cases each.</desc>
+
+  <rect x="0" y="0" width="900" height="540" fill="#ffffff"/>
+
+  <text x="40" y="38" font-size="19" font-weight="600" fill="#0b0b0b">Ablation 1 — what the groundedness verifier actually bought</text>
+  <text x="40" y="60" font-size="13" fill="#52514e">One run per arm, 12 cases each. Two measures on two axes in two panels — percentages and tokens are never plotted against one scale.</text>
+
+  <!-- legend -->
+  <g font-size="12" fill="#0b0b0b">
+    <rect x="40" y="76" width="12" height="12" rx="3" fill="#2a78d6"/>
+    <text x="58" y="86">Verifier ON (shipped)</text>
+    <rect x="210" y="76" width="12" height="12" rx="3" fill="#eb6834"/>
+    <text x="228" y="86">Verifier OFF (--no-verifier, retry disabled)</text>
+  </g>
+
+  <!-- ============ PANEL A: citation fidelity, 0-100% ============ -->
+  <text x="40" y="122" font-size="13" font-weight="600" fill="#0b0b0b">Citation fidelity (% of scored cases)</text>
+
+  <text x="24" y="270" font-size="11" fill="#52514e" transform="rotate(-90 24 270)" text-anchor="middle">percent</text>
+  <g font-size="11" fill="#52514e" text-anchor="end">
+    <text x="72" y="144">100</text>
+    <text x="72" y="198">80</text>
+    <text x="72" y="252">60</text>
+    <text x="72" y="306">40</text>
+    <text x="72" y="360">20</text>
+    <text x="72" y="414">0</text>
+  </g>
+  <g stroke="#e6e5e0" stroke-width="1">
+    <line x1="80" y1="140" x2="520" y2="140"/>
+    <line x1="80" y1="194" x2="520" y2="194"/>
+    <line x1="80" y1="248" x2="520" y2="248"/>
+    <line x1="80" y1="302" x2="520" y2="302"/>
+    <line x1="80" y1="356" x2="520" y2="356"/>
+  </g>
+  <line x1="80" y1="410" x2="520" y2="410" stroke="#8c8b85" stroke-width="1.5"/>
+
+  <!-- group 1: groundedness first-pass 100.0 vs 91.7 -->
+  <rect x="128" y="140" width="62" height="270" rx="4" fill="#2a78d6"/>
+  <text x="159" y="132" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">100.0%</text>
+  <rect x="196" y="162" width="62" height="248" rx="4" fill="#eb6834"/>
+  <text x="227" y="154" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">91.7%</text>
+  <text x="193" y="430" font-size="12" fill="#0b0b0b" text-anchor="middle">Groundedness, first pass</text>
+
+  <!-- group 2: citation precision 91.7 vs 87.5 -->
+  <rect x="348" y="162" width="62" height="248" rx="4" fill="#2a78d6"/>
+  <text x="379" y="154" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">91.7%</text>
+  <rect x="416" y="173" width="62" height="237" rx="4" fill="#eb6834"/>
+  <text x="447" y="165" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">87.5%</text>
+  <text x="413" y="430" font-size="12" fill="#0b0b0b" text-anchor="middle">Citation precision</text>
+
+  <!-- ============ PANEL B: tokens ============ -->
+  <line x1="560" y1="110" x2="560" y2="440" stroke="#e6e5e0" stroke-width="1"/>
+  <text x="600" y="122" font-size="13" font-weight="600" fill="#0b0b0b">Run token cost (tokens, whole run)</text>
+
+  <g font-size="11" fill="#52514e" text-anchor="end">
+    <text x="672" y="144">700k</text>
+    <text x="672" y="221">500k</text>
+    <text x="672" y="298">300k</text>
+    <text x="672" y="375">100k</text>
+    <text x="672" y="414">0</text>
+  </g>
+  <g stroke="#e6e5e0" stroke-width="1">
+    <line x1="680" y1="140" x2="870" y2="140"/>
+    <line x1="680" y1="217" x2="870" y2="217"/>
+    <line x1="680" y1="294" x2="870" y2="294"/>
+    <line x1="680" y1="371" x2="870" y2="371"/>
+  </g>
+  <line x1="680" y1="410" x2="870" y2="410" stroke="#8c8b85" stroke-width="1.5"/>
+
+  <!-- 655,564 of 700k scale over 270px -> 252.8px tall -->
+  <rect x="704" y="157" width="62" height="253" rx="4" fill="#2a78d6"/>
+  <text x="735" y="149" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">655,564</text>
+  <!-- 258,703 -> 99.8px tall -->
+  <rect x="784" y="310" width="62" height="100" rx="4" fill="#eb6834"/>
+  <text x="815" y="302" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">258,703</text>
+  <text x="775" y="430" font-size="12" fill="#0b0b0b" text-anchor="middle">ON = 2.5× the tokens</text>
+
+  <!-- honest reading -->
+  <text x="40" y="464" font-size="11.5" fill="#0b0b0b">What is NOT on this chart, because it is the point: decision accuracy was <tspan font-weight="600">identical on both arms (75.0%)</tspan>, and the retry loop</text>
+  <text x="40" y="480" font-size="11.5" fill="#0b0b0b"><tspan font-weight="600">corrected 0 of the 7</tspan> first-pass failures it retried. The verifier's measured value in this system is citation fidelity, not decision</text>
+  <text x="40" y="496" font-size="11.5" fill="#0b0b0b">correction — and one run per arm cannot resolve an accuracy delta inside B-006's measured 65–80% swing.</text>
+
+  <text x="40" y="520" font-size="11" fill="#52514e">Sources — every value transcribed from docs/ablations.md, Ablation 1 table (arms evals/archive/results-verifier-on-20260825.json and</text>
+  <text x="40" y="534" font-size="11" fill="#52514e">results-no-verifier.json; 12 cases each, the OFF arm with 1 error). Hand-authored 2026-08-29; nothing here is re-measured or averaged.</text>
+</svg>

@@ -191,8 +191,10 @@ fleet that drafts the determination — and a named human signs it."
 
 ### Shot 2 — Diagram (video 0:30–0:50)
 
-On screen: architecture diagram (OPEN QUESTION 4 — the README diagram is a DoD
-item not yet built; the shot needs an artifact to point at).
+On screen: the README's mermaid architecture diagram (README:72–, "Architecture
+(as actually deployed)") — it exists; OPEN QUESTION 4 is now only *how* it goes
+on camera (GitHub render vs screen capture) and whether it is legible at
+recording resolution.
 Narration cue: name the trust boundary: intake screening (Model Armor +
 Cloud Vision OCR), the fleet on Agent Engine, verifier, registry governance,
 the human gate.
@@ -386,13 +388,21 @@ moment they land.
    screening drill against the same project quota simultaneously; 429s killed a
    prior demo attempt. The full-cluster choreography needs one rehearsal
    exactly as scripted.
-4. **Architecture diagram does not exist yet** (README DoD item). Shot 2 needs
-   it.
-5. **Stale coverage prose in `docs/ablations.md`** ("image-OCR injection is
-   undetectable by construction") predates the Cloud Vision attachment
-   pipeline. If `/evals` or the ablation tables appear on camera, either the
-   doc gets the A-12/OCR-current update at freeze or the narration must carry
-   the current statement (Shot 4 wording above). Same check for the README.
+4. **Architecture diagram EXISTS** (closed 2026-08-29): the README carries a
+   rendered mermaid flowchart under "Architecture (as actually deployed)"
+   (README:72–, fence at README:74), covering intake + attachment pipeline,
+   the fleet, the verifier, registry governance and the human gate — i.e. the
+   exact trust boundary Shot 2's narration names. What remains is a shot
+   decision, not a build: GitHub-rendered README vs a full-screen capture, and
+   one legibility check at recording resolution.
+5. **Stale coverage prose in `docs/ablations.md` — FIXED 2026-08-29.** The
+   "undetectable by construction" sentence has been replaced with the
+   OCR-current statement (gap closed at intake since 2026-08-28; what remains
+   blind is raster text past a PDF's fifth page and the PDF byte-screen path),
+   and the README already carried the current version. Residual camera risk is
+   only that `evals/compare.py` would overwrite the hand-edit if it is
+   re-run before the take — don't re-run it, or re-apply the paragraph. Shot 4
+   narration stands as written.
 6. **Time-warp on-camera length** (199s): accept landing in Shot 5, or approve
    a control-probe skip flag / higher CLOCK_MULTIPLIER for the take (driver
    change = human OK).
@@ -468,7 +478,9 @@ COVERAGE STATEMENT (CURRENT)
   PROGRESS.md:255-259.
 - LIVE-PROVEN: pixel-only hostile screenshot OCR-read, MATCH at HIGH, case-1216f7712d35
   QUARANTINED, inc-420ff7fd33a1, zero engine calls: PROGRESS.md:276-281.
-- Stale prose flagged: docs/ablations.md:81 ("undetectable by construction") predates the pipeline.
+- Stale prose FIXED 2026-08-29: docs/ablations.md's "undetectable by construction" sentence replaced with the
+  OCR-current statement (remaining blind spot: raster text past a PDF's fifth page, and the PDF byte-screen
+  path). Caveat: it is a hand-edit in a generated file — re-running evals/compare.py before the take reverts it.
 
 TIME-WARP BEAT
 - Timestamps 10:58:52.6 → PASS 11:02:12.1 (=199.4s); parked 10:59:14; timer scheduled 10:59:17,

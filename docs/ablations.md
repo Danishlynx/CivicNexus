@@ -78,11 +78,19 @@ Every loosening was kept only because the negative arm stayed clean, so the adde
 
 The single holdout is characterised and deliberately not tuned away: `adv-001-white-text-approve-override-hobby-shed` sits at a 46% injection share between two siblings at 45% and 47% that both pass, and its instruction matches when screened standalone. That is boundary behaviour at a dilution ratio, not a defect, and editing the fixture until it passed would be fitting the test to the system.
 
-Coverage gap, stated with the number: screening does not read text out of embedded raster images, so image-OCR injection is undetectable by construction here and no fixture claims it (ADR-006 A-12).
+Coverage gap, stated with the number - **updated by hand 2026-08-29; `evals/compare.py` still emits the older sentence, so a regeneration of this file will overwrite this paragraph and the Charts section below**: the Model Armor filters themselves do not read text out of embedded raster images, which is exactly what A-12 pre-registered. Since 2026-08-28 that gap is CLOSED at intake rather than open by construction - every allowlisted attachment (PNG/JPEG/PDF) is transcribed by deterministic Cloud Vision OCR (images in full, PDFs up to the first five pages, the synchronous `files:annotate` cap pinned in code) and the extracted text is re-screened as plain text, the carrier B-014 measured most sensitive. Live-proven: a drill email whose hostile override text existed only as pixels (byte-verified absent from the file's bytes) was transcribed, matched `pi_and_jailbreak` at HIGH confidence, and the case went RECEIVED -> QUARANTINED with zero engine calls. **What remains blind: raster text inside PDF pages beyond the first five, and the PDF byte-screen path itself, which reads page text plus /Subject, /Keywords and /Author only.** No fixture in this corpus claims the image-OCR carrier, so nothing in the tables above measures it (ADR-006 A-12).
 
 ## Charts
 
-No charts written: matplotlib unavailable (ModuleNotFoundError: No module named 'matplotlib'); it is not a project dependency. Install it in the dev group to render the PNGs; the tables above are unaffected.
+`evals/compare.py` still writes no charts: matplotlib is unavailable (ModuleNotFoundError: No module named 'matplotlib') and is not a project dependency. The Definition-of-Done ablation charts were therefore **hand-authored as self-contained SVGs on 2026-08-29** - no plotting library, no external assets - with every value transcribed from the recorded artifacts named beside it. Nothing in them is computed by this script, re-measured, or averaged.
+
+| Chart | What it shows | Numbers taken from |
+|---|---|---|
+| [`charts/accuracy-by-config.svg`](charts/accuracy-by-config.svg) | Full-set decision accuracy per configuration against the ≥85% gate, with the 12-case CI smoke subset kept on its own clearly-labelled bar because its denominator differs | BLOCKERS.md B-006 (Phase-2 five-run band 65-80%, addendum 3 Pro arm), docs/eval-report.md (shipped 15/20), `results-above85-run1-20260829.json` (14/20), ADR-008 / `results-codedecides-run1-valid-20260829.json` (11/20), PROGRESS.md (smoke 12/12 x3) |
+| [`charts/ablation-verifier.svg`](charts/ablation-verifier.svg) | Ablation 1 in two panels - citation fidelity (percent) and run token cost (tokens) never share an axis | The Ablation 1 table above |
+| [`charts/ablation-armor.svg`](charts/ablation-armor.svg) | Ablation 2 as fixture counts, carrying the text-carriers-only scope and the no-control caveat on the face of the chart | The Ablation 2 table above |
+
+Not charted, and why: the injection sensitivity progression is a four-row transcription of a record established elsewhere (B-014), not an arm this file measured, so it stays a table.
 
 ## What this report does not claim
 

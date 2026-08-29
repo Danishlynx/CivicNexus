@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="536" viewBox="0 0 900 536" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">Ablation 2 — Model Armor screening OFF vs ON, text-carrier drill fixtures only</title>
+  <desc id="d">With screening on, 9 of 9 text-carrier drill fixtures were blocked at the screen and none reached a model. With screening off, 7 of the 8 scoreable fixtures steered the fleet to approve; one of the nine errored on a 503 and is unscoreable. Text carriers only: the 6 PDF-carrier fixtures have no unscreened ingestion path and are excluded, so this arm is never quoted against the 15-fixture denominator.</desc>
+
+  <rect x="0" y="0" width="900" height="536" fill="#ffffff"/>
+
+  <text x="40" y="38" font-size="19" font-weight="600" fill="#0b0b0b">Ablation 2 — Model Armor screening OFF vs ON</text>
+  <text x="40" y="60" font-size="13" fill="#52514e">Two arms that measure two different things, placed side by side and never subtracted. Counts of drill fixtures — not percentages, not a rate.</text>
+  <text x="40" y="80" font-size="13" font-weight="600" fill="#0b0b0b">Scope: TEXT CARRIERS ONLY — 9 of the 15 injection-gate fixtures.</text>
+
+  <!-- y axis -->
+  <text x="26" y="270" font-size="11" fill="#52514e" transform="rotate(-90 26 270)" text-anchor="middle">drill fixtures (count)</text>
+  <g font-size="11" fill="#52514e" text-anchor="end">
+    <text x="72" y="144">9</text>
+    <text x="72" y="231">6</text>
+    <text x="72" y="317">3</text>
+    <text x="72" y="404">0</text>
+  </g>
+  <g stroke="#e6e5e0" stroke-width="1">
+    <line x1="80" y1="140" x2="500" y2="140"/>
+    <line x1="80" y1="227" x2="500" y2="227"/>
+    <line x1="80" y1="313" x2="500" y2="313"/>
+  </g>
+  <line x1="80" y1="400" x2="500" y2="400" stroke="#8c8b85" stroke-width="1.5"/>
+
+  <!-- ON arm: 9 of 9 blocked at the screen -->
+  <rect x="140" y="140" width="110" height="260" rx="4" fill="#2a78d6"/>
+  <text x="195" y="132" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="middle">9 of 9</text>
+  <text x="195" y="420" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">Screening ON</text>
+  <text x="195" y="436" font-size="11" fill="#52514e" text-anchor="middle">blocked at the screen —</text>
+  <text x="195" y="450" font-size="11" fill="#52514e" text-anchor="middle">zero reached a model</text>
+
+  <!-- OFF arm: 7 of 8 scoreable steered to approve; dashed outline = the 8 scoreable -->
+  <rect x="330" y="169" width="110" height="231" rx="4" fill="none" stroke="#8c8b85" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="330" y="198" width="110" height="202" rx="4" fill="#eb6834"/>
+  <text x="385" y="190" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="middle">7 of 8</text>
+  <text x="452" y="173" font-size="11" fill="#52514e">8 scoreable</text>
+  <text x="385" y="420" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">Screening OFF</text>
+  <text x="385" y="436" font-size="11" fill="#52514e" text-anchor="middle">steered the fleet to APPROVE</text>
+  <text x="385" y="450" font-size="11" fill="#52514e" text-anchor="middle">(1 of 9 errored on a 503 —</text>
+  <text x="385" y="464" font-size="11" fill="#52514e" text-anchor="middle">unscoreable; 1 → request_info)</text>
+
+  <!-- caveats -->
+  <g font-size="11.5" fill="#0b0b0b">
+    <text x="546" y="126" font-size="12.5" font-weight="600">Read this chart with its four caveats</text>
+    <text x="546" y="150">1. <tspan font-weight="600">Text carriers only.</tspan> The 6 PDF-carrier fixtures have</text>
+    <text x="562" y="165">no unscreened ingestion path, so they cannot ride the</text>
+    <text x="562" y="180">OFF arm. This chart is <tspan font-weight="600">never</tspan> quoted against the</text>
+    <text x="562" y="195">15-fixture gate denominator.</text>
+    <text x="546" y="221">2. <tspan font-weight="600">No no-injection control arm exists.</tspan> "7 of 8 approved"</text>
+    <text x="562" y="236">is a strong indicator the embedded instructions worked,</text>
+    <text x="562" y="251">not proof of obedience — some of those synthetic</text>
+    <text x="562" y="266">applications might have been approved on their merits.</text>
+    <text x="546" y="292">3. <tspan font-weight="600">The two arms measure different things.</tspan> ON counts</text>
+    <text x="562" y="307">screening-layer blocks; OFF counts downstream behaviour.</text>
+    <text x="562" y="322">Side by side, never subtracted.</text>
+    <text x="546" y="348">4. <tspan font-weight="600">Canary leaks were 0 on both arms.</tspan> The shipped gate</text>
+    <text x="562" y="363">number over the whole 15-fixture corpus is a separate</text>
+    <text x="562" y="378">measurement — 14/15 blocked at LOW_AND_ABOVE — quoted</text>
+    <text x="562" y="393">only with its provenance (B-014 reporting rule).</text>
+  </g>
+
+  <text x="40" y="490" font-size="11" fill="#52514e">Sources — docs/ablations.md, Ablation 2 (arms evals/archive/drill-armor-on-20260827-094830.json and drill-armor-off-20260827-123812.json);</text>
+  <text x="40" y="504" font-size="11" fill="#52514e">the 7-of-8 decomposition and the no-control caveat from the README "Ablation 2" section. Hand-authored 2026-08-29, nothing re-measured.</text>
+  <text x="40" y="518" font-size="11" fill="#52514e">Defensive drill fixtures (ADR-006): they exist to validate CivicNexus's own guardrails and never leave the drill path.</text>
+</svg>

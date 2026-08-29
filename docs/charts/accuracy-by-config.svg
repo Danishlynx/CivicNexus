@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="590" viewBox="0 0 900 590" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">PermitBench decision accuracy by configuration</title>
+  <desc id="d">Full-set decision accuracy over the 20-case PermitBench golden set for five configurations, plus the 12-case CI smoke subset shown separately because its denominator differs. Phase 2 baseline 65 to 80 percent across five runs; Flash shipped 15 of 20; Pro at decision 15 of 20; step 6 plus taxonomy plus fixture repair 14 of 20; code decides 11 of 20; CI smoke 12 of 12 three consecutive runs. The section 9.4 gate is 85 percent and no full-set configuration reaches it.</desc>
+
+  <rect x="0" y="0" width="900" height="590" fill="#ffffff"/>
+
+  <text x="40" y="38" font-size="19" font-weight="600" fill="#0b0b0b">Decision accuracy by configuration — every arm measured, none at the gate</text>
+  <text x="40" y="60" font-size="13" fill="#52514e">PermitBench golden set, live deployed stack. Each bar is one full run unless its label says otherwise; nothing is averaged.</text>
+  <text x="40" y="78" font-size="13" fill="#52514e">The §9.4 gate was never lowered — it ships red.</text>
+
+  <!-- y axis -->
+  <text x="24" y="240" font-size="12" fill="#52514e" transform="rotate(-90 24 240)" text-anchor="middle">Cases decided as expected (%)</text>
+  <g font-size="11" fill="#52514e" text-anchor="end">
+    <text x="72" y="104">100</text>
+    <text x="72" y="160">80</text>
+    <text x="72" y="216">60</text>
+    <text x="72" y="272">40</text>
+    <text x="72" y="328">20</text>
+    <text x="72" y="384">0</text>
+  </g>
+  <g stroke="#e6e5e0" stroke-width="1">
+    <line x1="80" y1="100" x2="870" y2="100"/>
+    <line x1="80" y1="156" x2="870" y2="156"/>
+    <line x1="80" y1="212" x2="870" y2="212"/>
+    <line x1="80" y1="268" x2="870" y2="268"/>
+    <line x1="80" y1="324" x2="870" y2="324"/>
+  </g>
+  <line x1="80" y1="380" x2="870" y2="380" stroke="#8c8b85" stroke-width="1.5"/>
+
+  <!-- gate line at 85%, drawn over the full-set arms only -->
+  <line x1="80" y1="142" x2="656" y2="142" stroke="#52514e" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="652" y="136" font-size="12" font-weight="600" fill="#52514e" text-anchor="end">§9.4 gate — decision accuracy ≥ 85%</text>
+
+  <!-- 1. Phase 2 five-run band: 65-80% floating range, dots are the five run scores -->
+  <rect x="106" y="156" width="62" height="42" rx="4" fill="#c9c8c2"/>
+  <g fill="#0b0b0b" stroke="#ffffff" stroke-width="2">
+    <circle cx="113" cy="156" r="4.5"/>
+    <circle cx="126" cy="184" r="4.5"/>
+    <circle cx="139" cy="156" r="4.5"/>
+    <circle cx="152" cy="198" r="4.5"/>
+    <circle cx="165" cy="184" r="4.5"/>
+  </g>
+  <text x="137" y="216" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">65–80%</text>
+
+  <!-- 2. Flash full run, shipped baseline: 15/20 -->
+  <rect x="220" y="170" width="62" height="210" rx="4" fill="#2a78d6"/>
+  <text x="251" y="162" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">15/20 · 75%</text>
+
+  <!-- 3. Pro at decision: 15/20 -->
+  <rect x="334" y="170" width="62" height="210" rx="4" fill="#2a78d6"/>
+  <text x="365" y="162" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">15/20 · 75%</text>
+
+  <!-- 4. Step 6 + taxonomy + fixture repair: 14/20 -->
+  <rect x="448" y="184" width="62" height="196" rx="4" fill="#2a78d6"/>
+  <text x="479" y="176" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">14/20 · 70%</text>
+
+  <!-- 5. Code-decides: 11/20 -->
+  <rect x="562" y="226" width="62" height="154" rx="4" fill="#2a78d6"/>
+  <text x="593" y="218" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">11/20 · 55%</text>
+
+  <!-- divider: everything right of here has a different denominator -->
+  <line x1="668" y1="96" x2="668" y2="404" stroke="#8c8b85" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- 6. CI smoke subset: 12/12 x3, on a 12-case denominator -->
+  <rect x="734" y="100" width="72" height="280" rx="4" fill="#eb6834"/>
+  <text x="770" y="92" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="middle">12/12 · 100%</text>
+
+  <!-- x labels -->
+  <g font-size="11.5" fill="#0b0b0b" text-anchor="middle">
+    <text x="137" y="400">Phase 2 baseline<tspan x="137" dy="14" font-size="11" fill="#52514e">5 runs, 2026-08-19</tspan><tspan x="137" dy="13" font-size="11" fill="#52514e">13–16 of 20</tspan></text>
+    <text x="251" y="400" font-weight="600">Flash — SHIPPED<tspan x="251" dy="14" font-size="11" font-weight="400" fill="#52514e">full run 2026-08-28</tspan><tspan x="251" dy="13" font-size="11" font-weight="400" fill="#52514e">recorded baseline</tspan></text>
+    <text x="365" y="400">Pro at decision<tspan x="365" dy="14" font-size="11" fill="#52514e">ablation 2026-08-28</tspan><tspan x="365" dy="13" font-size="11" fill="#52514e">different misses</tspan></text>
+    <text x="479" y="400">Step 6 + taxonomy<tspan x="479" dy="14" font-size="11" fill="#52514e">+ fixture repair</tspan><tspan x="479" dy="13" font-size="11" fill="#52514e">one run, 2026-08-29</tspan></text>
+    <text x="593" y="400">Code decides<tspan x="593" dy="14" font-size="11" fill="#52514e">ADR-008, 2026-08-29</tspan><tspan x="593" dy="13" font-size="11" fill="#52514e">reverted per rule</tspan></text>
+    <text x="770" y="400">CI smoke subset<tspan x="770" dy="14" font-size="11" fill="#52514e">12 cases, NOT 20</tspan><tspan x="770" dy="13" font-size="11" fill="#52514e">3 consecutive runs, 08-28</tspan></text>
+  </g>
+
+  <!-- legend -->
+  <g font-size="12" fill="#0b0b0b">
+    <rect x="80" y="452" width="12" height="12" rx="3" fill="#2a78d6"/>
+    <text x="98" y="462">20-case full set — all 20 PermitBench golden cases</text>
+    <rect x="80" y="474" width="12" height="12" rx="3" fill="#eb6834"/>
+    <text x="98" y="484">12-case CI smoke subset — a different denominator; never comparable to the full-set bars</text>
+    <rect x="80" y="496" width="12" height="12" rx="3" fill="#c9c8c2"/>
+    <text x="98" y="506">range across five runs of one configuration; the dots are the five scores (80, 70, 80, 65, 70)</text>
+  </g>
+
+  <text x="80" y="534" font-size="11" fill="#52514e">Sources — Phase 2 band: BLOCKERS.md B-006 symptom (five runs, 2026-08-19). Flash 15/20 and the ≥85% gate: docs/eval-report.md.</text>
+  <text x="80" y="550" font-size="11" fill="#52514e">Pro arm: B-006 addendum 3 (results-pro-at-decision-20260828.json). Step 6 + taxonomy + repair: results-above85-run1-20260829.json.</text>
+  <text x="80" y="566" font-size="11" fill="#52514e">Code-decides: ADR-008 (results-codedecides-run1-valid-20260829.json). CI smoke 12/12 ×3: PROGRESS.md / B-006.</text>
+  <text x="80" y="582" font-size="11" fill="#52514e">Hand-authored from those records on 2026-08-29. Nothing here is re-measured, averaged, or estimated.</text>
+</svg>

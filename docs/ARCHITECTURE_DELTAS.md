@@ -457,12 +457,18 @@ ratifying record (ADR / BLOCKERS id + date).
   baseline and advance with it open, reaffirmed at the Phase 3 gate ("CI smoke
   gate stays honestly RED").
 
-### Δ (owed, §9.5 / DoD): ablation charts not exported
+### Δ (§9.5 / DoD): ablation charts exported by hand — CLOSED 2026-08-29
 - Both §9.5 ablations are measured and tabled in `docs/ablations.md`
   (verifier off/on; Model Armor off/on with the text-carrier-only scope
-  stated), but **no charts were rendered** — matplotlib is not a project
-  dependency and `docs/ablations.md` records "No charts written". The
-  Definition of Done requires "ablation charts exported"; Phase 7 owed item.
+  stated). `evals/compare.py` still renders **nothing** — matplotlib is not a
+  project dependency, and that line survives unchanged in the generated
+  report. The DoD item is instead closed by three **hand-authored,
+  self-contained SVGs** in `docs/charts/` (accuracy by configuration;
+  ablation 1 verifier; ablation 2 Model Armor), each value transcribed from a
+  named archived artifact and each chart carrying its own scope caveats and
+  source list. Exact claim: the charts exist and are traceable; the *script*
+  still cannot draw them, so a matplotlib install remains the only way to make
+  this reproducible from `make` rather than by hand.
 
 ## §11 / Appendix A — Phase 6 scope
 
@@ -621,8 +627,9 @@ product-loop section (human-directed).
   ≥85%, B-006 OPEN — measured 2026-08-28 post-fix. The 12-case CI smoke
   subset is green at 12/12 ×3 after the freeze-eve defect fix; the 8
   held-out cases measure 3/8. A measurement, not a spec change).
-- **Owed at Phase 7: 2** — ablation charts export (Definition of Done) and
-  the ADR-007 D12 registry preflight (C4).
+- **Owed at Phase 7: 1** — the ADR-007 D12 registry preflight (C4). The
+  ablation-charts export closed 2026-08-29 as three hand-authored SVGs in
+  `docs/charts/` (the generator still writes none — see the §9.5 delta above).
 
 <!-- SOURCES — load-bearing claim → file:line/section (repo-relative unless noted)
 
@@ -669,7 +676,7 @@ NOTICE BLOCK
 Δ19: docs/adr/006-model-armor-and-phase5-drills.md:186-189 (D9 narrowing); spec: docs/ARCHITECTURE.md:301-304
 Δ §9.4/§13 CI CADENCE: spec: docs/ARCHITECTURE.md:301 (§9.4 "PRs run the 12-case smoke subset; `main` runs nightly full"), 394 (§13 "eval smoke on PRs, full runs nightly only"); shipped trigger: docs/adr/005-resilience-architecture.md:263 ("CI eval-smoke — fires on every push to main"); per-run-OK rule: CLAUDE.md Working Agreement, "Eval spend rule (added 2026-08-20…)"
 RED GATE: docs/eval-report.md:9,19 (75.00%, FAIL line); B-006 range 65-80%: BLOCKERS.md:241-247; Phase 2 gate decision: PROGRESS.md:12; Phase 3 "stays honestly RED": PROGRESS.md:729; per-case misses: docs/eval-report.md:38-43
-ABLATION CHARTS owed: docs/ablations.md:83-85 ("No charts written: matplotlib unavailable"); DoD "ablation charts exported": CLAUDE.md Definition of done
+ABLATION CHARTS closed 2026-08-29 by hand: docs/charts/{accuracy-by-config,ablation-verifier,ablation-armor}.svg + the "Charts" table in docs/ablations.md naming each chart's source artifacts; the generator still writes none (docs/ablations.md "Charts" first sentence, matplotlib absent); DoD "ablation charts exported": CLAUDE.md Definition of done
 Δ20: BLOCKERS.md:398 (B-015 #4); docs/adr/007-console.md:453 (D10 row); managed Registry API "Not enabled": docs/BACKLOG.md:81; spec: docs/ARCHITECTURE.md:370-372, 377-379
 Δ21: BLOCKERS.md:399-401 (B-015 #5); docs/adr/007-console.md:301-310 (D5 rule 2, zero subscribers); spec: docs/ARCHITECTURE.md:370
 Δ22: BLOCKERS.md:402-405 (B-015 #6); docs/adr/007-console.md:270-281 (D4); zero hits re-verified: grep **/*.py 2026-08-28 (this log); spec: docs/ARCHITECTURE.md:343-345, 420-421
