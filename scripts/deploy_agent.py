@@ -111,6 +111,12 @@ def main() -> int:
     if os.environ.get("ZONING_MODEL_ID"):  # B-006 Pro-at-decision lever (zoning only)
         env_lines.append(f"ZONING_MODEL_ID={os.environ['ZONING_MODEL_ID']}\n")
         print(f"deploy_agent: ZONING_MODEL_ID override -> {os.environ['ZONING_MODEL_ID']}")
+    if os.environ.get("DECISION_MODE"):  # ADR-008: engine-side specialist selection —
+        # the coordinator reads this at import; an unbaked flag silently runs the
+        # deciding agent while a code-mode driver parses for fact sheets (the
+        # 2026-08-29 invalid 0/20 run). Bake it whenever the deployer sets it.
+        env_lines.append(f"DECISION_MODE={os.environ['DECISION_MODE']}\n")
+        print(f"deploy_agent: DECISION_MODE -> {os.environ['DECISION_MODE']}")
 
     # ADR-005 §1.3: apply manifest defaults, then hard-fail on any gap.
     manifest = ENV_MANIFEST.get(agent_dir.name, {})
