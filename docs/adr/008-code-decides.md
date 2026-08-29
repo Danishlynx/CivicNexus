@@ -165,9 +165,10 @@ correct on the golden set *given correct extraction*. No live run has been made.
 - **Checklist delivery:** deployed agent bundles cannot import workspace
   libraries (the constraint `caseflow_agent/schemas.py` already documents), so
   the driver renders `checklist_text()` and ships it in the review request.
-  This costs prompt tokens — roughly 6 KB of the full 82-element checklist — and
-  is a measurement variable, not a free choice. Sending only the retrieved
-  sections' elements is impossible without a second round trip.
+  This costs prompt tokens — the full 82-element checklist measures **11,393
+  bytes**, added to every review request including retries — and is a
+  measurement variable, not a free choice. Sending only the retrieved sections'
+  elements is impossible without a second round trip.
 - **Failure mode:** `decide()` raises `UndecidableError` when the fact sheet
   engages no section it has rules for, or when a rule's quote anchor is no
   longer in the corpus. It never guesses; the runner records the case as an
