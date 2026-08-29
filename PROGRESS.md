@@ -689,6 +689,27 @@ measured result. Investigation total ≈ $7–8.
 **Engineering is CLOSED for the submission.** Remaining: freeze declaration,
 video (proven stack), Devpost/blog/social, submit Aug 30.
 
+## FREEZE DECLARED — 2026-08-29, by the human ("freeze declaration")
+
+**Code and measurement are FROZEN at `main` = 985812e.** Branch
+`feature/code-decides` parked with ADR-008 (measured, not shipped). Deployed
+surfaces at freeze: caseflow engine on the proven Flash config (intake
+4-type enum, verifier steps 1–6, Gemma decidability judge), console v0.1.6
+serving the honest 20-case report. Everything after this line is ship work
+only: video, Devpost, blog, social, submission (target Aug 30; hard wall
+Sep 1 05:30 IST).
+
+**Video-structure ruling (human, same session):** the human supplied the
+contest's actual video requirements (problem overview, value proposition,
+demo in action, Google-Cloud backend proof) and directed the script be
+built to convince against THAT brief. The internal DoD line "one continuous
+unedited run hitting hot-add, injection, time-warp" is adapted per the
+shotlist's own measured fit-problem (hot-add AFTER ≈502s cannot fit 4:00):
+the continuous take carries the live product loop (email→OCR→gate→clerk)
+and the screening drill, time-warp runs live-in-take if rehearsal timing
+allows, and hot-add is proven via its recorded evidence + registry UI in
+the proof segment. Recorded here as a ratified deviation, not silent drift.
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video
