@@ -50,6 +50,10 @@ def main() -> int:
 
     if args.expect == "code":
         # Ship the same checklist-shaped request the runner sends in code mode.
+        # (The repo root is not on sys.path for scripts/ entrypoints; evals is
+        # a repo-root package, so add cwd explicitly — the probe always runs
+        # from the repo root, like every other script here.)
+        sys.path.insert(0, os.getcwd())
         from civicnexus.contracts import Application
 
         from evals.runner import _review_message
