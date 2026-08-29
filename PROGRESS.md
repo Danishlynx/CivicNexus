@@ -537,6 +537,74 @@ archived ablation, never the baseline. Remaining accuracy levers recorded in
 B-006 for post-submission: decidability enforcement, fixture repair, permit
 taxonomy extension.
 
+## Above-85 push (2026-08-29, human-directed): three fixes + Gemma integration; measurement rules PRE-COMMITTED before data
+
+**Human directive (2026-08-29, recorded verbatim in intent):** get decision
+accuracy above the §9.4 ≥85% gate today, integrate Gemma so the Gemma bonus
+claim is real rather than aspirational, and have Opus implement it. The
+frozen-at-75% measurement from last night is the baseline this push is
+measured against; nothing below claims a number until a run produces one.
+
+**The three fixes — each traced to a specific finding of the stuck-at-75
+study, not to a guess about what might help:**
+
+1. **013-class (over-ask on borderline): verifier step 6, a decidability
+   check.** The study named the unenforced entailment decidability clause as
+   the remaining lever for the over-ask class; step 6 enforces it — the judge
+   proposes the deciding fact, the code confirms it verbatim against the
+   application JSON and against a provision the reviewer actually cited.
+   The judge is **Gemma 4 (`gemma-4-26b-a4b-it-maas`, Vertex managed API,
+   `location=global`)**, hardened with **2-of-2 self-agreement plus
+   machine-verified quotes** — because live probes against this project
+   measured two real properties of that surface: temp-0 nondeterminism (five
+   identical calls flipped the verdict 1 in 5) and `response_schema` accepted
+   but not enforced (`.parsed` always `None`). The hardening is not
+   decoration; it is the specific countermeasure to the specific measured
+   defect, and it is why a nondeterministic judge can sit behind a gate at all.
+2. **020-class (permit taxonomy gap): completion of
+   `config/permit_types.yaml`.** The study found intake types outside the
+   config silently disable the verifier's steps 3/5 and let the retry critique
+   nudge escalate — a config gap, not a reasoning failure. Completing the
+   taxonomy restores the corrective loop for the 015/020 class.
+3. **golden-014: dated instrument repair of a self-contradicting fixture.**
+   The statute-level study showed the fixture's own words license a grounded
+   deny that our entailment gate correctly certified — the instrument, not the
+   fleet, produced that miss. **The expectation is untouched** (outcome,
+   required citations, must_request, tags all unchanged); only the
+   self-contradicting sentence in the source template moves, the diff is in
+   git, and the repair is disclosed wherever the number is quoted.
+
+**PRE-COMMITTED measurement rules — written down BEFORE any data exists, so
+the result cannot be read backwards into the rule:**
+
+- **Runs:** two full 20-case runs on the fixed configuration (intake redeploy,
+  Flash at decision, Gemma at decidability). Same config both times; no
+  between-run tuning.
+- **BOTH ≥17/20 AND smoke-12 intact in both** → ship it: all docs updated with
+  **both** runs cited (never the better one alone) and the golden-014 repair
+  disclosed in the same breath as the number.
+- **One ≥17 and one 16** → exactly **one** tiebreak run; majority of the three
+  rules. No further re-rolls.
+- **Both ≤16** → the three fixes stay in the tree as correctness evidence, but
+  **no ≥85% claim is made**, the gate stays visibly red, and the outcome is
+  recorded honestly here and in B-006. Fixes being right and the gate being
+  red are not in tension.
+- **Hard guard (stop condition):** if the step-6 decidability check fires on
+  any case whose EXPECTED outcome is `request_info` — 004, 008, 011, 014, 017,
+  019 — in *either* run, stop and investigate before shipping anything. A
+  false positive there is the failure mode this check is most capable of, and
+  it would regress the only smoke-subset request_info case.
+- **Spend:** estimate ~$2–4 total for the two runs (~₹180–350). Under the
+  2026-08-28 credits-exhausted regime this needs the human's explicit "ok run"
+  before either run starts; the estimate is a ceiling to verify against the
+  billing page, not an assumption.
+
+**Gemma bonus claim, wording pre-committed (accurate only if the integration
+ships as described):** "Gemma 4 (26B, Vertex AI managed API) is integrated as
+the decidability judge in the §7.3 verification layer, hardened against its
+measured temp-0 nondeterminism by 2-of-2 self-agreement and byte-level quote
+verification."
+
 **Tomorrow (Aug 28, freeze is Aug 29):**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video

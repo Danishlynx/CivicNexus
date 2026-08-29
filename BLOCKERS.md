@@ -273,6 +273,27 @@ fixture wording + expectation (documented dataset change, re-measure);
 out-of-scope types absent). Measurement frozen at 75% by human decision;
 engine reverted to Flash.
 
+**Addendum 4 (2026-08-29, human-directed above-85 push) — the three
+post-submission fixes are being attempted NOW, with the measurement rules
+pre-committed before any data.** Fixes: (1) 013-class — verifier **step 6**
+enforces the decidability clause, judged by **Gemma 4
+(`gemma-4-26b-a4b-it-maas`, Vertex managed API)** with 2-of-2 self-agreement
+and machine-verified verbatim quotes, hardening against live-probed temp-0
+nondeterminism (1-in-5 verdict flip) and non-enforced `response_schema`;
+(2) 020-class — `config/permit_types.yaml` taxonomy completed so the
+verifier's corrective loop stops being silently disabled; (3) golden-014 —
+dated instrument repair of the self-contradicting fixture sentence,
+**expectation untouched**, diff in git, done because the study showed the
+fixture licensed a grounded deny our own entailment gate certified.
+**PRE-COMMITTED rules:** two full 20-case runs on the fixed config (intake
+redeploy, Flash decisions, Gemma decidability); both ≥17/20 **and** smoke-12
+intact in both → ship with both runs cited and the repair disclosed; one ≥17
+and one 16 → one tiebreak run, majority rules; both ≤16 → fixes stay as
+correctness evidence, **no ≥85% claim**, gate stays red, recorded honestly.
+Hard guard: if step 6 fires on any case whose EXPECTED outcome is
+`request_info` (004/008/011/014/017/019) in either run, stop and investigate
+before shipping. Estimate ~$2–4; requires the human's explicit "ok run".
+
 **Addendum (2026-08-28, freeze eve) — the dominant driver was a DEFECT, not
 model capability.** Artifact-level failure recording (added between two
 measurement runs) exposed it: the intake agent's instruction still enumerated

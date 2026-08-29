@@ -29,6 +29,21 @@ def test_repo_config_is_valid() -> None:
     assert cfg.sla_days > 0
 
 
+def test_repo_config_covers_the_savings_clause_class() -> None:
+    # The 17.44.200 public-project temporary storage class (golden-020).
+    types = load_permit_types(REPO_CONFIG)
+    assert "temporary_public_project_storage" in types
+    cfg = types["temporary_public_project_storage"]
+    assert "zoning" in cfg.required_capabilities
+    # All three outcomes stay legal — narrowing them would steer the outcome.
+    assert set(cfg.allowed_outcomes) == {
+        DeterminationOutcome.APPROVE,
+        DeterminationOutcome.DENY,
+        DeterminationOutcome.REQUEST_INFO,
+    }
+    assert cfg.sla_days > 0
+
+
 def test_rejects_unknown_outcome(tmp_path: Path) -> None:
     p = _write(
         tmp_path,
@@ -75,10 +90,23 @@ def test_resolve_bridges_format_drift_only() -> None:
     assert resolve_permit_type(cfgs, "Home Occupation") is cfgs["home_occupation"]
     assert resolve_permit_type(cfgs, "  home-occupation ") is cfgs["home_occupation"]
     assert resolve_permit_type(cfgs, "ACCESSORY_STRUCTURE") is cfgs["accessory_structure"]
+    assert (
+        resolve_permit_type(cfgs, "Temporary Public Project Storage")
+        is cfgs["temporary_public_project_storage"]
+    )
     # ...but a genuinely different name NEVER does — the out-of-scope drills'
     # escalate-by-construction path depends on the miss.
     assert resolve_permit_type(cfgs, "structure_relocation") is None
     assert resolve_permit_type(cfgs, "street tree removal") is None
+
+
+def test_drill_out_of_scope_types_never_resolve() -> None:
+    # The three out-of-scope drill permit types (adv-020/021/022) must stay
+    # unconfigured: their escalate-by-construction path depends on the miss,
+    # including after the 17.44.200 class was added to the taxonomy.
+    cfgs = load_permit_types(REPO_CONFIG)
+    for permit_type in ("structure_relocation", "tree_removal", "right_of_way_encroachment"):
+        assert resolve_permit_type(cfgs, permit_type) is None
 
 
 def test_config_model_frozen() -> None:

@@ -17,3 +17,22 @@ accessory_structure:
   required_capabilities: [zoning]
   allowed_outcomes: [approve, deny, request_info]
   sla_days: 14
+
+# Added 2026-08-29 for the Title 17 section 17.44.200 savings clause: temporary
+# occupation of land to store vehicles, supplies or materials in connection with
+# a public construction project, with the owner's consent and Council permission
+# for a stated limited time.
+#
+# Why it exists: the 2026-08-28 eval-full run recorded golden-020 as request_info
+# against an expected approve. Filed under accessory_structure, the review framed
+# a 17.44.200 case as a structure-siting question and asked for structure facts
+# the savings clause makes irrelevant (BLOCKERS B-006, post-submission fix 3).
+#
+# allowed_outcomes keeps all three deliberately: narrowing them to force the
+# expected outcome would be outcome steering via config (prime directive 9).
+# sla_days mirrors home_occupation, the other confirm-the-stated-conditions
+# review; nothing measures this value - it is operator judgment.
+temporary_public_project_storage:
+  required_capabilities: [zoning]
+  allowed_outcomes: [approve, deny, request_info]
+  sla_days: 10

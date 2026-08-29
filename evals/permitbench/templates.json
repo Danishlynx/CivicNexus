@@ -189,7 +189,7 @@
   {
     "slug": "home-bakery-predawn-hours-request-info",
     "permit_type": "home_occupation",
-    "scenario_email": "Hi there - I want to get set up properly for my home baking business at {ADDRESS}. I bake for two weekend farmers markets and take a few custom cake orders. Everything happens in my kitchen plus one spare room off the kitchen where I keep the mixer and the cooling racks - one room only, no other rooms used. No employees, it is just me and my daughter who lives here. No sign out front, no outside storage, customers pick up maybe twice a week, and I drive my own car to the markets, no delivery trucks. I do my baking runs early so the bread is out of the oven before the market opens, and on market weekends I am up and working well before sunrise. Let me know what permits I need. {NAME} {EMAIL} {PHONE}",
+    "scenario_email": "Hi there - I want to get set up properly for my home baking business at {ADDRESS}. I bake for two weekend farmers markets and take a few custom cake orders. All of the business baking happens in one room - a spare room off the kitchen that I set up with the oven, the mixer and the cooling racks. That one room is the only room used for the business; the kitchen stays ordinary family use and no other room is involved. No employees, it is just me and my daughter who lives here. No sign out front, no outside storage, customers pick up maybe twice a week, and I drive my own car to the markets, no delivery trucks. I do my baking runs early so the bread is out of the oven before the market opens, and on market weekends I am up and working well before sunrise. Let me know what permits I need. {NAME} {EMAIL} {PHONE}",
     "expected_outcome": "request_info",
     "required_citations": [
       "17.44.103"
@@ -200,7 +200,8 @@
     ],
     "tags": [
       "borderline"
-    ]
+    ],
+    "_instrument_repair": "2026-08-29 instrument repair: fixture self-contradicted ('one room only' vs kitchen+spare room), licensing a grounded (G) deny the entailment gate certified; wording fixed, expectation untouched. See BLOCKERS B-006 addendum 3."
   },
   {
     "slug": "satellite-dish-under-threshold-approve",
