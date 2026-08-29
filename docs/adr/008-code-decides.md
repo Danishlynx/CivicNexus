@@ -267,3 +267,15 @@ reading was right where the composing was wrong — but nobody has measured
 per-element extraction accuracy directly. If extraction wobbles as much as
 decision did, this moves the problem rather than solving it, and the two-run
 variance check in §6 is what would reveal that.
+
+## Measured result (2026-08-29, appended at parking)
+
+Live run 1 (valid, after the deploy-env fix): **11/20 (55%)** — reverted per
+the pre-pinned <=16 rule. The rule layer delivered where extraction scoped
+correctly (002, 008, 014, 020 all correct — including the never-passing 020
+and the harmonization case 008), but extraction over-engaged inapplicable
+sections and their absent elements drove 8 over-asks (citation precision
+0.39, p95 267s, 1.43M tokens). Verdict: composition determinism proven
+necessary but not sufficient; the frontier is extraction/applicability
+scoping. Branch parked measured, not shipped. Artifacts in the main repo:
+evals/archive/results-codedecides-run1-{INVALID-envgap,valid}-20260829.json.
