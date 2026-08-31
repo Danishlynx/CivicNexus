@@ -1,165 +1,65 @@
-# We shipped a failing grade on our own public page
+# Permits take weeks. The answer is usually already in the code.
 
-### What building a governed agent fleet for municipal permits taught us about honesty as an engineering practice
+*I created this piece of content for the purposes of entering the All Things Agentic Hackathon.*
 
-*I created this piece of content for the purposes of entering this hackathon.*
+If you have ever applied for a building permit, you know the shape of it. You send in a form, maybe a scanned PDF and a crooked phone photo of your floor plan, and then you wait. Weeks. Sometimes months.
 
----
+What bothered me is that the answer is usually already sitting in the municipal code. Somebody just has to read it, apply it to your facts, and write down which section says so.
 
-If you open our project's evaluation page right now, the first number you see is
-red. Decision accuracy: **75%**. The gate is 85%. It says **FAIL**, in the
-table, on a public URL, with every failing case named by id.
+That turns out to be most of the job. A clerk prints the file, checks it is complete, routes it to each department in turn, relays every question back to the applicant, and re-reads the whole thing every time a reply lands. Reading and routing. Almost never deciding.
 
-We could have deleted that page, or moved the threshold to 70% — four seconds
-of work, and nobody would ever have known. We did neither, and that turned out
-to be the most useful engineering decision we made.
+So I built CivicNexus: a fleet of agents that does the reading, with a hard stop where a person does the deciding.
 
-## The thing we built
+## What it does
 
-CivicNexus runs municipal permit casework end to end with a fleet of AI agents.
-A person wants to convert their garage into a small bakery. They email the city
-a half-filled form and a crooked phone photo of a floor plan. Today that file
-enters a queue of inbox hops and waits — often through weeks or months of
-backlog — for an answer the municipal code already determines.
+An application arrives by email. If there are attachments, they are allowlisted, screened as raw bytes, transcribed by Cloud Vision, and screened a second time as plain text, all before any model sees them.
 
-The clerk who eventually decides isn't slow. The clerk is a message bus: they
-check completeness, route the file to zoning and fire and public works in
-sequence, relay every question to the applicant, and re-read the whole thing
-each time a reply lands. Their day is reading and routing. It is almost never
-deciding.
+A coordinator agent triages the case and hands it to specialist reviewers. Every determination has to quote the municipal code word for word, and a verifier checks those quotes byte for byte against the committed corpus text. If a quote does not match, the case goes back with a critique and gets one retry. Either way the verifier's report travels with the case, pass or fail.
 
-So we gave the reading to machines. Attachments are screened before any model
-sees them, transcribed by a deterministic OCR engine, then screened again as
-plain text. A coordinator agent triages the case and fans out to specialist
-reviewers. Every determination must quote the municipal code verbatim, and a
-verifier checks those quotes byte-for-byte against the committed corpus text.
-Then the case **stops**, and only a named human can approve, deny, issue, or
-close it — enforced not by a UI convention but by a write-once approval record
-that the data store itself checks inside its transition guard. A permit
-literally cannot exist without a row naming who signed it.
+Then it stops. Only a named human, working through an IAM-gated console, can approve, deny, issue or close a case. Issuing writes a one-time row in Firestore naming who signed it, and the single-writer case store checks for that row inside the state transition itself. A permit cannot exist without a record of who approved it.
 
-The pitch is one sentence: **autonomy everywhere except the signature.**
+On the deployed stack, an application with a floor plan attached went from arriving to sitting at the human gate in about 62 seconds, with a verifier-passed recommendation citing the right section of the code.
 
-Measured on the deployed system, an application with a floor-plan attachment
-went from arrival to a verifier-passed, code-cited recommendation sitting at
-the human gate in about **62 seconds**.
+## How it is put together
 
-## The red gate we refused to hide
+Four agents run on Vertex AI Agent Engine, built with Google's Agent Development Kit. Each one runs as its own service account with a custom least-privilege role, so agent-to-agent access is enforced by IAM rather than by prompt. A deliberate-deny test produced an audited 403, which is the kind of proof I wanted rather than a claim in a README.
 
-We built a benchmark of twenty verified permit cases, and its accuracy gate was
-set at 85% in the architecture spec — before any run had produced a score. Then,
-run after run, the system measured 80%, 70%, 80%, 65%, 70% — and two of those
-numbers came from *the same configuration on the same day*. At temperature zero.
-In a file whose own comment reads "a legal reviewer must be deterministic:
-identical facts, identical ruling."
+Gemini 3.5 Flash does coordination, intake and review. Gemma 4 sits in the verification layer as a second opinion on one narrow question: when the fleet asks for more information instead of deciding, is that request actually warranted? I used a different model family on purpose, because the Flash-based check had measurably rubber-stamped that exact failure. Gemma has its own quirks, and I measured them rather than assuming: it is not deterministic at temperature zero (five identical calls flipped the verdict once), and it accepts a response schema without enforcing it. So the check only fires when two independent calls agree and the quote it produces verifies byte for byte.
 
-It wasn't.
+Model Armor screens at four points. Cloud Vision does OCR at intake, which matters more than it sounds: OCR is a transcription engine, not a chat model, so text hidden in pixels cannot give it instructions. Firestore is the case store, the write-once inbox queue, the approvals ledger and the agent registry. Pub/Sub carries events, Cloud Tasks handles long timers, Cloud Run hosts the two consoles and the registry, Memory Bank handles recall across multi-week gaps, and everything is Terraform-managed.
 
-The pull toward making that number go away is strong. Average the runs. Report
-the best one. Retire the two cases that keep flipping. Change 85 to 70 and call
-it "calibrated to observed performance."
+There are two consoles, deliberately. The public one is read-only, and its service account holds exactly one Google Cloud role: `datastore.viewer`. It cannot write, cannot spend, cannot publish events, and cannot read a quarantined document, no matter what its code does. The clerk console, where approvals actually happen, is locked to one named person.
 
-We had a rule written down before any of this: *never lower a threshold to pass
-a gate; fix the system, or write the failure down honestly.* So the red number
-stayed on the public page for weeks while we worked. Every visitor could see we
-were failing our own bar.
+## The part I did not expect
 
-That turned out to matter, because a number you can't hide is a number you have
-to explain.
+I wanted to test whether the screening layer could be fooled by an image. So I built a drill: an email with a screenshot attached, where the hostile override text existed only as pixels. I byte-verified that the words were nowhere in the file.
 
-## The freeze-eve defect hunt
+The system caught it without anyone watching. Cloud Vision transcribed the image, the plain-text screen matched it at high confidence, and the case went from received to quarantined with the bytes locked in a private bucket, an incident opened, and a single trace id linking all three audit events. No model was ever called. No human was asked.
 
-The day before our internal freeze we added something unglamorous:
-artifact-level failure recording. Not a metric — just the ability to open one
-failing case and read what the pipeline did to it.
+That is the moment the project clicked for me. Not that it drafts a permit decision in a minute, but that when something adversarial arrived mid-run, it decided on its own and contained it.
 
-The bug fell out in about twenty minutes. The intake agent's instruction still
-enumerated exactly **one** permit type, left over from the first week of the
-build. Any application outside that one type silently missed a configuration
-lookup. The verifier's legality check then failed *every* outcome for those
-cases — and, worse, wrote a misleading critique that corrupted the retry,
-measurably flipping one correct finding into a wrong one.
+## The number I did not hide
 
-Weeks of "the model is being weird" was a stale list in a prompt.
+The system's decision accuracy is 75% against my own 85% target. That gate is red, and it has been red on a public page for weeks. I never lowered the threshold to make it green, and the eval report renders unedited on the live site with every failing case named by id.
 
-We fixed it. The twelve-case continuous-integration subset went **12/12, three
-consecutive times**. That gate is green now.
+Publishing that number is what got it improved. Because the failure was visible, I kept digging, and the night before freeze I found a real bug rather than a model quirk: an instruction inside the intake agent still listed exactly one permit type from an early phase of the build. Anything outside that list missed a config lookup, which made the verifier's legality check fail every possible outcome, and its misleading critique then corrupted the retry. It measurably flipped one correct answer into a wrong one.
 
-And the honest boundary of that fix showed up in the same run: the eight harder
-held-out cases measured 3 of 8. So the headline stayed red at 75%, but the
-failure had moved somewhere much more interesting — out of "our plumbing is
-broken" and into a clean, symmetric taxonomy of model judgment. Over-asking:
-requesting more information when the stated facts already decide the case.
-Over-deciding: denying when a decision-critical fact is genuinely absent. Five
-cases, each named, each reproducible.
+After that fix the CI subset went twelve for twelve, three runs in a row. The harder held-out cases still measure three of eight, which tells me exactly where the remaining problem lives: borderline statutory readings where two human reviewers would also disagree.
 
-## Measuring our way to the truth
+I also tried two things that did not work, and I am glad I measured them instead of guessing. Swapping in a bigger model at the decision step fixed two cases and broke two others, landing on the same score with worse latency. Rewriting the decision as a deterministic rules engine passed all twenty cases offline and then scored eleven live, because the problem moved upstream into which sections get pulled in. Both runs are archived in the repo. Neither is a claim I make.
 
-With a real taxonomy in hand we ran two experiments, both with the pass/fail
-rule pinned *before* the run so the result couldn't be read backwards.
+## What I would tell someone starting this
 
-**Experiment one: a bigger model at the decision step.** A statute-level study
-predicted exactly two of the five misses were model-fixable. Both converted.
-And the bigger model scored **exactly the same 15 of 20** — it regressed a case
-that had always been solid and failed another on output format, while dropping
-citation groundedness below its gate and running about 50% slower. Measured
-conclusion: model tier is not our constraint — a finding we could only earn by
-predicting first and running second.
+Instrument the failures, not the successes. Weeks of "the model is being weird" dissolved the moment I recorded which specific check failed on which case. The bug was a stale list in a prompt, and no amount of prompt tuning would have found it.
 
-**Experiment two: take the decision away from the model entirely.** We encoded
-fourteen statute sections as eighty-two explicit elements and let code compose
-the outcome from a fact sheet the model extracted. Offline it passed 20 of 20,
-including every case that had ever wobbled. Live, it measured **11 of 20** and
-was reverted under the threshold we'd pinned in advance. The rules were right;
-the extraction over-engaged sections that didn't apply, whose absent elements
-then drove a flood of unnecessary information requests.
+Decide what counts as success before you run the experiment. Every measurement in this project had its threshold written down first. That is the only reason I could accept two negative results without arguing myself into a different interpretation.
 
-Both runs are archived. Neither ships. Between them they handed us something
-better than a green number: the frontier is **which sections the reading
-engages**, not how the decision composes — now written down as the next
-problem, with its measurement plan attached.
+And put the human in the one place that matters. The fleet does all the reading, all the retrieval, all the drafting, and defends itself when attacked. The only thing it cannot do is sign. For a system that issues government documents, that is not a limitation. It is the design.
 
-## Meanwhile, the system defended itself
+## Links
 
-The part of the demo people react to hardest isn't the permit. It's a drill
-email carrying hostile override instructions hidden **only as pixels in a
-screenshot** — verifiably absent from the file's bytes.
+- Live console (read-only, no login): https://civicnexus-console-wrhx6s33dq-uc.a.run.app
+- Code, evals and every archived run: https://github.com/Danishlynx/CivicNexus
+- Four-minute demo: https://youtu.be/8mWPskk6QUo
 
-The image was transcribed by OCR, the resulting text was screened, matched at
-high confidence, and the case went straight to quarantine with the bytes held
-in a locked bucket, an incident raised, and a single trace id linking all three
-audit events.
-
-No model was ever called. No human was ever asked. It was attacked and it
-decided alone — and the incident is sitting on the public console for anyone to
-look at.
-
-## What a permit office actually gets
-
-Not "AI decides your permit." A permit office gets the reading done in a minute
-instead of a month; a determination that quotes the governing section
-verbatim, with a machine-checked receipt that the quote is real; a screening
-layer that blocked 14 of 15 drill documents before any model saw them; and an
-audit trail where every issued permit names the human who signed it.
-
-And a vendor whose evaluation page shows a failing number.
-
-That last one isn't a confession — it's the specification. A system that
-decides things about people's property has to be judged by numbers it cannot
-edit. Every run behind ours is archived in the repository — the only kind of
-claim worth making.
-
-Judge us by re-running us.
-
----
-
-**Live console (public, read-only):**
-https://civicnexus-console-wrhx6s33dq-uc.a.run.app
-**Repository:** `<REPO URL>`
-**Video (4 min):** `<YOUTUBE URL>`
-
-*Built for Google's All Things Agentic Hackathon, Fortified Enterprise Fleet
-track, on Vertex AI Agent Engine with ADK, Gemini, Gemma, Cloud Vision and
-Model Armor. All data shown is synthetic; the adversarial fixtures are
-synthetic screening-drill inputs that exist solely to validate CivicNexus's own
-guardrails.*
+Built for the All Things Agentic Hackathon, Fortified Enterprise Fleet track. All data shown is synthetic. The municipal code corpus is one public chapter of the Monrovia, CA code, attributed in the repo.
