@@ -4,6 +4,42 @@ Every billable sequence runs from THIS document, not from memory. The
 failure ledger (FAILURES.md) exists because ad-hoc commands kept re-rolling
 solved problems.
 
+## Current deployed reality (verified 2026-09-01): read this before running anything
+
+Code and measurement are FROZEN at `main` = 985812e (freeze declared
+2026-08-29). Phases 0 through 6 are complete, engineering is closed, the video
+is published (https://youtu.be/8mWPskk6QUo), and the Devpost submission is in.
+**Judging runs to 2026-10-01, 11:45 PM PT.**
+
+What is deployed, and what has to stay that way until judging closes:
+
+| Surface | State |
+|---|---|
+| caseflow engine | the proven Flash config: intake 4-type enum, verifier steps 1 to 6 with the Gemma 4 decidability judge at step 6. No `ZONING_MODEL_ID` and no `DECISION_MODE` baked in. Warm. |
+| treepres engine | deployed; the hot-add specialist |
+| Console, public reader | https://civicnexus-console-wrhx6s33dq-uc.a.run.app (no login, read-only) |
+| Console, clerk | https://civicnexus-console-clerk-wrhx6s33dq-uc.a.run.app (IAM-gated; invoker binding is exactly `user:danishlynx@gmail.com`, anonymous gets 403) |
+| Console image | v0.1.6, pinned in `infra/terraform/console_service.tf`; `/evals` serves the honest 20-case report |
+| Scaling | both Cloud Run services at `min-instances=0`, idle cost near $0 |
+
+Standing prohibitions for the judging window:
+
+- **`make teardown` is FORBIDDEN until after 2026-10-01.** The
+  `CONFIRM_TEARDOWN` guard stays in place; do not weaken it.
+- **Do not redeploy the engines or the console.** The contest rule "must
+  function consistently as depicted in the video" makes the deployed revisions
+  a compliance artifact, not just a convenience.
+- Do not delete the letters engine and do not trim CI, even though both are
+  standing cost offers in `BACKLOG.md`. They wait until judging closes.
+- Pinned evidence cases stay untouched: `case-5ea037e64ef8` (time-warp) and
+  `case-c50219ca5166` (live demo case, enforced as NEVER_TOUCH in
+  `scripts/verify_phase6.py`).
+- Hackathon credits ran out 2026-08-28, so every billed action is personal
+  money: name the estimate, get an explicit OK. $0 actions proceed.
+
+The procedures below are the record of how each thing is done and were accurate
+at freeze. During the judging window they are reference, not a work queue.
+
 ## Session-start framing (assistant sessions on Phase 5+ drill work)
 
 Fable 5's automated safeguards paused a session on 2026-08-26 — a false
@@ -38,7 +74,17 @@ report, docs, and console work run fine on any model with the opener above.
 Never resume a session that has already been paused — the flagged context
 travels with it; start fresh with the opener instead.
 
+*Phase note added 2026-09-01, framing above deliberately unedited:* the opener
+is preserved word for word because that exact wording is what was tested after
+the two pauses. If you use it now, replace only the "Current phase is 5" line
+with "Phases 0 to 6 are complete, the tree is frozen, and the project is in its
+judging window." Every defensive-framing sentence stays as written.
+
 ## Deploy an agent (hermetic)
+
+**FROZEN: do not run this during the judging window** (see "Current deployed
+reality"). Kept as the procedure for after Oct 1, or for a clean-project
+spin-up.
 
 ```powershell
 $env:PROJECT_ID='civicnexus-hack26'   # REGISTRY_MODE now defaults in-manifest
@@ -56,6 +102,11 @@ uv run python scripts/deploy_agent.py --agent-dir agents/<a>/src/<a>_agent `
 
 ## Run the hot-add demo (exit proof / video)
 
+**Billed, and frozen during the judging window.** Kept as the procedure. If it
+is ever run again, step 2 (`demo_reset`) must also be run *after* the demo, so
+the registry holds zero approved cards and the eval baseline's tool surface
+stays what was measured.
+
 1. **Quota-quiet window**: no eval runs or CI pushes within ±30 min. Check
    nothing is running; push only with `[skip ci]` during the window.
 2. **Reset the fixture** (clean BEFORE moment): 
@@ -69,6 +120,12 @@ uv run python scripts/deploy_agent.py --agent-dir agents/<a>/src/<a>_agent `
    timings persisted per attempt) — engine logs are the second stop now.
 
 ## Run evals
+
+**Frozen too.** The shipped measurement is the 2026-08-28 full run (15/20 =
+75%, gate red and visible) plus the 12-case CI smoke at 12/12 across three
+consecutive runs. Do not re-run either during the judging window: it costs
+personal money and any new number would diverge from the report the console and
+the video already show.
 
 - Registry must hold ZERO approved cards (a stray card changes the
   coordinator's tool surface vs the measured baseline): run
@@ -90,18 +147,56 @@ python -m evals.drill_runner --armor off --i-have-a-spend-ok --label drill-armor
 python -m evals.compare [--charts]
 ```
 
-The armor-OFF arm covers **text carriers only** - no PDF ingestion path exists
-(D9/A-12) - and both the arm and the table state how many fixtures were excluded
-and why. Do not quote that arm as full gate coverage.
+The armor-OFF arm covers **text carriers only**: 6 of the 15 gate fixtures are
+PDF carriers, and the drill runner has no unscreened path that ingests a PDF, so
+those fixtures are screening-layer only and their result never transfers to this
+arm (ADR-006 D9 / A-12). Both the arm and the table state how many fixtures were
+excluded and why. Do not quote that arm as full gate coverage.
+
+Scope note added 2026-09-01 so the phrase above is not read wider than it goes:
+the **product** intake path does ingest PDFs. Since 2026-08-28 intake
+attachments (PNG, JPEG, PDF; 3 per email, 4MB) are byte-screened, then
+transcribed by deterministic Cloud Vision OCR, and the extracted text is
+re-screened as plain text; an attachment OCR cannot read fails closed to
+quarantine. That closed A-12 at intake. It did not change the archived
+armor-OFF arm, which measured the drill runner's engine path and stays reported
+exactly as it was measured.
 
 `compare.py` refuses to pair arms that are not genuinely comparable and says
 "NOT a comparison" rather than showing a delta it cannot justify.
 
 
+## Intake paths that exist (verified against the deployed code, 2026-09-01)
+
+Three ways an application enters the system. All three land in the same inbox
+queue that the watcher consumes, and there is no fourth.
+
+1. **Clerk console form**: `GET /cases/new` + `POST /cases/new`, clerk mode
+   only. Structured fields are composed into the same email-shaped text the
+   watcher consumes and submitted with `source="console_form"` plus a named
+   human. Fully proven; this is the default path on camera.
+2. **Watcher, fixture drive**:
+   `uv run python scripts/inbox_watcher.py --once <file>` drives one
+   application file and exits. Every recorded rehearsal measurement in
+   `docs/shotlist.md` §2 used this path.
+3. **Watcher, live Gmail over IMAP**: `--consume --watch-gmail
+   --i-accept-billing`, spend bounded by `--max-cases` (default 3), crash
+   recovery requeues anything a dead run left claimed. Honest status is
+   unchanged: no `docs/evidence/*.json` records a live IMAP firing, so treat
+   the live hop as unproven and do not describe it as proven anywhere.
+
+The console never invokes an engine (D13). The watcher is what drives intake
+into review; the console reads and transitions.
+
 ## Phase 5 drills (ADR-006)
 
 All four are $0 unless noted. Each writes evidence to `.deploy/*_last_run.json`
 BEFORE parsing, so a crashed run still leaves a usable record.
+
+Judging-window note (2026-09-01): these are $0, but `make demo-injection` and
+`dlq-replay` write new cases, incidents and events into the same Firestore the
+public console is serving to judges. Leave them alone unless there is a reason
+to run them, and never touch the pinned evidence cases.
 
 | Drill | Command | Cost | Detail |
 |---|---|---|---|
@@ -123,7 +218,20 @@ to the system.
 
 **Ablation arms are BILLED and gated behind explicit flags** - see "Run evals".
 
-## Video day (Phase 7) — additions
+## Video day (Phase 7): EXECUTED 2026-08-31; kept as the procedure
+
+The take was recorded 2026-08-31 and published 2026-09-01 at
+https://youtu.be/8mWPskk6QUo. `docs/submission/video-script.md` is the script
+that was shot; `docs/shotlist.md` carries the measured timing ledger behind it
+and the ratified video-structure ruling that shaped it.
+
+One item is still live: **if the ASK-FIRST `min_instances=1` lever was applied
+to caseflow and treepres for the recording, confirm it is back at 0.** Nothing
+in this runbook records which way it went, so verify rather than assume; idle
+cost through Oct 1 depends on it.
+
+The original checklist, kept:
+
 
 - Clean browser profile + empty desktop (no third-party logos — rules).
 - Reserve a quota-quiet hour; do a full rehearsal run first.

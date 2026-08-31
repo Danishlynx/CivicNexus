@@ -12,6 +12,9 @@ Google Cloud (Vertex AI Agent Engine, ADK, Gemini, Model Armor) for the
 
 ## Try it
 
+**Demo video (public, YouTube):** https://youtu.be/8mWPskk6QUo
+(the fastest way to see a case run end to end).
+
 **Hosted console (public, read-only):**
 https://civicnexus-console-wrhx6s33dq-uc.a.run.app
 
@@ -39,6 +42,8 @@ case remains browsable on the public reader, and the write-once `approvals/`
 row naming the human approver (`approvals/apr-ea2cfd823116`, naming the
 operator / issue / ISSUED) exists in Firestore as the durable evidence of the
 clerk walk — the case page explains the row; it does not render its contents.
+Both console services run at `min-instances=0` and stay up through judging, to
+2026-10-01; `make teardown` is blocked until after that.
 
 All data on the site is **synthetic** (faker with fixed seeds). Strings like
 `CANARY-*` are deliberately planted leak detectors, not mistakes — every page
@@ -159,7 +164,9 @@ silently absorbed.
 ## Spin-up from a clean project
 
 **Honest status first: this sequence has NOT been re-verified end-to-end from a
-clean project as of 2026-08-28.** It is assembled from the verified build
+clean project.** That was written on 2026-08-28 and it is still true at the
+2026-08-29 freeze, which is where `main` stands: no commit after the freeze
+touches code. It is assembled from the verified build
 history of the one project it has run in (`civicnexus-hack26`). The known
 clean-project deltas are called out inline.
 
@@ -208,7 +215,8 @@ project with billing enabled; `gcloud auth application-default login` done.
 7. **Verify:** `make test` (lint, strict mypy, unit + contract tests),
    `make smoke`, then the phase verifiers (`make verify-phase-N`). The current
    tree measures **331 passed, 14 skipped, coverage 90.23%** on `make test`
-   (the gate recorded at commit `f82871a`).
+   (the gate recorded at commit `f82871a`, the last commit that touched code;
+   every commit after it is documentation).
 
 ## Evaluation results
 
@@ -246,6 +254,19 @@ baseline, well inside B-006's documented run-to-run spread (five runs at
 difference to the changes rather than to that spread. Both artifacts are archived in `evals/archive/`
 (`results-full-20260828.json`, `results-above85-run1-20260829.json`). The
 number quoted above is the 2026-08-28 run, and this note travels with it.
+
+**Measured and parked, not shipped (2026-08-29).** Two alternative
+configurations were run against the same 20 cases and neither ships. Pro at the
+decision step scored 15/20, net zero (Ablation 0 below). A code-decides
+architecture, in which the model extracts facts and code applies the rule,
+proved **20/20 offline** against the golden expectations and then measured
+**11/20 live**, and was reverted the same day under a rule pinned before the
+run. It is recorded in `docs/adr/008-code-decides.md` (proposed, measured,
+parked, not ratified) on branch `feature/code-decides`, with both artifacts in
+`evals/archive/`. The shipped engine is the Flash configuration the table above
+measures, and the
+[accuracy by configuration](docs/charts/accuracy-by-config.svg) chart puts all
+of these side by side.
 
 **The full-set gate is red, ships red, and the number is better understood
 than it looks — the story is the project's clearest honesty exhibit.** Through
@@ -502,9 +523,9 @@ agents/     ADK agents: caseflow (coordinator+intake+zoning), safety, letters, t
 libs/       contracts (every schema, single source of truth), tools (stores, armor, OCR, inbox), verifier, otel, clock
 services/   registry (private Cloud Run), console (one image, reader+clerk services)
 infra/      Terraform — the only way infrastructure changes
-evals/      PermitBench: 20 golden cases + 25-artifact drill corpus, runner, ablation compare
+evals/      PermitBench: 20 golden cases + 25-artifact drill corpus, runner, ablation compare, archive/ (every recorded run)
 scripts/    deploy, demo drivers (hotadd/injection/timewarp/dlq-replay), inbox watcher, verifiers
-docs/       PRODUCT, ARCHITECTURE, ADRs 001–007, RUNBOOK, eval report, ablations, evidence/
+docs/       PRODUCT, ARCHITECTURE, ADRs 001–008 (008 measured and parked, not ratified), RUNBOOK, eval report, ablations, charts/, evidence/, submission/
 ```
 
 Key make targets (each prints PASS/FAIL): `make test`, `make smoke`,
@@ -522,7 +543,20 @@ Nothing was re-verified line by line in this pass — the SECTION NAMES quoted a
 reliable locator. Entries added or corrected today (test counts, configuration note, golden-014 repair, Gemma,
 charts) cite sections and artifacts rather than PROGRESS line numbers for exactly this reason.
 
+BLOCKERS.md UPDATE (2026-09-01): the BLOCKERS.md line numbers below have been DROPPED rather than renumbered, and those
+entries now locate by B-number plus the quoted section heading. Reason, measured while writing this pass: the pointers had
+already drifted (a 32-line insert, then a further ~61-line shift below B-001 while this edit was in progress), so any
+number written here is stale on arrival. B-numbers and headings do not move. PROGRESS.md line numbers were NOT re-checked
+in this pass and keep the caveat above.
+
 URLS
+- Demo video https://youtu.be/8mWPskk6QUo (public, YouTube): same URL recorded in docs/submission/blog.md:63 and
+  docs/submission/social.md:29,37; shot structure in docs/submission/video-script.md. Length and cut are not claimed here
+  beyond what the video itself shows.
+- Both console services stay up through judging to 2026-10-01 / teardown blocked: CLAUDE.md make-targets table
+  ("do NOT run before judging ends Oct 1"). min_instance_count = 0 on BOTH services, read from
+  infra/terraform/console_service.tf:69-73 (reader) and :103-106 (clerk), with max_instance_count = 2 bounding
+  anonymous load; cost-guard rationale in CLAUDE.md prime directive 8 and ADR-007 D9's abuse table.
 - Public reader + clerk URLs: PROGRESS.md:114-117.
 - Reader single role [datastore.viewer] + verifier scope caveat (project-level direct bindings only): PROGRESS.md:104-106,158 (verify-phase-6 assertion + D13 scope note), ADR-007 D13 table + "one-sentence version" (docs/adr/007-console.md:333-349).
 - Clerk sole invoker = user:danishlynx@gmail.com; widening turns the gate red: PROGRESS.md:148-151,159; ADR-007 D2 platform correction (007-console.md:227-238).
@@ -536,7 +570,7 @@ WHAT-IT-DOES NUMBERS
 - Attachment allowlist PNG/JPEG/PDF, 3 per email, 4MB cap: PROGRESS.md:240-246.
 - Approvals row verified inside CaseStore.transition (A6): PROGRESS.md:41-45; ADR-007 D3.
 - Verifier-failed cases still advance to PENDING_HUMAN with the failed report attached: docs/ablations.md:34-37 (7/12 unresolved-after-verification); PROGRESS.md:829-832 (PENDING_HUMAN on every path incl. double verifier failure).
-- "Content the screen flags never reaches the fleet" (qualified, not absolute): B-014 never-bare rule BLOCKERS.md:457-459; 14/15 with characterised miss PROGRESS.md:389-399.
+- "Content the screen flags never reaches the fleet" (qualified, not absolute): B-014 never-bare rule (B-014 FINAL, "Reporting rule, binding on the README, eval report and video"); 14/15 with characterised miss PROGRESS.md:389-399.
 
 ARCHITECTURE / DIAGRAM
 - 4 agents + per-agent SAs + custom role: PROGRESS IAM log 2026-08-20 rows (PROGRESS.md:559,564); agents/ dir listing (caseflow, safety, letters, treepres, hello).
@@ -553,45 +587,66 @@ ARCHITECTURE / DIAGRAM
 - 4 screening points names: libs/contracts/src/civicnexus/contracts/incidents.py:16-22.
 - InboxStore write-once, two feeders, single consumer: PROGRESS.md:171-177.
 - Registry private; console reads registry_agents via Firestore: ADR-007 D7 (007-console.md:399-405).
-- SAFE_MODE not implemented / CONSOLE_MODE=reader: B-015 item 6 (BLOCKERS.md:402-408); ADR-007 D4.
+- SAFE_MODE not implemented / CONSOLE_MODE=reader: B-015 item 6 ("§11/Appendix A `SAFE_MODE` is NOT implemented"); ADR-007 D4.
 - Derived activity feed, labelled: ADR-007 D5 rule 2; B-015 item 5.
 
 SPIN-UP
 - Not re-verified from clean project: PROGRESS.md:101-103 (honest gap 2); BACKLOG.md deferred item (line 84).
 - gcloud services enable serviceusage/cloudresourcemanager before first apply: PROGRESS.md:695-698.
-- GCS state backend created out-of-band, versioned, bootstrap-cycle reasoning: BLOCKERS.md B-013 (695-723).
+- GCS state backend created out-of-band, versioned, bootstrap-cycle reasoning: BLOCKERS.md B-013 (tfstate bucket created
+  out-of-band with gcloud, directive 6 record).
 - budget_currency must match billing account: terraform.tfvars.example:5-11.
 - Budget alerts $50/$100/$140 gross: PROGRESS.md:654-655; CLAUDE.md bootstrap.
-- 22 APIs: infra/terraform/apis.tf:3-26 (22 entries; vision.googleapis.com added 2026-08-28 per B-016, BLOCKERS.md:8-19 — PROGRESS's "20 APIs" lines are Phase-0-era history).
-- First clean-project apply expected to fail on the two Cloud Run services (non-empty image defaults point at civicnexus-hack26's private Artifact Registry; the AR repo is itself Terraform-managed, so images cannot be pre-built): infra/terraform/console_service.tf:17-24 (console:v0.1.4), infra/terraform/registry_service.tf:5-20 (registry:v0.1.0 default + AR repo resource); Makefile:16-17 (bootstrap = full-module apply); A8 rationale in both .tf comments.
-- Image override lines: terraform.tfvars.example:13-21; PROGRESS.md:101-103.
+- 22 APIs: infra/terraform/apis.tf:3-26 (22 entries, counted 2026-09-01; vision.googleapis.com added 2026-08-28 per B-016 — PROGRESS's "20 APIs" lines are Phase-0-era history).
+- First clean-project apply expected to fail on the two Cloud Run services (non-empty image defaults point at civicnexus-hack26's private Artifact Registry; the AR repo is itself Terraform-managed, so images cannot be pre-built): infra/terraform/console_service.tf:17-24 (console:v0.1.6, the deployed tag as of the freeze), infra/terraform/registry_service.tf:5-20 (registry:v0.1.0 default + AR repo resource); Makefile:16-17 (bootstrap = full-module apply); A8 rationale in both .tf comments.
+- Image override lines: terraform.tfvars.example:13-20 (the file is 20 lines); PROGRESS.md:101-103.
 - Deploy-agent procedure: docs/RUNBOOK.md "Deploy an agent (hermetic)".
-- make test 331 passed, 14 skipped, coverage 90.23%: recorded gate line in the commit message of f82871a ("Gate: 331 passed / 14 skipped, coverage 90.23%, mypy strict"). Supersedes the earlier 310/89.65% figure (PROGRESS.md:260-262), which predates the step-6 + taxonomy + fixture work.
+- make test 331 passed, 14 skipped, coverage 90.23%: recorded gate line in the commit message of f82871a ("Gate: 331 passed / 14 skipped, coverage 90.23%, mypy strict"). Supersedes the earlier 310/89.65% figure (PROGRESS.md:260-262), which predates the step-6 + taxonomy + fixture work. Re-checked 2026-09-01: `git diff --stat f82871a..HEAD` touches only
+  README.md, docs/, BLOCKERS.md, PROGRESS.md and evals/archive/, so no commit after f82871a changes what `make test` runs.
 
 EVALS
 - Headline table values (75.00 (15/20) / 87.50 / 95.00 / 100.00 / 90.00 / 0.00 / 66s/84s / 529,470; Gates: FAIL; 20 cases, run 2026-08-28): docs/eval-report.md:1-20 (full run). Smoke-subset 12/12 ×3 + fix narrative: PROGRESS.md "Accuracy levers" section; all runs archived under evals/archive/ (lever runs 1-2, shipfix runs 3-4, full run, red-era baseline).
-- Gate red statement + 65-80% five-run range + over-asking failure mode: BLOCKERS.md B-006 (241-263); PROGRESS.md:575-580.
-- Three missed cases named: docs/eval-report.md:38-43.
-- ~45 artifacts (20 golden + 25 adversarial, census 15/4/3/3): ADR-006 D7 (docs/adr/006:130-135); PROGRESS.md:439,812-813.
+- Gate red statement + 65-80% five-run range + over-asking failure mode: BLOCKERS.md B-006 (header + "Addendum 2
+  (2026-08-28, post-eval-full)"); PROGRESS.md:575-580.
+- The five missed cases named (was written as "three"; the shipped 15/20 run has FIVE, and 008/010/013/014/020 is what the
+  report lists): docs/eval-report.md:46-52, section "Where it still fails".
+- ~45 artifacts (20 golden + 25 adversarial, census 15/4/3/3): ADR-006 D7 (docs/adr/006-model-armor-and-phase5-drills.md:130-135);
+  PROGRESS.md:439,812-813.
 - Ablation 1 numbers (75.0/75.0, 100.0/91.7, 91.7/87.5, 7 caught, 0 of 7 corrected, 655,564 vs 258,703, 2.5x): docs/ablations.md:26-40; PROGRESS.md:458-476.
 - Small-sample caveat on accuracy delta: PROGRESS.md:489-494.
 - Ablation 2 (9/9 blocked ON; 7 of 8 scoreable APPROVE OFF; adv-013 503 unscoreable; adv-015 request_info; 6 PDF fixtures excluded; canary 0; text-carriers-only scope; no no-injection control): PROGRESS.md:509-542; docs/ablations.md:42-58.
 - Configuration note under the headline table (three post-baseline changes; the one run carrying all three = 14/20; run-to-run spread 65–80% = 13–16 of 20 per B-006's five-run symptom; both artifacts archived; baseline unchanged): BLOCKERS.md B-006 addendum 5; PROGRESS.md "Above-85 run 1 OUTCOME" section; artifacts evals/archive/results-full-20260828.json and results-above85-run1-20260829.json (the 14/20 read directly from the latter's metrics block: decision_accuracy 0.7, 20 cases, 0 errors).
 - golden-014 repaired 2026-08-29, expectation untouched (correcting the earlier "deliberately not edited" clause): commit f82871a diff on evals/permitbench/templates.json (scenario_email sentence only; expected_outcome / required_citations / must_request / tags unchanged) + the `_instrument_repair` provenance field beside the fixture; PROGRESS.md "Above-85 push" fix 3; BLOCKERS.md B-006 addendum 4.
 - Gemma in the verification layer (26B, Vertex managed API, step 6, 2-of-2 self-agreement + byte-verified quotes, 1-in-5 temp-0 verdict flip, response_schema not enforced): wording pre-committed in PROGRESS.md "Gemma bonus claim, wording pre-committed"; mechanism + probe results in the same "Above-85 push" section and commit f82871a's message; **zero firings** measured across the 20 cases of evals/archive/results-above85-run1-20260829.json (no decidability entry in any case's verifier_first_failures / verifier_final_failures) — PROGRESS.md "Above-85 run 1 OUTCOME".
+- Measured and parked, not shipped (Pro at decision 15/20 net zero; code-decides 20/20 offline then 11/20 live, reverted under
+  the rule pinned before the run, parked and NOT ratified): docs/adr/008-code-decides.md status line + section 4 "Evidence
+  available now - offline only" (20/20) + "Measured result (2026-08-29, appended at parking)" (11/20, citation precision 0.39,
+  p95 267s); PROGRESS.md "Code-decides (ADR-008, branch feature/code-decides)" section; artifacts
+  evals/archive/results-pro-at-decision-20260828.json and results-codedecides-run1-valid-20260829.json (the INVALID-envgap
+  artifact beside it is the discarded first attempt, kept as history and labelled in its filename). Branch feature/code-decides
+  exists locally and is not merged.
+- Repository-layout line (ADRs 001-008, docs/charts, docs/submission, evals/archive): directory listings of docs/adr, docs/charts,
+  docs/submission and evals/archive as of 2026-09-01.
 - Ablation charts (docs/charts/*.svg): hand-authored 2026-08-29 from docs/ablations.md, docs/eval-report.md, BLOCKERS.md B-006 and the named archive artifacts; per-chart source lists in docs/ablations.md "Charts". No plotting library ran and no value in them is re-measured — matplotlib is still absent, which is why evals/compare.py itself writes no charts.
 
 INJECTION REPORTING (B-014 rule)
-- Reporting rule binding: BLOCKERS.md:457-459 (B-014 final) + docs/ablations.md:62.
+- Reporting rule binding: BLOCKERS.md B-014 FINAL, "Reporting rule, binding on the README, eval report and video"
+  + docs/ablations.md:62.
 - Shipped setting pi_and_jailbreak {ENABLED, LOW_AND_ABOVE}: PROGRESS.md:367-369.
-- Four-row progression table: PROGRESS.md:371-376; BLOCKERS.md:425-430; docs/ablations.md:70-75.
+- Four-row progression table: PROGRESS.md:371-376; BLOCKERS.md B-014 FINAL, the table under "FINAL, measured and
+  reproducible"; docs/ablations.md:70-75.
 - Stable across three consecutive runs, same miss: PROGRESS.md:378-380.
 - Two levers reported separately: PROGRESS.md:381-387.
-- adv-001 holdout: 46% share, siblings 45%/47%, non-monotonic boundary (63 MATCH / 54 NO / 46 NO / 37 MATCH): PROGRESS.md:389-395; BLOCKERS.md:646-665.
+- adv-001 holdout: 46% share, siblings 45%/47%, non-monotonic boundary (63 MATCH / 54 NO / 46 NO / 37 MATCH): PROGRESS.md:389-395; BLOCKERS.md B-014 FINAL, "The one holdout is characterised, and deliberately NOT tuned away", with the
+  composition walk in B-014 (original) under "Dilution is NOT a clean threshold".
 - Negative arm 12 controls 0 FP at every rung: progression tables above.
 - §11 delta 15/15 vs 14/15 honest: PROGRESS.md:396-399,443.
-- Coverage: PDF screening reads page text + /Subject,/Keywords,/Author but not embedded raster images (A-12): PROGRESS.md:401-405; BLOCKERS.md:617-624.
-- 11/15 instructions match as bare text vs 2/15 inside PDFs: PROGRESS.md:246-248; BLOCKERS.md:606-609.
+- Coverage: PDF screening reads page text + /Subject,/Keywords,/Author but not embedded raster images (A-12): PROGRESS.md:401-405;
+  BLOCKERS.md B-014 (original), finding 2 "Carrier coverage is uneven, and one carrier is blind".
+- 11/15 instructions match as bare text vs 2 as shipped inside their documents: PROGRESS.md:246-248; BLOCKERS.md
+  B-014 (original), "ROOT-CAUSED 2026-08-27 (measured, $0) - the miss was mostly CARRIER, not wording" ("11 of 15
+  instructions already MATCH as plain text, but only 2 match as shipped"), plus its finding 1, PDF carriers screen
+  materially less sensitively than plain text.
 - OCR intake pipeline: images in full; PDFs first 5 pages only (synchronous files:annotate cap, pinned): libs/tools/src/civicnexus/tools/ocr.py:14-19,31-32,93-94; raster text beyond page 5 outside coverage (no page-count guard in process_email, scripts/inbox_watcher.py:399-433); deterministic Cloud Vision; fail-closed attachment_unreadable→QUARANTINE: PROGRESS.md:240-258; scripts/inbox_watcher.py:417-432.
 - Live containment: pixel-only hostile text, MATCH_FOUND at HIGH, case-1216f7712d35 RECEIVED→QUARANTINED, inc-420ff7fd33a1, one traceparent, zero engine calls: PROGRESS.md:276-281.
 - demo-injection --with-letters: point 1 adv-002 quarantined byte-identical zero engine calls; point 3 letter_draft NO_MATCH staged action.pending_approval; all four points live: PROGRESS.md:213-222.
@@ -600,14 +655,15 @@ INJECTION REPORTING (B-014 rule)
 
 FAILURE MODES
 - Scale limits (no pagination ~10k ceiling; single serial watcher; human-gate ceiling; fix shape): docs/BACKLOG.md:86.
-- Outcome variance deny-vs-request_info = Phase 1 gate delta, B-006 family: PROGRESS.md:619-621; BLOCKERS.md:241-251,365.
+- Outcome variance deny-vs-request_info = Phase 1 gate delta, B-006 family: PROGRESS.md:619-621; BLOCKERS.md B-006
+  (header + the over-asking/over-deciding split in "Addendum 2 (2026-08-28, post-eval-full)").
 - Redactor not built + compensating controls: ADR-007 D10 redactor row (007-console.md:456); B-015 item 3.
-- SAFE_MODE zero code hits: B-015 item 6 (BLOCKERS.md:402-408).
+- SAFE_MODE zero code hits: B-015 item 6 ("verified, zero code hits repo-wide").
 - Token consumption not built: B-015 item 2; ADR-007 D3.
 - No Looker dashboard: B-015 item 7; ADR-007 delta 7.
 - Emulator path has never executed anywhere (no local Docker; every Phase 6 commit [skip ci]): PROGRESS.md:95-100.
 - IMAP-attachment and PDF .eml legs not fired live: PROGRESS.md:300-304.
-- Verifier retry 0/7 + byte-exact quote root cause (root cause recorded in B-009's update): PROGRESS.md:474-487; BLOCKERS.md B-009 (25+).
+- Verifier retry 0/7 + byte-exact quote root cause (root cause recorded in B-009's update): PROGRESS.md:474-487; BLOCKERS.md B-009.
 
 DISCLOSURES
 - Human authorized every apply; most human-run (e.g. PROGRESS.md:324-325); final console apply human-authorized agent-run (PROGRESS.md:108-112); v0.1.1 revision apply agent-run under standing authorization (PROGRESS.md:152-154).

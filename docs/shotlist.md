@@ -1,7 +1,41 @@
-# CivicNexus — video shotlist (FINAL for `docs/shotlist.md`)
+# CivicNexus — video shotlist
 
-Status: **DRAFT→FINAL after verdict fixes, 2026-08-28** — refuter verdict applied
-(defects 1–5); not yet in the repo.
+## STATUS: EXECUTED. The video is recorded and published.
+
+**Recorded 2026-08-31, published 2026-09-01 (public YouTube):
+https://youtu.be/8mWPskk6QUo**
+
+This document is now a historical planning record, kept because it carries the
+measured timing ledger (§2) that every on-camera claim was paced against, and
+because the fit problem it works through (§3) is the reason the take was
+structured the way it was.
+
+Three things a reader should know before using it:
+
+1. **The take did not follow Plan A (§4) verbatim.** It followed the human's
+   video-structure ruling of 2026-08-29 (recorded in PROGRESS.md under "FREEZE
+   DECLARED"), implemented shot by shot in `docs/submission/video-script.md`.
+   Under that ruling the continuous take carries the live product loop
+   (application, OCR, human gate, clerk walk) plus the screening drill;
+   time-warp runs live in-take only if rehearsal timing allows; hot-add is
+   proven through its recorded evidence plus the registry UI in the proof
+   segment. That is a ratified deviation from the internal Definition-of-Done
+   wording, taken because hot-add's measured AFTER review (502.2s) cannot fit a
+   4:00 video. `docs/submission/video-script.md` is authoritative for what was
+   shot; this file is authoritative for the measurements behind it.
+2. **No measurement in §2 has been changed.** Every [M] and [E] tag stands
+   exactly as recorded, and the video itself is the record of which optional
+   paths (live Gmail leg, in-take time-warp, letters leg) were actually taken
+   on the day.
+3. **The open questions in §7 are closed or historical** (see the status line
+   on each). They no longer block anything.
+
+---
+
+Original status line, kept as the record: **DRAFT→FINAL after verdict fixes,
+2026-08-28** — refuter verdict applied (defects 1–5); not yet in the repo.
+(That last clause was true the day it was written; the file landed in `docs/`
+shortly after.)
 Every timing below is tagged **[M]** (measured, from repo evidence — file named in
 the SOURCES block at the end) or **[E]** (estimate, honestly labeled, needs a
 rehearsal measurement before this shotlist is locked).
@@ -133,6 +167,11 @@ rehearsal measurement):
    honest ablation; skipping it on camera would need a driver flag (code change,
    human OK). Raising CLOCK_MULTIPLIER shrinks only the ≈52s warp wait.
 
+**Outcome (2026-08-29): the human ruled, and the ruling went further than
+this recommendation:** hot-add left the continuous run entirely and is proven
+in the proof segment from recorded evidence plus the registry UI. The
+recommendation below is what this draft proposed at the time.
+
 **Decision this draft takes (recommendation, for human ratification):** shoot
 the ENTIRE 4:00 as one continuous unedited screen recording. Segments 1/2/4/5
 are performed live as window switches while the long-running beats stream in
@@ -165,6 +204,11 @@ time-warp; the email loop is not the problem.
 ---
 
 ## 4. Plan A — shot-by-shot script (one continuous 4:00 recording)
+
+**SUPERSEDED 2026-08-29, kept as the record.** The human's video-structure
+ruling replaced this plan, and `docs/submission/video-script.md` is the script
+that was actually shot. Plan A's shot detail stays here because it is where the
+beat-by-beat reasoning and the per-beat measured timings were worked out.
 
 **Conditional on OPEN QUESTION 1 (AFTER ≤ ~110s at rehearsal). All "video t="
 values are planning targets, not measurements.**
@@ -337,6 +381,12 @@ moment they land.
 
 ## 6. Pre-flight checklist (run down IN ORDER on recording day)
 
+**EXECUTED on the recording day (2026-08-31).** The shipped script carries this
+list as its PREP HEADER; both copies say the same thing. Items 3 and 4 (pinned
+evidence cases untouched, registry reset before and after) remain standing
+rules for as long as the evidence cases matter, which is through the judging
+window.
+
 1. **Branding (binding — rules disqualify):** clean browser profile, empty
    desktop, no third-party logos/trademarks anywhere — tabs, icons, wallpaper,
    taskbar.
@@ -368,7 +418,25 @@ moment they land.
 
 ---
 
-## 7. Open questions (block the shotlist lock; owner = human unless noted)
+## 7. Open questions: ALL CLOSED as of 2026-09-01 (historical)
+
+These blocked the shotlist lock while the take was still ahead. The video is
+recorded and published, so none of them is live work. Each carries its
+disposition; the question text below it is unchanged.
+
+| # | Disposition |
+|---|---|
+| 1 Hot-add AFTER duration | **CLOSED by ruling, not by re-measurement.** The 2026-08-29 video-structure ruling moved hot-add out of the continuous run and into the proof segment as recorded evidence plus the registry UI. The 502.2s [M] figure stands untouched. |
+| 2 Gmail-IMAP leg | **CLOSED as a decision, still honest as a caveat.** The shipped script defaults to the fully proven form-feed path and forbids the word "email" on camera unless the live Gmail leg was rehearsed that day (`docs/submission/video-script.md`, CONTINGENCY table). The evidence-precision caveat in §2 is unchanged and still governs any future claim. |
+| 3 Concurrency untested | **OVERTAKEN.** The ruling removed the four-driver simultaneous cluster that created the concern; the take runs the product loop plus the screening drill, with time-warp as optional ambient footage. |
+| 4 Architecture diagram | **CLOSED 2026-08-29**, and further settled since: a rendered PNG ships at `docs/submission/architecture-diagram.png` alongside the README mermaid diagram. |
+| 5 Stale coverage prose in `docs/ablations.md` | **FIXED 2026-08-29.** The don't-re-run-`compare.py` caution below still applies to that hand-edited paragraph. |
+| 6 Time-warp on-camera length | **CLOSED by ruling:** live in-take only if rehearsal timing allowed, narrated as ambient and never as a completed result; otherwise the recorded evidence line. No driver flag was added and CLOCK_MULTIPLIER was not raised. |
+| 7 Clerk-walk duration | **CLOSED as unmeasured.** It stayed an [E] estimate of about 20 to 30 seconds; no repo measurement was ever produced. |
+| 8 Letters leg in-take | **CLOSED: left out**, as the default here recommended. |
+
+Question text as it stood before the take:
+
 
 1. **Hot-add AFTER duration.** Sole measurement is 502.2s — incompatible with
    any ≤4:00 video. Re-measure at rehearsal; if it stays ~500s, a CLAUDE.md

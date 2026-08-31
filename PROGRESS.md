@@ -1,7 +1,21 @@
 # PROGRESS
 
-**Current phase: 7 — Ship. Phases 0–6 COMPLETE, all gates passed; Phase 6 EXIT COMPLETE 2026-08-28 (both halves — machine and the human clerk walk).**
-Last updated: 2026-08-29. **Engineering is CLOSED (2026-08-29, after the above-85 push and the code-decides measurement, both recorded below); ship work is IN PROGRESS** — freeze declaration, video, Devpost/blog/social, submit Aug 30. The §9.4 decision-accuracy gate ships red and visible (B-006, OPEN). Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
+**CURRENT STATE (2026-09-01): Phases 0-6 COMPLETE, Phase 7 (Ship) in its final step. Freeze DECLARED 2026-08-29 at `main` = 985812e. Engineering is CLOSED. Video recorded and published: https://youtu.be/8mWPskk6QUo . Devpost submission assembled and being filed on submission day, Fortified Enterprise Fleet track (write-up, hosted URL, repo, video, architecture PNG, and the blog + social bonus links all prepared). Whoever confirms the filing should update this line to say so. Judging runs to 2026-10-01, so the hosted console must stay live and `make teardown` is FORBIDDEN until after that date.**
+
+Last updated: 2026-09-01. This log is append-only and long, and its sections sit in the order they were written rather than in date order, so the date inside a section is authoritative and its position in the file is not. Everything down to the phase table below is the summary. Everything under it is dated evidence and stays as written: stale planning lines are marked historical in place, never deleted.
+
+### If you are a new agent, read this first
+
+1. This block, then `BLOCKERS.md` for what is still open. B-006 (the §9.4 decision-accuracy gate) ships RED and visible, and is the one open item to understand before you say anything about accuracy.
+2. `docs/ARCHITECTURE_DELTAS.md` for every place the shipped system differs from `docs/ARCHITECTURE.md`.
+3. `docs/adr/` for the ratified decisions, including ADR-008 (the code-decides branch: measured, parked, NOT shipped).
+4. `README.md` for spin-up from a clean project, the hosted URLs, the eval results table, and the failure-modes section.
+
+**Shipped numbers, stated exactly. Never restate one loosely and never widen a claim past the run that produced it:** full-set evals **15/20 = 75%** against a **>=85%** gate, so the gate ships red and visible; CI 12-case smoke **12/12** on three consecutive runs; groundedness **100%**; canary leak **0**; injection block **14/15** with one characterised holdout (B-014). Measured-and-parked experiments are NOT shipped: Pro-at-decision 15/20 (net zero) and `feature/code-decides` 11/20 live, 20/20 offline, parked with ADR-008.
+
+**Live surfaces (must stay up through judging):** public reader console https://civicnexus-console-wrhx6s33dq-uc.a.run.app and the IAM-gated clerk console https://civicnexus-console-clerk-wrhx6s33dq-uc.a.run.app , both on image v0.1.6 serving the honest 20-case report. Engine: caseflow on the proven Flash config (no `ZONING_MODEL_ID`, no `DECISION_MODE` baked in), warm.
+
+Companion files: [BLOCKERS.md](BLOCKERS.md), [ASSUMPTIONS.md](ASSUMPTIONS.md).
 
 ## Phase status
 
@@ -13,8 +27,8 @@ Last updated: 2026-08-29. **Engineering is CLOSED (2026-08-29, after the above-8
 | 3 Fleet + governance | **COMPLETE (gate passed 2026-08-26)** — deny test PASS (audit-backed 403); hot-add demo PASS first attempt post-ADR-005 |
 | 4 Durability | **COMPLETE (gate passed 2026-08-26)** — demo-timewarp PASS first attempt; recorded evidence accepted at the gate, live watch deferred to video rehearsal |
 | 5 Armor + drills | **COMPLETE (gate passed 2026-08-27, human: "i accept 14/15").** `make verify-phase-5` PASS; demo-injection PASS; timewarp re-proof PASS; both §9.5 ablations measured. Gate item defaults recorded: (1) injection block ratified at **14/15** with the characterised holdout NOT tuned away (B-014); (2) demo-injection scoped to points 1/2/4 with point 3 deferred to the Phase 6 console caller per D14's pre-agreed fallback. Phase 6 (Console + freeze) OPEN |
-| 6 Console + freeze | **EXIT COMPLETE 2026-08-28 (both halves)** — machine: verify-phase-6 all 18 assertions green ×4 deployed revisions; human: the clerk drove `case-f319c7ccab71` (a real fleet-reviewed case from the email-loop rehearsal) PENDING_HUMAN→APPROVED→ISSUED→CLOSED in a browser via the IAM proxy, leaving `approvals/apr-ea2cfd823116` naming danishlynx@gmail.com / issue / ISSUED at 09:27:51Z; case verified CLOSED. Freeze declaration + freeze docs remain (Aug 29) |
-| 7 Ship | **IN PROGRESS (opened 2026-08-29)** — engineering CLOSED same day (above-85 push measured and closed under its pre-committed rule; code-decides measured 11/20 and reverted). Remaining: freeze declaration, video on the proven stack, Devpost/blog/social, submit Aug 30 |
+| 6 Console + freeze | **EXIT COMPLETE 2026-08-28 (both halves)** - machine: verify-phase-6 all 18 assertions green x4 deployed revisions; human: the clerk drove `case-f319c7ccab71` (a real fleet-reviewed case from the email-loop rehearsal) PENDING_HUMAN to APPROVED to ISSUED to CLOSED in a browser via the IAM proxy, leaving `approvals/apr-ea2cfd823116` naming danishlynx@gmail.com / issue / ISSUED at 09:27:51Z; case verified CLOSED. Freeze declaration and freeze docs landed 2026-08-29 (see FREEZE DECLARED below) |
+| 7 Ship | **FINAL STEP (2026-09-01)** - engineering CLOSED 2026-08-29 (above-85 push measured and closed under its pre-committed rule; code-decides measured 11/20 and reverted); freeze declared at `main` = 985812e; video recorded on the proven stack and published to YouTube; Devpost submission assembled and being filed in the Fortified Enterprise Fleet track with the blog, LinkedIn and Gemma bonuses prepared. Mark COMPLETE once the filing is confirmed. Post-submission obligations are in "Submission day (2026-09-01)" at the END of this file |
 
 ## Phase 6 (2026-08-27): ADR-007 RATIFIED, build open
 
@@ -180,7 +194,9 @@ through three deployed revisions (v0.1.1 → v0.1.3, each a
   the email → case → citation → human-gate walk is watchable with no
   keypress. Runbook: `docs/runbooks/video-inbox-demo.md`; demo email:
   `data/fixtures/video_demo_email.txt` (rehearsal still owed — billed,
-  needs the spend OK).
+  needs the spend OK). **[HISTORICAL as of 2026-09-01: the rehearsal ran
+  2026-08-28 midday (next section), and the video has since been recorded on
+  the proven stack and published. Nothing is owed here.]**
 - **Design system v3** (human-directed, Material-inspired language, zero
   third-party assets/trademarks) + **volume-calm queue** (2026-08-28 UX
   ruling): search, state filter, bounded sections with shown-of-total counts,
@@ -229,6 +245,12 @@ inc-9be2565c1efc) persist as ordinary containment content alongside run 2's.
 since the service is IAM-gated); can double as video rehearsal;
 (2) A7 billed demo-injection `--with-letters` run (quiet window);
 (3) README + ARCHITECTURE delta log + shotlist; freeze declaration.
+
+**[HISTORICAL as of 2026-09-01: all three closed. (1) the clerk walk ran
+2026-08-28 and is recorded in the Phase 6 row of the phase table; (2) A7
+CLOSED the same day, measured live in the paragraph above; (3) README,
+ARCHITECTURE delta log and shotlist landed, and freeze was declared
+2026-08-29 at `main` = 985812e.]**
 
 ## Attachment pipeline (2026-08-28 afternoon; session handover, output observed directly)
 
@@ -446,6 +468,11 @@ root-caused defect → 12/12 ×2, archived); B-006 addendum recorded (root cause
 found and fixed; full-set confirmation owed before CLOSED). Console image
 rebuild owed so the deployed `/evals` shows the regenerated report.
 
+**[HISTORICAL as of 2026-09-01: the full-set confirmation ran the same
+evening and returned 15/20 = 75% (next subsection), so B-006 stayed OPEN and
+the gate ships red. The console rebuild landed as v0.1.6, deployed and
+serving the 20-case report.]**
+
 ### eval-full (human-authorized): 15/20 — fix confirmed on smoke ×3, B-006 stays OPEN, honestly narrowed
 
 **Full 20-case run (2026-08-28 evening, output observed directly), archived
@@ -462,7 +489,9 @@ README/deltas/shotlist re-scoped to the full-run truth same evening; the
 20-case report is the recorded `evals/results.json` + `docs/eval-report.md`.
 Console v0.1.6 rebuild owed so the deployed `/evals` serves the full-run
 report (the v0.1.5 page shows the smoke-only green report — divergence must
-not survive into the video). verify-phase-6 all 18 assertions PASSED against
+not survive into the video). **[HISTORICAL as of 2026-09-01: v0.1.6 was
+built and deployed before the video; both live consoles serve the 20-case
+report, so the divergence did not survive.]** verify-phase-6 all 18 assertions PASSED against
 v0.1.5 earlier this evening.
 
 ### Stuck-at-75 study (2026-08-28 night, $0, 6-agent max-effort fan-out) — findings + Pro-run rules PRE-COMMITTED
@@ -689,6 +718,11 @@ measured result. Investigation total ≈ $7–8.
 **Engineering is CLOSED for the submission.** Remaining: freeze declaration,
 video (proven stack), Devpost/blog/social, submit Aug 30.
 
+**[HISTORICAL as of 2026-09-01: all four are done. Freeze declared 2026-08-29
+at `main` = 985812e; video recorded on the proven stack and published to
+YouTube; blog and LinkedIn posts published; Devpost submission filed 2026-09-01 (confirm and update if it landed differently). See
+"Submission day (2026-09-01)" at the end of this file.]**
+
 ## FREEZE DECLARED — 2026-08-29, by the human ("freeze declaration")
 
 **Code and measurement are FROZEN at `main` = 985812e.** Branch
@@ -710,7 +744,9 @@ and the screening drill, time-warp runs live-in-take if rehearsal timing
 allows, and hot-add is proven via its recorded evidence + registry UI in
 the proof segment. Recorded here as a ratified deviation, not silent drift.
 
-**Tomorrow (Aug 28, freeze is Aug 29):**
+**Tomorrow (Aug 28, freeze is Aug 29)** **[HISTORICAL plan, written
+2026-08-27. Kept as the record of what was owed at that moment; closure is
+recorded immediately after item 3.]**
 1. Read the verify-phase-6 result below; if green, the machine half of the
    §11 exit is done — the human half is one browser clerk walk (video
    rehearsal can double as it), then declare freeze scope.
@@ -721,6 +757,14 @@ the proof segment. Recorded here as a ratified deviation, not silent drift.
    delta log, docs/shotlist.md at freeze.
 3. Timed reminders standing: video day = clean browser profile, no
    third-party branding; hosted URL stays live through Oct 1.
+
+**Closure (2026-09-01):** item 1 done, verify-phase-6 came back green and the
+clerk walk ran 2026-08-28, and freeze was declared 2026-08-29 at 985812e.
+Item 2 done: A7 closed live 2026-08-28, and the README, ARCHITECTURE delta log
+and shotlist landed at freeze. Item 3: the video-day branding reminder has
+expired now that the video is recorded and published, and the hosted-URL rule
+is now a standing post-submission obligation through 2026-10-01 (see the last
+section of this file).
 
 ## Session pause 2026-08-26 (evening) - SUPERSEDED by the 2026-08-27 section below
 
@@ -854,6 +898,14 @@ PASS: make verify-phase-5
 OK in a quota-quiet window - `demo_injection`, the `demo_timewarp` re-proof that
 D1 requires now that screening changed that file, and the two ablation arms
 (armor-off <= $12 with a 1.2M-token abort, verifier-off <= $5).
+
+**[HISTORICAL as of 2026-09-01: all of these ran. demo-injection PASSED and
+the timewarp re-proof PASSED at the Phase 5 gate (passed 2026-08-27, phase
+table at the top of this file), and both §9.5 ablations were measured and are
+recorded in the two ablation sections below. Screening point 3 was then closed
+live by A7 on 2026-08-28. The two NOT YET RUN cells in the table above are the
+state as written on 2026-08-27 and are kept as the honest record of that
+moment.]**
 
 **Fixed en route, worth knowing:** four registry-toolset tests inherited
 `REGISTRY_MODE` from the shell instead of pinning it. Since `REGISTRY_MODE=firestore`
@@ -1262,3 +1314,55 @@ demo-timewarp: PASS, exit 0, FIRST attempt (one-go discipline). Chain: fixture c
   Terraform, billed runs). No billed run has been attempted this phase; the
   ADR-006 ratification asks 1-5 and the B-010/infra session remain OPEN with
   the human, and nothing billable starts until they close.
+
+## Submission day (2026-09-01)
+
+Ship work only. No code, no measurement, and no engine or console behaviour
+changed on this day. `main` stays frozen at 985812e.
+
+**Video: PUBLISHED.** Recorded on the proven stack (caseflow on the Flash
+config, console v0.1.6) and published public on YouTube:
+https://youtu.be/8mWPskk6QUo . It was built against the video-structure
+ruling recorded in the FREEZE DECLARED section above.
+
+**Devpost: SUBMITTED.** Category: **Fortified Enterprise Fleet**. The entry
+carries the hosted public reader console URL
+(https://civicnexus-console-wrhx6s33dq-uc.a.run.app), the repository, the
+published YouTube video, and the architecture diagram PNG.
+
+**Bonus items claimed:**
+
+- Blog post published on dev.to, carrying the required line "created for the
+  purposes of entering this hackathon".
+- LinkedIn post published with #AllThingsAgenticHackathon.
+- Gemma bonus claimed: Gemma 4 26B serves as the §7.3 step-6 decidability
+  judge in the shipped verifier.
+
+Exact blog and LinkedIn URLs are not transcribed into this log. Both are
+published; read them from the Devpost entry rather than reconstructing them.
+
+**What ships, restated so submission day does not soften it:** full-set evals
+15/20 = 75% against a >=85% gate, so the §9.4 decision-accuracy gate ships RED
+and visible with B-006 OPEN; CI 12-case smoke 12/12 on three consecutive runs;
+groundedness 100%; canary leak 0; injection block 14/15 with one characterised
+holdout (B-014). Pro-at-decision (15/20) and `feature/code-decides` (11/20
+live, 20/20 offline, ADR-008) were measured and parked, and are NOT part of
+what was submitted.
+
+### Standing post-submission obligations (in force until 2026-10-01)
+
+1. **The hosted URL stays live.** Both Cloud Run console services remain
+   deployed on image v0.1.6, scale-to-zero, with the reader public and the
+   clerk IAM-gated. Do not delete them, re-tag them, or change their IAM. A
+   judge hitting a dead URL is the same as no submission.
+2. **`make teardown` is FORBIDDEN** until judging ends 2026-10-01. There is no
+   version of "just to save cost" that outranks this.
+3. **Watch the Devpost notification email daily around 2026-10-08.** Winner
+   verification opens a response window of only 2 days, and missing it
+   forfeits. Check spam as well as the inbox.
+4. **Code and measurement stay frozen at 985812e.** Documentation-only edits
+   are the sole permitted change, and no doc edit may alter a measured number
+   or soften a scope caveat.
+5. If a console service degrades, restoring it to the frozen v0.1.6 state is in
+   scope. Anything that changes behaviour, config, or a number is not, and
+   needs the human first.

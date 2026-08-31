@@ -5,6 +5,38 @@ paths, recommendation, who acts.
 
 ---
 
+## Status board (2026-09-01)
+
+Fast index, added so a fresh reader does not have to scan the whole file to learn what is
+still open. **Open right now: B-006, B-009, B-012. Everything else is closed.** Full
+history for every id is kept below and nothing has been deleted; superseded "original
+entry" blocks are retained as evidence.
+
+| id | status | current state in one line |
+|---|---|---|
+| B-016 | RESOLVED | `vision.googleapis.com` enabled with gcloud and then `terraform import`ed (a plain apply would have forced 8 live IAM bindings to be replaced); post-import plan reports "No changes" and the TF resource is committed in `apis.tf`. |
+| B-015 | CLOSED-BY-DECISION | Phase 6 ADR-007 deltas A1 to A10 ratified by the human 2026-08-27, so the nine listed deviations are deliberate; kept listed so README and the ARCHITECTURE delta log can cite one place. |
+| B-014 | RESOLVED | Injection gate shipped at 14/15 on `pi_and_jailbreak {ENABLED, LOW_AND_ABOVE}` with the strengthened drill corpus, negative arm 12 controls and 0 false positives, stable across three runs; the one holdout is characterised as boundary behaviour and deliberately not tuned away. The entry's reporting rule binds: never quote the number bare. |
+| B-013 | RESOLVED | tfstate bucket `gs://civicnexus-hack26-tfstate` created out of band on purpose (a bucket managed by the state it holds is a bootstrap cycle), state migrated, remote plan "No changes". Carry-forward: `make teardown` will not delete this versioned bucket, so remove it by hand after judging and only after the rest is destroyed. |
+| B-012 | **OPEN** | Third NUL/truncation event (a `.git` ref zero-filled) was recovered non-destructively with no commits or history lost, but the **root cause is still unproven**. The OneDrive hypothesis is refuted. The evidence that would separate the remaining candidates (Event Log review around the three timestamps, disk health check) was never collected. Terraform state left the local-file path with B-013, yet `.git`, the `.deploy/*_last_run.json` phase-gate evidence and the eval archive remain exposed to the same class. |
+| B-011 | CLOSED-BY-DECISION | Phase 5 ADR-006 asks 1 to 5 ratified by the human 2026-08-26, so the three spec deviations (gate denominator, ~45 eval artifacts, watchdog scope) are ratified. The entry's own status line was still reading OPEN and was corrected 2026-08-28. |
+| B-010 | RESOLVED | Second tfstate truncation: state recovered and the missing DLQ subscriber grant applied and live-verified 2026-08-26 (`1 added, 2 changed, 0 destroyed`, clean exit). The heading's trailing "GCS migration still OPEN" is stale, see the dated correction under that heading: B-013 records the migration completed the same day. |
+| B-009 | **OPEN (never formally closed)** | Composition-crash mechanism from demo run 2 is confirmed fixed (the AgentTool re-wiring produced zero validation crashes), and the wiring question was then settled by measurement on 2026-08-25: old `sub_agents` wiring 10/12 and 9/12, SHIP-OLD per the pre-committed rule, deterministic composition parked. The Firestore project-number fix is recorded as coded and awaiting redeploy, with no redeploy confirmation written into this file. Nobody ever wrote a closing note, so by its own text the entry is still open bookkeeping rather than a live unknown. |
+| B-008 | RESOLVED | First local `terraform.tfstate` truncation to 0 bytes; restored byte-exact from backup by the human 2026-08-21 and reconciled at plan. The standing rule it produced still binds: a non-zero exit at the END of an apply is a state-integrity event, not display noise. |
+| B-007 | RESOLVED | Cloud Run edge routing re-tested from scratch 2026-08-27 and behaving correctly (403 on the private service without auth and it appears in request logs, 200 on real authed routes); the console is hosted on Cloud Run today, which is the practical proof. Two follow-ups the entry named, the `REGISTRY_MODE=http` revert and removal of the interim `roles/datastore.viewer` grant, have no completion recorded here. |
+| B-006 | **OPEN (narrowed)** | Decision-accuracy gate is red and ships red. Recorded baseline is the 2026-08-28 full run at 15/20 (75%) against the >=85% §9.4 gate, with the 12-case smoke subset 12/12 on three consecutive runs and the held-out 8 at 3/8. The 2026-08-29 above-85 run measured 14/20, which fired the pre-committed "both <=16" branch, so there is **no >=85% claim** and the fixes stand only as correctness evidence. Pro-at-decision measured 15/20, net zero, so model tier is not the constraint. The config-drift disclosure in the entry travels with every quote of 15/20. Named remaining levers: entailment decidability enforcement, golden-013 borderline calibration, permit-taxonomy coverage. Threshold never lowered. |
+| B-005 | RESOLVED | "No traces" was a read-path gap, not a write failure: OTel-native spans do not surface through the legacy Cloud Trace v1 `traces.list` API. Tracing was working the whole time. |
+| B-004 | RESOLVED | OneDrive uninstalled 2026-08-18; the `OneDrive\Pictures` path is vestigial and the repo is a plain local folder. Do not re-raise sync as an explanation for anything (see B-012). |
+| B-003 | RESOLVED (worked around) | Tooling installed after retries; the machine's intermittent network is still the recorded cause of a few unscoreable eval cases in archived runs (cited inside B-009). |
+| B-002 | RESOLVED (superseded) | Phase 0 prerequisites (project, billing, ADC) have existed since Phase 0; phases 0 to 6 are complete. |
+| B-001 | CLOSED-BY-DECISION | Personal billing chosen 2026-08-18 rather than waiting on credits, with the cost guard as the compensating control (budget alerts at $50/$100/$140, Flash by default, `min-instances=0`, evals not per-push). The $150 credit form was submitted 2026-08-21. The cost guard and the per-run OK rule for full eval runs stay in force regardless of who is paying. |
+
+**Standing constraints that are not blockers but bite if forgotten:** judging runs to
+2026-10-01, so the hosted console must stay live and `make teardown` is forbidden until
+after that date; the B-013 state bucket is deleted by hand afterwards, not by teardown.
+
+---
+
 ## B-016 — vision.googleapis.com enabled via gcloud + terraform import (directive 6 record, 2026-08-28) — RESOLVED
 
 **What:** the Vision API (deterministic OCR for the attachment pipeline) was enabled
@@ -23,6 +55,17 @@ lint/gate step before writing this entry; the sequence is preserved in its
 transcript and reconstructed 2026-08-28).
 
 ## B-009 — demo run 2: two engine-side defects; composition crash is a demo-reliability trap (OPEN, fix decision with human)
+
+**Status note 2026-09-01 (bookkeeping correction, no new facts):** this entry was
+never given a closing line, so its heading still reads OPEN. What the record below
+actually establishes: the sticky-delegation crash mechanism is confirmed FIXED (the
+AgentTool re-wiring produced zero validation crashes), and the wiring question was
+then settled by measurement on 2026-08-25 (old `sub_agents` wiring 10/12 and 9/12,
+SHIP-OLD per the pre-committed rule; deterministic composition parked). Defect 1's
+fix is recorded as coded and awaiting redeploy, and no redeploy confirmation was
+ever written into this file. Phases 3 to 6 completed and froze on the shipped
+wiring. Read this as open bookkeeping, not a live unknown, and do not reopen the
+composition question without new measurement.
 
 **Symptom (2026-08-21, run 2 of demo-hotadd):** BEFORE review crashed
 mid-stream. Engine logs (Cloud Logging, both tracebacks captured) show:
@@ -149,6 +192,12 @@ is automatic once state is restored.
 
 ## B-007 — Cloud Run URLs unroutable at Google's edge — RESOLVED 2026-08-27 (anomaly healed)
 
+**Status at 2026-09-01: RESOLVED**, and independently confirmed since, because the
+Phase 6 console is served publicly from Cloud Run. The two follow-ups named at the
+end of this entry (revert `REGISTRY_MODE` to http, remove the interim
+`roles/datastore.viewer` grant) have no completion recorded in this file. Carry them
+into post-judging cleanup rather than assuming they were done.
+
 **Re-tested from scratch at the top of Phase 6, because the whole console
 architecture depends on the answer. The edge routes correctly now.**
 
@@ -239,6 +288,15 @@ Google's edge** (the registry service stays deployed; re-probe before
 Phase 6 managed-mode work).
 
 ## B-006 — Decision-accuracy gate red: fleet measures 65–80% vs the ≥85% §9.4 gate (OPEN, narrowed 2026-08-28: smoke subset SOLVED ×3, held-out 8 measure 3/8)
+
+**Status at 2026-09-01: still OPEN, and it ships red.** The number that ships is the
+2026-08-28 full run, 15/20 (75%), against the >=85% gate, with the config-drift
+disclosure recorded in this entry attached wherever 15/20 is quoted; the 12-case
+smoke subset is 12/12 across three consecutive runs. The 2026-08-29 above-85 run
+measured 14/20, which fired the pre-committed "both <=16" branch, so no >=85% claim
+exists anywhere. The measured-and-parked experiments (Pro-at-decision 15/20, net
+zero; the code-decides branch at 11/20 live and 20/20 offline, parked under ADR-008)
+are not shipped. No threshold was lowered at any point.
 
 **Addendum 2 (2026-08-28, post-eval-full) — the full-set run scopes the fix
 honestly and B-006 stays OPEN.** `make eval-full` (20 cases, human-authorized):
@@ -433,6 +491,9 @@ zip download failed three times (scoop extras bucket clone reset twice; direct
 human on 2026-08-18. **Human acts.**
 
 ## B-002 — GCP prerequisites not yet available (expected at this stage)
+
+**Status at 2026-09-01: RESOLVED (superseded).** Project, billing and ADC have
+existed since Phase 0 and phases 0 to 6 are complete. Kept as the Phase 0 record.
 
 **Symptom:** No `PROJECT_ID`, no billing-enabled project, no `gcloud auth
 application-default login` on this machine. `make bootstrap`, agent deploy, and
@@ -799,6 +860,10 @@ the behaviour that produced it.
 
 ## B-013 - tfstate bucket created out-of-band with gcloud (directive 6 record, 2026-08-26)
 
+**Status at 2026-09-01: RESOLVED.** A deliberate, verified out-of-band creation, not
+an oversight. One live consequence remains, in the teardown paragraph below: the
+versioned bucket is deleted by hand after judging, never by `make teardown`.
+
 **What:** `gs://civicnexus-hack26-tfstate` (us-central1, **versioning enabled**,
 public access prevention enforced, uniform bucket-level access) was created with
 `gcloud storage buckets create`, not Terraform. State then migrated with
@@ -909,6 +974,14 @@ B-011 no longer land on a stale OPEN.**
 
 ## B-010 - terraform.tfstate truncated to 0 bytes AGAIN on apply - RESOLVED 2026-08-26 (state recovered, DLQ grant applied); GCS migration still OPEN
 
+**Correction 2026-09-01: the heading's trailing "GCS migration still OPEN" is
+stale.** B-013 records that migration completed on 2026-08-26, the same day: bucket
+created, `terraform init -migrate-state -force-copy` run, backend block committed in
+versions.tf, remote plan "No changes." This blocker is fully RESOLVED. The "Still
+open" paragraph near the end is kept as history and is superseded by that record.
+Terraform state is off the local-file truncation path; `.git` and the `.deploy/`
+evidence files are not, which is why B-012 stays open.
+
 **CLOSED 2026-08-26 (all output observed directly).** State recovered and the
 missing DLQ grant applied by the human (agent was blocked mid-sitting by a
 safety-classifier outage, so the apply itself was human-run; everything else
@@ -933,6 +1006,9 @@ Post-apply verification, per the B-008 standing rule:
 **Still open:** the GCS backend migration - the permanent fix for this
 truncation class. Local state remains the single point of failure, and B-012
 records a third NUL-truncation event in `.git` with root cause unresolved.
+
+*(Historical. Superseded 2026-08-26: the GCS backend migration was completed that
+day, see B-013. B-012 remains open.)*
 
 **Recovery completed 2026-08-26 (all output observed directly).** Insurance
 copies of both the truncated file and the backup were taken to the session
