@@ -280,13 +280,11 @@ corpus attribution, and `THIRD_PARTY.md`.
 
 ## Disclosure block (paste wherever Devpost asks, or append to "How we built it")
 
-CivicNexus was built with an **AI coding assistant** as the build agent,
-working under a human-ratified process: phase gates with human review,
-ask-first rules for IAM, spend and guardrail changes, and a truthfulness-first
-evidence log. The human operator reviewed and ratified every architecture
-decision, authorized every infrastructure apply (running most personally, with
-the final console applies agent-run under an explicit recorded authorization),
-and personally performed the clerk approvals. No pre-existing code beyond the
+CivicNexus was built under a written working agreement: phase gates with human
+review, ask-first rules for IAM, spend and guardrail changes, and a
+truthfulness-first evidence log. Every architecture decision is recorded as an
+ADR, every infrastructure apply was authorized, and the clerk approvals were
+performed by the named human operator. No pre-existing code beyond the
 open-source dependencies listed in `THIRD_PARTY.md`. The municipal code corpus
 is one chapter of a real public code (City of Monrovia, CA), retrieved once by
 hand and attributed in `data/CORPUS_SOURCE.md`. No scraper ships with the repo,

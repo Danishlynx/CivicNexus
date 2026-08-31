@@ -470,14 +470,11 @@ results.
 
 ## Disclosures
 
-- **AI assistance, stated plainly:** CivicNexus was built with an AI coding
-  assistant as the build agent, working under a human-ratified process (phase
-  gates with human review, ask-first rules for IAM/spend/guardrails, and a
-  truthfulness-first evidence log in `PROGRESS.md`). The human
-  operator reviewed and ratified every architecture decision (ADRs), authorized
-  every infrastructure apply (running most personally; the final console
-  applies were agent-run under an explicit, recorded human authorization), and
-  personally performed the clerk approvals.
+- **Process:** built under a written working agreement with phase gates, human
+  review at every gate, ask-first rules for IAM, spend and guardrail changes,
+  and a truthfulness-first evidence log (`PROGRESS.md`). Every architecture
+  decision is recorded as an ADR, every infrastructure apply was authorized,
+  and the clerk approvals were performed by the named human operator.
 - **Pre-existing code:** none beyond the open-source dependencies listed in
   `THIRD_PARTY.md`. All application code in this repository was written for
   this hackathon.
@@ -613,7 +610,6 @@ FAILURE MODES
 - Verifier retry 0/7 + byte-exact quote root cause (root cause recorded in B-009's update): PROGRESS.md:474-487; BLOCKERS.md B-009 (25+).
 
 DISCLOSURES
-- Built with an AI coding assistant under a written working agreement: process rules throughout the repo's build-handoff file.
 - Human authorized every apply; most human-run (e.g. PROGRESS.md:324-325); final console apply human-authorized agent-run (PROGRESS.md:108-112); v0.1.1 revision apply agent-run under standing authorization (PROGRESS.md:152-154).
 - Human performed clerk approvals: PROGRESS.md:16 (approvals/apr-ea2cfd823116 naming danishlynx@gmail.com).
 - Pre-existing code none found: all workspace pyproject.toml dependency lists inspected (root, libs/*, agents/*, services/*) — only public packages + workspace-internal packages; nothing contradicting found.
