@@ -280,7 +280,7 @@ corpus attribution, and `THIRD_PARTY.md`.
 
 ## Disclosure block (paste wherever Devpost asks, or append to "How we built it")
 
-CivicNexus was built with **Claude Code** (Anthropic) as the build agent,
+CivicNexus was built with an **AI coding assistant** as the build agent,
 working under a human-ratified process: phase gates with human review,
 ask-first rules for IAM, spend and guardrail changes, and a truthfulness-first
 evidence log. The human operator reviewed and ratified every architecture

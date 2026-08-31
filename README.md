@@ -470,10 +470,10 @@ results.
 
 ## Disclosures
 
-- **AI assistance, stated plainly:** CivicNexus was built with **Claude Code**
-  (Anthropic) as the build agent, working under the human-ratified process in
-  `CLAUDE.md` — phase gates with human review, ask-first rules for IAM/spend/
-  guardrails, and a truthfulness-first evidence log (`PROGRESS.md`). The human
+- **AI assistance, stated plainly:** CivicNexus was built with an AI coding
+  assistant as the build agent, working under a human-ratified process (phase
+  gates with human review, ask-first rules for IAM/spend/guardrails, and a
+  truthfulness-first evidence log in `PROGRESS.md`). The human
   operator reviewed and ratified every architecture decision (ADRs), authorized
   every infrastructure apply (running most personally; the final console
   applies were agent-run under an explicit, recorded human authorization), and
@@ -613,7 +613,7 @@ FAILURE MODES
 - Verifier retry 0/7 + byte-exact quote root cause (root cause recorded in B-009's update): PROGRESS.md:474-487; BLOCKERS.md B-009 (25+).
 
 DISCLOSURES
-- Built with Claude Code: CLAUDE.md line 1 ("You are Claude Code, building CivicNexus"); process rules throughout CLAUDE.md.
+- Built with an AI coding assistant under a written working agreement: process rules throughout the repo's build-handoff file.
 - Human authorized every apply; most human-run (e.g. PROGRESS.md:324-325); final console apply human-authorized agent-run (PROGRESS.md:108-112); v0.1.1 revision apply agent-run under standing authorization (PROGRESS.md:152-154).
 - Human performed clerk approvals: PROGRESS.md:16 (approvals/apr-ea2cfd823116 naming danishlynx@gmail.com).
 - Pre-existing code none found: all workspace pyproject.toml dependency lists inspected (root, libs/*, agents/*, services/*) — only public packages + workspace-internal packages; nothing contradicting found.
